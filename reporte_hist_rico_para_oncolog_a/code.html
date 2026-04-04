@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eeeee6",
+                        "surface": "#fafaf1",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#d1e4ff",
+                        "tertiary-fixed-dim": "#78dc77",
+                        "inverse-on-surface": "#f1f1e8",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#002c4f",
+                        "surface-bright": "#fafaf1",
+                        "surface-tint": "#0061a4",
+                        "secondary-fixed": "#ffdcbe",
+                        "background": "#fafaf1",
+                        "tertiary-fixed": "#94f990",
+                        "on-tertiary-container": "#003308",
+                        "secondary-fixed-dim": "#ffb870",
+                        "surface-dim": "#dadbd2",
+                        "on-secondary-fixed": "#2c1600",
+                        "secondary-container": "#ff9800",
+                        "on-background": "#1a1c17",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#0061a4",
+                        "surface-container-highest": "#e3e3da",
+                        "on-surface-variant": "#404752",
+                        "on-surface": "#1a1c17",
+                        "surface-container-high": "#e8e9e0",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e3e3da",
+                        "outline": "#707883",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#42a547",
+                        "primary-container": "#2196f3",
+                        "on-primary-fixed-variant": "#00497d",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#653900",
+                        "on-primary-fixed": "#001d36",
+                        "secondary": "#8b5000",
+                        "primary-fixed-dim": "#9ecaff",
+                        "tertiary": "#006e1c",
+                        "on-secondary-fixed-variant": "#693c00",
+                        "inverse-surface": "#2f312b",
+                        "inverse-primary": "#9ecaff",
+                        "outline-variant": "#bfc7d4",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f4f4eb",
+                        "on-tertiary-fixed-variant": "#005313",
+                        "on-tertiary-fixed": "#002204"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Public Sans"],
+                        "label": ["Public Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #fafaf1;
+            color: #1a1c17;
+        }
+        h1, h2, h3, .font-headline {
+            font-family: 'Lexend', sans-serif;
+        }
+        .glass-card {
+            background: rgba(227, 227, 218, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar (As defined in JSON) -->
+<aside class="flex flex-col h-screen w-72 border-r-0 bg-[#fafaf1] dark:bg-slate-950 p-6 gap-2 shrink-0">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-12 h-12 rounded-full overflow-hidden">
+<img alt="Doctor Profile" class="w-full h-full object-cover" data-alt="Professional female oncologist with a warm smile wearing a white lab coat in a clean modern medical office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzxaZDOsM7C8J_xhbC3AxwqtS4SnUYM9JQehSXtRjLH62FcfRRnexHyVTIflnjxlmVF4aMfskfHRZ89BCMJk8I20Sr97ul8MQbzjIxf8LvR-bMlpTSJYE4jNQ4ug5qiHEcJzAz_TGLhBwZ46mQe2Vjks5EolJ7YL-5QRu9iP5h3XQGlz2rdBb8Dp7ajyagf4OTAtRuNrDZfJDdqhkagzBO1abjFyYhk00FAB8VOEUiqMoquwj4qb80N8Fp72B0pigy5D1EDqrc888"/>
+</div>
+<div>
+<p class="text-xl font-bold text-[#1a1c17] font-headline">Oncología</p>
+<p class="text-xs opacity-70 font-label">Panel de Seguimiento</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-4 text-[#1a1c17] dark:text-slate-400 p-4 hover:bg-[#e3e3da] dark:hover:bg-slate-800 transition-colors rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-medium text-title-lg font-headline">Historial</span>
+</a>
+<a class="flex items-center gap-4 text-[#1a1c17] dark:text-slate-400 p-4 hover:bg-[#e3e3da] dark:hover:bg-slate-800 transition-colors rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="show_chart">show_chart</span>
+<span class="font-medium text-title-lg font-headline">Constantes</span>
+</a>
+<a class="flex items-center gap-4 text-[#1a1c17] dark:text-slate-400 p-4 hover:bg-[#e3e3da] dark:hover:bg-slate-800 transition-colors rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="medication">medication</span>
+<span class="font-medium text-title-lg font-headline">Medicación</span>
+</a>
+<!-- ACTIVE TAB: Reportes -->
+<a class="flex items-center gap-4 bg-[#e3e3da] dark:bg-slate-800 text-[#2196f3] rounded-xl p-4 font-bold scale-[0.98] duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-medium text-title-lg font-headline">Reportes</span>
+</a>
+</nav>
+<div class="mt-auto">
+<button class="w-full py-4 bg-gradient-to-v from-primary to-primary-container text-on-primary rounded-3xl font-bold text-lg hover:opacity-90 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                Nuevo Registro
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto px-10 py-8 bg-surface">
+<!-- Top Title Bar -->
+<header class="flex justify-between items-end mb-12">
+<div>
+<h1 class="text-display-lg font-black text-on-surface tracking-tight leading-none mb-2">Reporte Histórico</h1>
+<p class="text-title-lg text-on-surface-variant font-medium">Paciente: Clara M. - Expediente #4492</p>
+</div>
+<div class="flex gap-4">
+<button class="h-20 px-8 flex items-center gap-3 bg-surface-container-highest text-on-surface rounded-3xl font-bold text-xl hover:bg-surface-container-high active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'opsz' 32">sync</span>
+                    Sincronizar Datos
+                </button>
+<button class="h-20 px-8 flex items-center gap-3 bg-gradient-to-b from-primary to-primary-container text-white rounded-3xl font-bold text-xl hover:opacity-90 active:scale-95 transition-all shadow-xl">
+<span class="material-symbols-outlined" style="font-variation-settings: 'opsz' 32">picture_as_pdf</span>
+                    Exportar PDF para consulta
+                </button>
+</div>
+</header>
+<!-- Filtros y Alertas (Bento Style) -->
+<div class="grid grid-cols-12 gap-6 mb-10">
+<!-- Selector de Fecha (Filtros) -->
+<div class="col-span-8 bg-surface-container-low rounded-3xl p-8 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-headline-sm font-bold mb-4">Periodo de Análisis</span>
+<div class="flex items-center gap-6">
+<div class="relative">
+<label class="absolute -top-3 left-4 bg-surface-container-low px-2 text-xs font-bold text-primary">Desde</label>
+<div class="bg-surface-variant rounded-2xl px-6 py-4 min-w-[200px] flex items-center gap-3 border border-outline-variant border-opacity-20">
+<span class="material-symbols-outlined text-on-surface-variant">calendar_today</span>
+<span class="font-bold text-xl">01 Oct 2023</span>
+</div>
+</div>
+<div class="w-8 h-[2px] bg-outline-variant opacity-30"></div>
+<div class="relative">
+<label class="absolute -top-3 left-4 bg-surface-container-low px-2 text-xs font-bold text-primary">Hasta</label>
+<div class="bg-surface-variant rounded-2xl px-6 py-4 min-w-[200px] flex items-center gap-3 border border-outline-variant border-opacity-20">
+<span class="material-symbols-outlined text-on-surface-variant">event</span>
+<span class="font-bold text-xl">31 Oct 2023</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="px-6 py-4 rounded-2xl bg-surface-container-highest font-bold text-on-surface hover:bg-surface-container-high transition-colors">Mes Actual</button>
+<button class="px-6 py-4 rounded-2xl bg-surface-container-highest font-bold text-on-surface hover:bg-surface-container-high transition-colors">Último Trimestre</button>
+</div>
+</div>
+<!-- Alertas Médicas Summary -->
+<div class="col-span-4 bg-error-container rounded-3xl p-8 flex flex-col justify-between border-l-[12px] border-error">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="text-headline-lg font-black text-on-error-container">Alertas Críticas</h3>
+<p class="text-title-lg font-medium opacity-80">Periodo Octubre</p>
+</div>
+<span class="material-symbols-outlined text-error text-5xl" style="font-variation-settings: 'FILL' 1">warning</span>
+</div>
+<div class="flex gap-6 mt-4">
+<div class="flex flex-col">
+<span class="text-3xl font-black text-error">04</span>
+<span class="text-sm font-bold uppercase tracking-widest opacity-60">Fiebre</span>
+</div>
+<div class="flex flex-col">
+<span class="text-3xl font-black text-error">02</span>
+<span class="text-sm font-bold uppercase tracking-widest opacity-60">Hiperglucemia</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Vital Signs Panel (Gigantism & Intentional Asymmetry) -->
+<section class="mb-10">
+<h2 class="text-headline-lg font-black mb-6 px-2">Evolución de Constantes Vitales</h2>
+<div class="bg-surface-container-low rounded-3xl p-10">
+<div class="flex justify-between items-center mb-8">
+<div class="flex gap-8">
+<div class="flex items-center gap-3">
+<span class="w-4 h-4 rounded-full bg-primary-container"></span>
+<span class="font-bold text-xl">Glucosa (mg/dL)</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="w-4 h-4 rounded-full bg-secondary-container"></span>
+<span class="font-bold text-xl">Temperatura (°C)</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-title-lg font-medium opacity-60">Frecuencia: Diaria (Promedio)</span>
+</div>
+</div>
+<!-- Mock Graph Area -->
+<div class="relative h-[300px] w-full flex items-end justify-between px-4 pb-8">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between opacity-5 pointer-events-none">
+<div class="border-t border-on-surface w-full"></div>
+<div class="border-t border-on-surface w-full"></div>
+<div class="border-t border-on-surface w-full"></div>
+<div class="border-t border-on-surface w-full"></div>
+</div>
+<!-- Bars/Data Points -->
+<div class="flex flex-col items-center gap-2 group w-16">
+<div class="relative w-full flex items-end justify-center gap-1 h-[200px]">
+<div class="w-4 bg-primary-container rounded-t-lg transition-all group-hover:scale-y-110" style="height: 65%;"></div>
+<div class="w-4 bg-secondary-container rounded-t-lg transition-all group-hover:scale-y-110" style="height: 40%;"></div>
+</div>
+<span class="font-bold text-sm opacity-50">OCT 01</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-16">
+<div class="relative w-full flex items-end justify-center gap-1 h-[200px]">
+<div class="w-4 bg-primary-container rounded-t-lg transition-all" style="height: 70%;"></div>
+<div class="w-4 bg-secondary-container rounded-t-lg transition-all" style="height: 42%;"></div>
+</div>
+<span class="font-bold text-sm opacity-50">OCT 05</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-16">
+<div class="relative w-full flex items-end justify-center gap-1 h-[200px]">
+<div class="w-4 bg-error rounded-t-lg transition-all" style="height: 85%;"></div>
+<div class="w-4 bg-error rounded-t-lg transition-all" style="height: 60%;"></div>
+</div>
+<span class="font-bold text-sm text-error font-black">OCT 10</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-16">
+<div class="relative w-full flex items-end justify-center gap-1 h-[200px]">
+<div class="w-4 bg-primary-container rounded-t-lg transition-all" style="height: 60%;"></div>
+<div class="w-4 bg-secondary-container rounded-t-lg transition-all" style="height: 38%;"></div>
+</div>
+<span class="font-bold text-sm opacity-50">OCT 15</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-16">
+<div class="relative w-full flex items-end justify-center gap-1 h-[200px]">
+<div class="w-4 bg-primary-container rounded-t-lg transition-all" style="height: 62%;"></div>
+<div class="w-4 bg-secondary-container rounded-t-lg transition-all" style="height: 41%;"></div>
+</div>
+<span class="font-bold text-sm opacity-50">OCT 20</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-16">
+<div class="relative w-full flex items-end justify-center gap-1 h-[200px]">
+<div class="w-4 bg-primary-container rounded-t-lg transition-all" style="height: 58%;"></div>
+<div class="w-4 bg-secondary-container rounded-t-lg transition-all" style="height: 39%;"></div>
+</div>
+<span class="font-bold text-sm opacity-50">OCT 25</span>
+</div>
+<div class="flex flex-col items-center gap-2 group w-16">
+<div class="relative w-full flex items-end justify-center gap-1 h-[200px]">
+<div class="w-4 bg-primary-container rounded-t-lg transition-all" style="height: 64%;"></div>
+<div class="w-4 bg-secondary-container rounded-t-lg transition-all" style="height: 40%;"></div>
+</div>
+<span class="font-bold text-sm opacity-50">OCT 30</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Chronological Record (No-Line Table Design) -->
+<section>
+<div class="flex justify-between items-center mb-6 px-2">
+<h2 class="text-headline-lg font-black">Historial de Medicación</h2>
+<div class="bg-surface-container-high px-6 py-3 rounded-2xl flex items-center gap-4">
+<span class="material-symbols-outlined">filter_list</span>
+<span class="font-bold">Filtrar por fármaco</span>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Record Header -->
+<div class="grid grid-cols-12 px-8 py-4 opacity-50 font-bold uppercase tracking-wider text-xs">
+<div class="col-span-5">Medicamento / Principio Activo</div>
+<div class="col-span-2">Dosis</div>
+<div class="col-span-3">Fecha y Hora</div>
+<div class="col-span-2 text-right">Estado</div>
+</div>
+<!-- Record Card 1 -->
+<div class="grid grid-cols-12 items-center px-8 py-6 bg-surface-container-low rounded-3xl border-l-[12px] border-primary-container hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="col-span-5 flex items-center gap-6">
+<div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-3xl">pill</span>
+</div>
+<div>
+<p class="text-2xl font-black">Ciclofosfamida</p>
+<p class="text-sm opacity-70">Tratamiento Oncológico IV</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="text-xl font-bold bg-white px-4 py-2 rounded-xl">500 mg</span>
+</div>
+<div class="col-span-3">
+<div class="flex flex-col">
+<span class="text-xl font-bold">28 Oct 2023</span>
+<span class="text-sm opacity-70">09:15 AM</span>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<span class="px-4 py-2 bg-tertiary-container text-on-tertiary-container rounded-full text-sm font-black uppercase tracking-tighter">Administrado</span>
+</div>
+</div>
+<!-- Record Card 2 -->
+<div class="grid grid-cols-12 items-center px-8 py-6 bg-surface-container-low rounded-3xl border-l-[12px] border-secondary-container hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="col-span-5 flex items-center gap-6">
+<div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-secondary-container">
+<span class="material-symbols-outlined text-3xl">medication</span>
+</div>
+<div>
+<p class="text-2xl font-black">Ondansetrón</p>
+<p class="text-sm opacity-70">Antiemético / Control de Náuseas</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="text-xl font-bold bg-white px-4 py-2 rounded-xl">8 mg</span>
+</div>
+<div class="col-span-3">
+<div class="flex flex-col">
+<span class="text-xl font-bold">28 Oct 2023</span>
+<span class="text-sm opacity-70">08:45 AM</span>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<span class="px-4 py-2 bg-tertiary-container text-on-tertiary-container rounded-full text-sm font-black uppercase tracking-tighter">Administrado</span>
+</div>
+</div>
+<!-- Record Card 3 (Alert State) -->
+<div class="grid grid-cols-12 items-center px-8 py-6 bg-surface-container-low rounded-3xl border-l-[12px] border-tertiary-container hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="col-span-5 flex items-center gap-6">
+<div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-tertiary-container">
+<span class="material-symbols-outlined text-3xl">vaccines</span>
+</div>
+<div>
+<p class="text-2xl font-black">Filgrastim</p>
+<p class="text-sm opacity-70">Factor estimulante de colonias</p>
+</div>
+</div>
+<div class="col-span-2">
+<span class="text-xl font-bold bg-white px-4 py-2 rounded-xl">300 mcg</span>
+</div>
+<div class="col-span-3">
+<div class="flex flex-col">
+<span class="text-xl font-bold">27 Oct 2023</span>
+<span class="text-sm opacity-70">10:00 PM</span>
+</div>
+</div>
+<div class="col-span-2 text-right">
+<span class="px-4 py-2 bg-error-container text-error rounded-full text-sm font-black uppercase tracking-tighter">Omitido</span>
+</div>
+</div>
+<!-- Load More / Footer Action -->
+<div class="flex justify-center mt-6">
+<button class="px-12 py-6 rounded-3xl bg-surface-container-highest font-black text-xl hover:bg-surface-container-high transition-all flex items-center gap-4">
+                        Cargar registros anteriores
+                        <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Element for Focus -->
+<div class="fixed bottom-8 right-8 glass-card border border-white border-opacity-20 px-8 py-6 rounded-3xl shadow-2xl flex items-center gap-6">
+<div class="flex flex-col">
+<span class="text-xs font-black uppercase text-on-surface-variant tracking-widest">Última Sincronización</span>
+<span class="text-lg font-bold">Hace 2 minutos</span>
+</div>
+<div class="w-[1px] h-10 bg-on-surface opacity-10"></div>
+<button class="w-14 h-14 bg-primary text-white rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-3xl">refresh</span>
+</button>
+</div>
+</body></html>

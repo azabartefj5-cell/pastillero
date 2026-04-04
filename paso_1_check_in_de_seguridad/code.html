@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;800;900&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e3e3da",
+                    "on-surface-variant": "#404752",
+                    "on-surface": "#1a1c17",
+                    "primary": "#0061a4",
+                    "secondary-container": "#ff9800",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#1a1c17",
+                    "surface-dim": "#dadbd2",
+                    "on-secondary-fixed": "#2c1600",
+                    "on-tertiary-container": "#003308",
+                    "tertiary-fixed": "#94f990",
+                    "secondary-fixed-dim": "#ffb870",
+                    "surface-bright": "#fafaf1",
+                    "on-primary-container": "#002c4f",
+                    "secondary-fixed": "#ffdcbe",
+                    "background": "#fafaf1",
+                    "surface-tint": "#0061a4",
+                    "inverse-on-surface": "#f1f1e8",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#78dc77",
+                    "primary-fixed": "#d1e4ff",
+                    "on-error": "#ffffff",
+                    "surface-container": "#eeeee6",
+                    "surface": "#fafaf1",
+                    "surface-container-low": "#f4f4eb",
+                    "on-tertiary-fixed-variant": "#005313",
+                    "on-tertiary-fixed": "#002204",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "outline-variant": "#bfc7d4",
+                    "inverse-surface": "#2f312b",
+                    "inverse-primary": "#9ecaff",
+                    "on-secondary-fixed-variant": "#693c00",
+                    "tertiary": "#006e1c",
+                    "primary-fixed-dim": "#9ecaff",
+                    "on-secondary-container": "#653900",
+                    "primary-container": "#2196f3",
+                    "on-primary-fixed-variant": "#00497d",
+                    "error": "#ba1a1a",
+                    "secondary": "#8b5000",
+                    "on-primary-fixed": "#001d36",
+                    "outline": "#707883",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#42a547",
+                    "surface-container-high": "#e8e9e0",
+                    "surface-variant": "#e3e3da",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Public Sans"],
+                    "label": ["Public Sans"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        body {
+            background-color: #fafaf1;
+            color: #1a1c17;
+            font-family: 'Public Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .text-32px { font-size: 2rem; }
+        .text-24px { font-size: 1.5rem; }
+        .h-100px { height: 100px; }
+        .h-80px { height: 80px; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen flex flex-col items-center">
+<!-- TopAppBar Semantic Shell -->
+<header class="bg-[#fafaf1] dark:bg-stone-950 flex items-center justify-between px-6 h-24 w-full docked full-width top-0 sticky z-40">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#2196f3] dark:text-blue-400" style="font-size: 40px;">account_circle</span>
+<h1 class="text-3xl font-black text-[#1a1c17] dark:text-stone-100 font-['Lexend'] leading-tight">Guardián Empático</h1>
+</div>
+</header>
+<main class="w-full max-w-md px-6 py-8 flex flex-col flex-grow">
+<!-- Hero Section: Editorial Clarity -->
+<section class="mb-10">
+<h2 class="font-headline font-bold text-32px leading-tight text-on-background mb-2">Buenos días, Pilar</h2>
+<p class="font-body font-medium text-24px text-on-surface-variant">Antes de empezar, necesitamos tus datos</p>
+</section>
+<!-- Vital Sign Inputs: Gigantism & Touch-First -->
+<div class="space-y-8 flex-grow">
+<!-- Temperature Input Card -->
+<div class="relative">
+<label class="block font-headline font-bold text-xl mb-3 pl-2">Temperatura (ºC)</label>
+<div class="relative flex items-center">
+<input class="w-full h-100px bg-surface-container-highest border-none rounded-xl px-8 text-4xl font-headline font-black focus:ring-4 focus:ring-primary-container outline-none transition-all placeholder:text-on-surface-variant/30" placeholder="36.5" step="0.1" type="number"/>
+<div class="absolute right-6 flex items-center gap-2 pointer-events-none">
+<span class="material-symbols-outlined text-error text-4xl" data-icon="thermostat">thermostat</span>
+</div>
+</div>
+<!-- Contextual Alert (Simulated) -->
+<div class="mt-4 flex items-center gap-3 p-4 bg-error-container rounded-xl">
+<span class="material-symbols-outlined text-on-error-container" data-icon="warning">warning</span>
+<p class="font-body font-bold text-on-error-container">Alerta: Fiebre detectada (&gt;37.5ºC)</p>
+</div>
+</div>
+<!-- Glucose Input Card -->
+<div class="relative">
+<label class="block font-headline font-bold text-xl mb-3 pl-2">Glucosa (mg/dL)</label>
+<div class="relative flex items-center">
+<input class="w-full h-100px bg-surface-container-highest border-none rounded-xl px-8 text-4xl font-headline font-black focus:ring-4 focus:ring-primary-container outline-none transition-all placeholder:text-on-surface-variant/30" placeholder="110" type="number"/>
+<div class="absolute right-6 flex items-center gap-2 pointer-events-none">
+<span class="material-symbols-outlined text-tertiary text-4xl" data-icon="bloodtype">bloodtype</span>
+</div>
+</div>
+<p class="mt-3 text-on-surface-variant font-medium px-2">Dato esencial para calcular tu Insulina Lantus</p>
+</div>
+</div>
+<!-- Call to Action: The Giant Button -->
+<footer class="mt-12 mb-8">
+<button class="w-full h-80px bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-extrabold text-2xl shadow-xl active:scale-95 transition-transform duration-150 flex items-center justify-center gap-4">
+                GUARDAR Y CONTINUAR
+                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</footer>
+</main>
+<!-- Visual Polish: Decorative Background Accent -->
+<div class="fixed top-1/4 -right-20 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl -z-10"></div>
+<div class="fixed bottom-1/4 -left-20 w-64 h-64 bg-primary-container/10 rounded-full blur-3xl -z-10"></div>
+<!-- Hidden Image for Aesthetic Context -->
+<div class="hidden">
+<img alt="Contextual Wellness" data-alt="Modern minimalist home interior with soft natural morning light, a glass of water on a light wood table, peaceful atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv-HlhlaspwUUn75snNFEm8MrGhvU8x_BcUWnGIIq6xOhW8UVoXkNpx7QXPf6fLA9Hf8SUkGiHHbZFGCg8knKJQzR26j5VwP2ATYIsIY4B0aq9IHLyPxudtNk_6VYXddYTJfW1f4auXjonNRLDeCHLd1OYoDnu__rl0jkJRJmJvnbzt8mO71_TwiVBfgcRN0bEmxAgG5fznM7zn7Fe6BCdtX5wzgyace3H4oc2d2-IjEio_GLjVohtMTT1ouVnLK28WeY7GYYcyz8"/>
+</div>
+</body></html>

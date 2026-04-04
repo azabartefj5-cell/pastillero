@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;800;900&amp;family=Public+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e3e3da",
+                    "on-surface-variant": "#404752",
+                    "on-surface": "#1a1c17",
+                    "primary": "#0061a4",
+                    "secondary-container": "#ff9800",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#1a1c17",
+                    "surface-dim": "#dadbd2",
+                    "on-secondary-fixed": "#2c1600",
+                    "on-tertiary-container": "#003308",
+                    "tertiary-fixed": "#94f990",
+                    "secondary-fixed-dim": "#ffb870",
+                    "surface-bright": "#fafaf1",
+                    "on-primary-container": "#002c4f",
+                    "secondary-fixed": "#ffdcbe",
+                    "background": "#fafaf1",
+                    "surface-tint": "#0061a4",
+                    "inverse-on-surface": "#f1f1e8",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#78dc77",
+                    "primary-fixed": "#d1e4ff",
+                    "on-error": "#ffffff",
+                    "surface-container": "#eeeee6",
+                    "surface": "#fafaf1",
+                    "surface-container-low": "#f4f4eb",
+                    "on-tertiary-fixed-variant": "#005313",
+                    "on-tertiary-fixed": "#002204",
+                    "on-tertiary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "outline-variant": "#bfc7d4",
+                    "inverse-surface": "#2f312b",
+                    "inverse-primary": "#9ecaff",
+                    "on-secondary-fixed-variant": "#693c00",
+                    "tertiary": "#006e1c",
+                    "primary-fixed-dim": "#9ecaff",
+                    "on-secondary-container": "#653900",
+                    "primary-container": "#2196f3",
+                    "on-primary-fixed-variant": "#00497d",
+                    "error": "#ba1a1a",
+                    "secondary": "#8b5000",
+                    "on-primary-fixed": "#001d36",
+                    "outline": "#707883",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#42a547",
+                    "surface-container-high": "#e8e9e0",
+                    "surface-variant": "#e3e3da",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Public Sans"],
+                    "label": ["Public Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        body { font-family: 'Public Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Lexend', sans-serif; }
+        .glass-timer {
+            background: rgba(227, 227, 218, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#fafaf1] dark:bg-stone-950 flex items-center justify-between px-6 h-24 w-full docked full-width top-0 sticky z-40">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-3xl text-[#2196f3] dark:text-blue-400" data-icon="account_circle">account_circle</span>
+<h1 class="text-3xl font-black text-[#1a1c17] dark:text-stone-100">Guardián Empático</h1>
+</div>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-[#1a1c17] text-3xl" data-icon="notifications">notifications</span>
+</div>
+</header>
+<main class="px-6 pt-6 space-y-8 max-w-md mx-auto">
+<!-- Morning Context Header -->
+<header class="space-y-2">
+<div class="flex items-center gap-3 text-secondary">
+<span class="material-symbols-outlined text-4xl" data-icon="sunny">sunny</span>
+<span class="font-headline font-bold text-xl uppercase tracking-wider">Mañana</span>
+</div>
+<h2 class="text-[3.5rem] font-black leading-[1.1] text-on-background">Hora del Desayuno</h2>
+</header>
+<!-- CRITICAL SECTION: INSULINA -->
+<section class="space-y-4">
+<div class="bg-surface-container-high rounded-[2rem] overflow-hidden flex shadow-[0_20px_40px_rgba(26,28,23,0.08)]">
+<!-- Status Bar (Temporal Palette: Morning/Secondary) -->
+<div class="w-4 bg-secondary-container"></div>
+<div class="p-6 flex-1 space-y-6">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label font-bold text-secondary text-lg">INSULINA</span>
+<h3 class="text-3xl font-bold text-on-surface leading-tight">Lantus</h3>
+<p class="text-xl font-medium text-on-surface-variant">Dosis: 10-12 UI</p>
+</div>
+<div class="bg-secondary-container/20 p-3 rounded-2xl">
+<span class="material-symbols-outlined text-secondary text-4xl" data-icon="syringe" data-weight="fill" style="font-variation-settings: 'FILL' 1;">syringe</span>
+</div>
+</div>
+<button class="w-full h-24 bg-gradient-to-b from-primary to-primary-container text-white rounded-[1.5rem] flex items-center justify-center gap-4 shadow-lg active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined text-3xl" data-icon="check_circle">check_circle</span>
+<span class="font-headline text-2xl font-extrabold uppercase tracking-tight">REGISTRAR INYECCIÓN</span>
+</button>
+</div>
+</div>
+</section>
+<!-- MEDICATION LIST -->
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-extrabold text-on-surface">Medicación Mañana</h3>
+<span class="bg-surface-container-highest px-4 py-2 rounded-full font-bold text-on-surface">3 Pendientes</span>
+</div>
+<!-- Critical Medication: Enoxaparina -->
+<div class="bg-error-container rounded-[2rem] overflow-hidden flex border-2 border-error/10">
+<div class="w-4 bg-error"></div>
+<div class="p-6 flex-1 space-y-4">
+<div class="flex justify-between items-center">
+<div>
+<span class="text-error font-black text-sm uppercase tracking-widest">CRÍTICO</span>
+<h4 class="text-2xl font-bold text-on-error-container">Enoxaparina 100mg</h4>
+<p class="text-lg text-on-error-container/80">Inyección Subcutánea</p>
+</div>
+<span class="material-symbols-outlined text-error text-4xl" data-icon="priority_high">priority_high</span>
+</div>
+<button class="w-full h-20 bg-error text-white rounded-[1.5rem] font-headline text-xl font-bold active:scale-95 transition-all">
+                        CONFIRMAR TOMA
+                    </button>
+</div>
+</div>
+<!-- Standard: Kreon -->
+<div class="bg-surface-container-low rounded-[2rem] overflow-hidden flex">
+<div class="w-4 bg-tertiary-container"></div>
+<div class="p-6 flex-1 space-y-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-2xl font-bold text-on-surface">Kreon 35000</h4>
+<p class="text-lg font-medium text-on-surface-variant">2 cápsulas</p>
+</div>
+<span class="material-symbols-outlined text-tertiary text-4xl" data-icon="pill">pill</span>
+</div>
+<button class="w-full h-20 bg-surface-container-highest text-on-surface rounded-[1.5rem] font-headline text-xl font-bold active:scale-95 transition-all border-2 border-outline-variant/20">
+                        CONFIRMAR TOMA
+                    </button>
+</div>
+</div>
+<!-- Standard: Valsartan -->
+<div class="bg-surface-container-low rounded-[2rem] overflow-hidden flex">
+<div class="w-4 bg-tertiary-container"></div>
+<div class="p-6 flex-1 space-y-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-2xl font-bold text-on-surface">Valsartan/HTZ</h4>
+<p class="text-lg font-medium text-on-surface-variant">1 comprimido</p>
+</div>
+<span class="material-symbols-outlined text-tertiary text-4xl" data-icon="medication">medication</span>
+</div>
+<button class="w-full h-20 bg-surface-container-highest text-on-surface rounded-[1.5rem] font-headline text-xl font-bold active:scale-95 transition-all border-2 border-outline-variant/20">
+                        CONFIRMAR TOMA
+                    </button>
+</div>
+</div>
+</section>
+<!-- Decorative Context Image -->
+<div class="relative w-full h-48 rounded-[2.5rem] overflow-hidden mt-8">
+<img class="w-full h-full object-cover" data-alt="Close-up of a healthy Mediterranean breakfast with fresh orange juice and whole grain bread in soft morning sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeFh7p_YCqv-oUVssSr7Y0H18D01y8EZBs1PPeP7f8LxCcRf650QU7Yl8FpAyBOI-veUuvbf7_aC5SId4Jza6yQTh33EbWNpginOjynV1ryQACBBzpfH-Wrh38PZddCohu2oj2gYD2xyxayEOb-4B-c-9mSmjmLWsQTqVUnI6B6gZk_SDs4QnCDpOE_ZHjOi5OaLjYui7R9a72V0imW7rf3lqnKiapo-BDA-7Sy9Ln35RLaL_o3JjzoMHslq7-w2l5PsU4hlXFzuM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+<p class="text-white font-headline text-xl font-bold">Recuerda desayunar después de la insulina</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-10 bg-[#fafaf1] dark:bg-stone-950 h-28 shadow-[0_-10px_30px_rgba(26,28,23,0.05)]">
+<!-- Tab: Hoy (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#2196f3] text-white rounded-[1.5rem] px-8 py-3 h-[80%] scale-98 transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-3xl" data-icon="today" data-weight="fill" style="font-variation-settings: 'FILL' 1;">today</span>
+<span class="font-['Lexend'] text-[1.25rem] font-medium">Hoy</span>
+</a>
+<!-- Tab: SOS -->
+<a class="flex flex-col items-center justify-center text-[#1a1c17] dark:text-stone-300 px-6 py-2 hover:bg-[#e3e3da] dark:hover:bg-stone-700 transition-all" href="#">
+<span class="material-symbols-outlined text-3xl" data-icon="emergency_home">emergency_home</span>
+<span class="font-['Lexend'] text-[1.25rem] font-medium">SOS</span>
+</a>
+<!-- Tab: Historial -->
+<a class="flex flex-col items-center justify-center text-[#1a1c17] dark:text-stone-300 px-6 py-2 hover:bg-[#e3e3da] dark:hover:bg-stone-700 transition-all" href="#">
+<span class="material-symbols-outlined text-3xl" data-icon="history">history</span>
+<span class="font-['Lexend'] text-[1.25rem] font-medium">Historial</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,33 @@
+PROMPT PARA STITCH: Pastillero Inteligente Sincronizado
+Contexto del Proyecto: Crea una Aplicación Web Progresiva (PWA) de alta fidelidad para gestionar el tratamiento oncológico de María Pilar (78 años). La app debe ser extremadamente fácil de usar para ella y su marido, y permitirme a mí actuar como supervisor sincronizado mediante Firebase.
+
+1. Identidad Visual y UI (Senior-Friendly):
+Estilo: Botones gigantes (mínimo 80px de alto), textos en negrita de 24px, contraste máximo (negro sobre blanco/amarillo suave).
+Organización: Cuatro secciones principales por colores: Mañana (Amarillo), Comida (Naranja), Merienda (Verde) y Noche (Azul).
+Navegación: Pestaña principal "Hoy", pestaña secundaria "Botiquín SOS" y pestaña oculta "Admin/Historial".
+
+2. Flujo de Trabajo y Seguridad:
+Check-in Obligatorio: Antes de habilitar las pastillas de cada comida, el usuario DEBE introducir:
+- Temperatura: (Vigilar infección por E. coli). Alerta si es >37.5°C.
+- Glucosa: Para decidir la dosis de Insulina Rápida.
+Confirmación: Al pulsar "Tomado", el botón debe cambiar a un check verde y registrar la hora exacta.
+
+3. Programación de Medicación (Informe 31/03/2026):
+Implementa esta pauta exacta:
+- Mañana: Kreon 35000 (2 cápsulas) , Valsartan/HTZ 160/25 (1 comp.) , Amlodipino 5mg (1 comp.) , Trangorex 200mg (Solo de Lunes a Viernes) , Omeprazol 40mg (1 comp.) , Enoxaparina 100mg (Inyección subcutánea).
+- Comida: Kreon 35000 (2 cápsulas).
+- Merienda: Kreon 35000 (3 cápsulas).
+- Noche: Kreon 35000 (2 cápsulas) , Omeprazol 40mg (1 comp.) , e Insulina Lantus (10-12 UI).
+- Especiales: Recordatorio de Parche de Morfina cada 3 días e Hidroferol cada 15 días.
+
+4. Botiquín SOS (Medicamentos de Soporte):
+Botones interactivos con las siguientes reglas:
+- Botón "Dolor": Registrar Oramorph 2mg/ml (1ml). Bloquear botón 6 horas tras toma.
+- Botón "Diarrea": Registrar Fortasec. Límite máximo de 8 al día.
+- Botón "Náuseas": Sugerir Motilium (antes de comer) o Zofran 4mg si persiste.
+- Botón "Llagas": Recordar enjuagues con Mycostatin 3 veces al día.
+
+5. Configuración de Firebase y Sincronización:
+Prepara el código para usar Firebase Firestore.
+Necesito que la base de datos sincronice en tiempo real: el estado de las pastillas (tomadas/pendientes), los valores de glucosa/temperatura y el historial de SOS.
+Añade un campo para pegar mi firebaseConfig objeto.

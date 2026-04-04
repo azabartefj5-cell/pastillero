@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;700;800;900&amp;family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#404752",
+                    "on-secondary-container": "#653900",
+                    "surface-container-low": "#f4f4eb",
+                    "primary-fixed": "#d1e4ff",
+                    "surface": "#fafaf1",
+                    "outline-variant": "#bfc7d4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005313",
+                    "secondary-container": "#ff9800",
+                    "inverse-primary": "#9ecaff",
+                    "secondary-fixed": "#ffdcbe",
+                    "on-tertiary-container": "#003308",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fafaf1",
+                    "on-primary-fixed-variant": "#00497d",
+                    "surface-tint": "#0061a4",
+                    "tertiary-fixed-dim": "#78dc77",
+                    "on-primary-fixed": "#001d36",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#2196f3",
+                    "error": "#ba1a1a",
+                    "primary": "#0061a4",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#1a1c17",
+                    "on-secondary-fixed": "#2c1600",
+                    "on-background": "#1a1c17",
+                    "inverse-surface": "#2f312b",
+                    "on-secondary-fixed-variant": "#693c00",
+                    "tertiary": "#006e1c",
+                    "on-primary-container": "#002c4f",
+                    "inverse-on-surface": "#f1f1e8",
+                    "primary-fixed-dim": "#9ecaff",
+                    "surface-dim": "#dadbd2",
+                    "secondary": "#8b5000",
+                    "on-tertiary-fixed": "#002204",
+                    "tertiary-fixed": "#94f990",
+                    "surface-variant": "#e3e3da",
+                    "surface-container-highest": "#e3e3da",
+                    "secondary-fixed-dim": "#ffb870",
+                    "background": "#fafaf1",
+                    "outline": "#707883",
+                    "surface-container-high": "#e8e9e0",
+                    "surface-container": "#eeeee6",
+                    "tertiary-container": "#42a547"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Public Sans"],
+                    "label": ["Public Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-pill-glow {
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen">
+<!-- TopNavBar -->
+<nav class="bg-[#fafaf1] dark:bg-stone-950 flex justify-between items-center w-full px-8 h-24 sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<span class="font-headline text-[2rem] leading-tight font-bold text-[#1a1c17] dark:text-stone-100">Clarion Care</span>
+</div>
+<div class="hidden md:flex items-center space-x-12">
+<a class="font-headline text-xl font-bold text-[#2196f3] border-b-4 border-[#2196f3] pb-2" href="#">Hoy</a>
+<a class="font-headline text-xl font-bold text-[#1a1c17] dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-800 px-4 py-2 rounded-xl transition-colors" href="#">Botiquín SOS</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-4xl p-2 hover:bg-stone-200 dark:hover:bg-stone-800 rounded-full transition-all active:scale-98">account_circle</button>
+</div>
+</nav>
+<div class="flex h-[calc(100vh-6rem)] overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full space-y-4 bg-[#f4f4eb] dark:bg-stone-900 h-screen w-80 border-r-0 shadow-xl p-6">
+<div class="mb-8">
+<h2 class="font-headline text-2xl font-bold text-[#1a1c17] dark:text-stone-100">Mi Horario</h2>
+<p class="text-on-surface-variant font-medium">Selecciona un momento</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-4 text-[#1a1c17] dark:text-stone-400 p-6 hover:bg-[#e3e3da] dark:hover:bg-stone-800 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined text-3xl">light_mode</span>
+<span class="font-headline text-xl font-bold">Mañana</span>
+</a>
+<a class="flex items-center gap-4 text-[#1a1c17] dark:text-stone-400 p-6 hover:bg-[#e3e3da] dark:hover:bg-stone-800 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined text-3xl">wb_sunny</span>
+<span class="font-headline text-xl font-bold">Comida</span>
+</a>
+<a class="flex items-center gap-4 text-[#1a1c17] dark:text-stone-400 p-6 hover:bg-[#e3e3da] dark:hover:bg-stone-800 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined text-3xl">bakery_dining</span>
+<span class="font-headline text-xl font-bold">Merienda</span>
+</a>
+<a class="bg-[#e3e3da] dark:bg-stone-800 text-[#2196f3] rounded-xl p-6 flex items-center gap-4 active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">dark_mode</span>
+<span class="font-headline text-xl font-bold">Noche</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto bg-surface-container-low p-6 md:p-12">
+<!-- Context Header -->
+<div class="mb-12 flex items-center justify-between">
+<div>
+<h1 class="font-headline text-[3.5rem] font-extrabold leading-none text-on-surface tracking-tight mb-2">Buenas noches</h1>
+<p class="text-2xl text-on-surface-variant font-medium">Es hora de tu medicación de cena.</p>
+</div>
+<div class="hidden lg:block">
+<img class="w-48 h-48 rounded-full object-cover border-8 border-surface-container-highest" data-alt="serene night landscape with a large silver moon over a quiet blue forest in a minimalist editorial illustration style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCUCS6nARVj4kWttsT3X3VtdpDRKthhVsx8MfI2bB5I3vwlQlNwPNUDIZf36H5So8Lhuo_1aSzxMdNRA2GewvHO5SMf1hyCw_-dvrAhvMh3sWyQy1b2oo-GiiceLb9E8yBvHpiZbMfnAhETZgdLO_qIyOczwGlt2eEEDWLAfzo25WaCWc7BlY-EcrR21IpQ9s_qA_1e72HunaBoRJ6FvkYqneuvM1UbKQ8AcGTknVOy-auzKOULqnbfVTnfxMTK3zZQyQXM3xIDPs"/>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- 1. Omeprazol Section (Priority 1) -->
+<section class="lg:col-span-12 xl:col-span-8">
+<div class="bg-primary-container/10 border-l-[12px] border-primary-container rounded-xl p-8 bg-surface-container-highest active-pill-glow relative overflow-hidden group">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+<div class="flex-1">
+<div class="flex items-center gap-4 mb-2">
+<span class="material-symbols-outlined text-primary-container text-4xl" style="font-variation-settings: 'FILL' 1;">pill</span>
+<span class="bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wider">Prioridad: Pre-Cena</span>
+</div>
+<h3 class="font-headline text-[2.5rem] font-bold text-on-surface mb-2 leading-tight">Omeprazol 20mg</h3>
+<p class="text-xl text-on-surface-variant max-w-md">Tómalo 30 minutos antes de empezar a cenar para proteger tu estómago.</p>
+</div>
+<!-- Giant CTA Button -->
+<div class="w-full md:w-auto">
+<button class="w-full md:w-72 h-32 rounded-xl bg-gradient-to-b from-primary to-primary-container text-white shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center p-4">
+<span class="material-symbols-outlined text-4xl mb-1">check_circle</span>
+<span class="font-headline text-xl font-bold">Tomar Omeprazol (Cena)</span>
+</button>
+</div>
+</div>
+<!-- Timer Preview (Simulated Glassmorphism) -->
+<div class="mt-8 p-6 bg-surface-container-low/80 backdrop-blur-md rounded-xl border-outline-variant/20 border-2 flex items-center gap-6">
+<div class="relative w-20 h-20 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-surface-container-high" cx="40" cy="40" fill="transparent" r="36" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary-container" cx="40" cy="40" fill="transparent" r="36" stroke="currentColor" stroke-dasharray="226" stroke-dashoffset="50" stroke-width="8"></circle>
+</svg>
+<span class="material-symbols-outlined text-primary-container text-3xl">timer</span>
+</div>
+<div>
+<h4 class="font-headline text-2xl font-bold">Cronómetro de 30 min</h4>
+<p class="text-lg text-on-surface-variant">Se activará tras pulsar el botón.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Records/Alerts (Right Column) -->
+<section class="lg:col-span-12 xl:col-span-4 space-y-6">
+<div class="bg-error-container/20 rounded-xl p-8 border-l-[12px] border-error bg-surface-container-highest">
+<div class="flex items-center gap-4 mb-4 text-error">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">warning</span>
+<h3 class="font-headline text-2xl font-bold">Recordatorios Especiales</h3>
+</div>
+<div class="space-y-4">
+<!-- Parche Morfina -->
+<div class="flex items-center gap-4 bg-white/50 p-4 rounded-xl">
+<div class="w-16 h-16 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-3xl">layers</span>
+</div>
+<div>
+<p class="font-bold text-xl leading-tight text-on-surface">Parche de Morfina</p>
+<p class="text-on-surface-variant">Cada 3 días (Hoy toca)</p>
+</div>
+</div>
+<!-- Hidroferol -->
+<div class="flex items-center gap-4 bg-white/50 p-4 rounded-xl">
+<div class="w-16 h-16 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-3xl">calendar_month</span>
+</div>
+<div>
+<p class="font-bold text-xl leading-tight text-on-surface">Hidroferol</p>
+<p class="text-on-surface-variant">Cada 15 días</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Medication List (Kreon) -->
+<section class="lg:col-span-12">
+<h2 class="font-headline text-3xl font-bold mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary-container text-4xl">restaurant</span>
+                        Durante la Cena
+                    </h2>
+<div class="bg-surface-container-highest rounded-xl p-10 border-l-[12px] border-tertiary-container shadow-sm flex flex-col md:flex-row items-center gap-10">
+<div class="w-full md:w-1/3">
+<img class="w-full h-48 object-cover rounded-xl shadow-inner" data-alt="professional macro photography of two brown medical capsules on a soft neutral ceramic background with soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGwQpXHkwib7a1zDL235jvESA0q--n0KBXhFKJ5w93wO06dAfFcCIjEBgFi7I0zdV86mc-mwYYkn5kD5HTK_Fy-IpQPuFthW3utah6DvUc6OeLhuCmm5PqWwIai54_Udr03R8d3XNAQ0Qr_6ut6etO0vSJ1OH9NeXX3C04GpQLzgzWkkzTuMYIP4dlXCZpXCIRh0k-aAcPig_0tYw3hbCnkaXtwVxLh4PHtkFz8-c0SmoezZ-Wkz37wsEA9vHmjjVj6lTVtf_gnjo"/>
+</div>
+<div class="flex-1">
+<h3 class="font-headline text-[2rem] font-bold text-on-surface mb-1">Kreon 35000</h3>
+<p class="text-2xl text-tertiary font-bold mb-4">2 Cápsulas</p>
+<div class="flex flex-wrap gap-4">
+<div class="bg-tertiary-container/10 px-6 py-3 rounded-full flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary">info</span>
+<span class="font-bold text-lg">Tomar con el primer bocado</span>
+</div>
+<div class="bg-surface-container-low px-6 py-3 rounded-full flex items-center gap-3">
+<span class="material-symbols-outlined">water_drop</span>
+<span class="font-bold text-lg">Beber mucha agua</span>
+</div>
+</div>
+</div>
+<button class="w-full md:w-auto h-24 px-12 rounded-xl bg-surface-container-high border-2 border-outline-variant/30 text-on-surface font-headline text-xl font-bold hover:bg-stone-200 transition-all active:scale-95 flex items-center justify-center gap-3">
+<span class="material-symbols-outlined text-3xl">check</span>
+                            Confirmar toma
+                        </button>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only & Global Status) -->
+<footer class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-center items-center px-8 bg-[#1a1c17] dark:bg-black h-20 shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
+<div class="flex items-center justify-center gap-4 text-white">
+<span class="material-symbols-outlined text-2xl animate-pulse">sync</span>
+<span class="font-headline text-xl font-medium tracking-wide">Estado de Sincronización</span>
+</div>
+</footer>
+<!-- Desktop Global Sync Indicator (Implicit) -->
+<div class="hidden md:flex fixed bottom-8 right-8 z-50 bg-[#1a1c17] text-white px-8 py-4 rounded-full shadow-2xl items-center gap-4">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">sync</span>
+<span class="font-headline text-lg font-medium">Sincronizado</span>
+</div>
+</body></html>

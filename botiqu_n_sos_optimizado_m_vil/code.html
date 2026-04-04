@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;700;800;900&amp;family=Public+Sans:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "on-surface": "#1a1c17",
+                        "on-surface-variant": "#404752",
+                        "on-tertiary-container": "#003308",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eeeee6",
+                        "surface": "#fafaf1",
+                        "on-primary-container": "#002c4f",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#94f990",
+                        "background": "#fafaf1",
+                        "surface-variant": "#e3e3da",
+                        "on-primary-fixed": "#001d36",
+                        "surface-container-high": "#e8e9e0",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e3e3da",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary": "#0061a4",
+                        "secondary": "#8b5000",
+                        "primary-container": "#2196f3",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1f1e8",
+                        "surface-dim": "#dadbd2",
+                        "inverse-primary": "#9ecaff",
+                        "secondary-fixed-dim": "#ffb870",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#fafaf1",
+                        "surface-container-low": "#f4f4eb",
+                        "primary-fixed-dim": "#9ecaff",
+                        "on-secondary-fixed-variant": "#693c00",
+                        "tertiary-container": "#42a547",
+                        "primary-fixed": "#d1e4ff",
+                        "secondary-fixed": "#ffdcbe",
+                        "outline": "#707883",
+                        "tertiary-fixed-dim": "#78dc77",
+                        "secondary-container": "#ff9800",
+                        "on-secondary-container": "#653900",
+                        "on-secondary-fixed": "#2c1600",
+                        "outline-variant": "#bfc7d4",
+                        "inverse-surface": "#2f312b",
+                        "tertiary": "#006e1c",
+                        "on-tertiary-fixed-variant": "#005313",
+                        "on-primary-fixed-variant": "#00497d",
+                        "on-background": "#1a1c17",
+                        "surface-tint": "#0061a4",
+                        "on-tertiary-fixed": "#002204"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Public Sans"],
+                        "label": ["Public Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #fafaf1;
+            color: #1a1c17;
+        }
+        .editorial-header {
+            font-family: 'Lexend', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface mb-20">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-white dark:bg-stone-900 shadow-sm">
+<div class="text-xl font-black text-stone-900 dark:text-stone-50 editorial-header uppercase tracking-tighter">Guardian</div>
+<nav class="flex gap-4 items-end h-full">
+<a class="font-lexend text-xs uppercase tracking-wider text-stone-500 dark:text-stone-400 pb-4" href="#">Hoy</a>
+<a class="font-lexend text-xs uppercase tracking-wider text-blue-700 dark:text-blue-300 border-b-2 border-blue-600 pb-4 font-bold" href="#">SOS</a>
+</nav>
+<button class="material-symbols-outlined text-stone-600 dark:text-stone-300 text-2xl" data-icon="settings">settings</button>
+</header>
+<main class="pt-20 px-4 pb-12 max-w-md mx-auto">
+<!-- Hero Section -->
+<section class="mb-8">
+<h1 class="editorial-header text-4xl font-extrabold tracking-tight mb-3">Botiquín SOS</h1>
+<p class="text-base text-on-surface-variant leading-snug">
+                Pulsa sobre el síntoma para ver la pauta de rescate autorizada.
+            </p>
+</section>
+<!-- SOS Bento Grid (Mobile Stack) -->
+<div class="grid grid-cols-1 gap-4">
+<!-- Category: Dolor (Critical) -->
+<button class="group relative flex flex-col items-start p-6 min-h-[160px] bg-error-container text-on-error-container rounded-3xl transition-all duration-200 active:scale-[0.97] shadow-sm text-left border-l-[12px] border-error">
+<div class="flex justify-between items-center w-full mb-4">
+<span class="material-symbols-outlined text-4xl fill-icon" data-icon="emergency_home" style="font-variation-settings: 'FILL' 1;">emergency_home</span>
+<span class="bg-error text-on-error px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Urgente</span>
+</div>
+<h3 class="editorial-header text-[28px] font-extrabold leading-none mb-1">Dolor</h3>
+<div class="flex flex-col">
+<span class="text-[28px] font-bold leading-tight">Oramorph 2mg/ml</span>
+<span class="text-lg opacity-80 italic">Tomar 1ml si persiste</span>
+</div>
+</button>
+<!-- Category: Náuseas -->
+<button class="group relative flex flex-col items-start p-6 min-h-[160px] bg-surface-container-highest rounded-3xl transition-all duration-200 active:scale-[0.97] shadow-sm text-left border-l-[12px] border-primary-container">
+<div class="flex justify-between items-center w-full mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="sick">sick</span>
+<span class="bg-primary text-on-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Alivio</span>
+</div>
+<h3 class="editorial-header text-[28px] font-extrabold leading-none mb-1">Náuseas</h3>
+<div class="flex flex-col">
+<span class="text-[28px] font-bold leading-tight">Motilium o Zofran</span>
+<span class="text-lg opacity-80">1 comprimido cada 8h</span>
+</div>
+</button>
+<!-- Category: Diarrea -->
+<button class="group relative flex flex-col items-start p-6 min-h-[160px] bg-secondary-container text-on-secondary-container rounded-3xl transition-all duration-200 active:scale-[0.97] shadow-sm text-left border-l-[12px] border-secondary">
+<div class="flex justify-between items-center w-full mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="water_drop">water_drop</span>
+</div>
+<h3 class="editorial-header text-[28px] font-extrabold leading-none mb-1">Diarrea</h3>
+<div class="flex flex-col">
+<span class="text-[28px] font-bold leading-tight">Fortasec</span>
+<span class="text-lg opacity-80">Tras cada deposición</span>
+<span class="text-xs mt-2 font-bold opacity-60">Botón se deshabilita tras 8 dosis en 24h</span>
+</div>
+</button>
+<!-- Category: Llagas -->
+<button class="group relative flex flex-col items-start p-6 min-h-[160px] bg-tertiary-container text-on-tertiary-container rounded-3xl transition-all duration-200 active:scale-[0.97] shadow-sm text-left border-l-[12px] border-tertiary">
+<div class="flex justify-between items-center w-full mb-4">
+<span class="material-symbols-outlined text-4xl" data-icon="mouth">oral_disease</span>
+</div>
+<h3 class="editorial-header text-[28px] font-extrabold leading-none mb-1">Llagas</h3>
+<div class="flex flex-col">
+<span class="text-[28px] font-bold leading-tight">Mycostatin</span>
+<span class="text-lg opacity-80 italic">Enjuagues bucales</span>
+</div>
+</button>
+</div>
+<!-- Safety Warning Section -->
+<div class="mt-8 p-6 bg-surface-container-low rounded-3xl border-2 border-dashed border-outline-variant">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-error text-3xl shrink-0" data-icon="warning">warning</span>
+<div>
+<h4 class="editorial-header text-xl font-bold mb-1">Aviso Importante</h4>
+<p class="text-sm text-on-surface-variant">
+                        Si el dolor es intenso o los síntomas persisten tras la dosis de rescate, contacta con enfermería inmediatamente.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Support Call -->
+<div class="mt-6 bg-surface-container-highest p-6 rounded-3xl flex items-center gap-6">
+<span class="material-symbols-outlined text-5xl text-primary" data-icon="contact_support">contact_support</span>
+<div>
+<p class="font-bold text-lg">¿Dudas?</p>
+<p class="text-primary font-bold">Llamar a Guardian</p>
+</div>
+</div>
+</main>
+<!-- Bottom Status Bar -->
+<footer class="fixed bottom-0 left-0 w-full z-50 h-8 flex justify-center items-center px-4 bg-stone-900 dark:bg-black">
+<div class="text-green-400 flex items-center gap-2 font-lexend text-[10px] font-bold uppercase">
+<span class="material-symbols-outlined text-[10px]" data-icon="cloud_done">cloud_done</span>
+<span>Sincronizado</span>
+<div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+</div>
+</footer>
+</body></html>

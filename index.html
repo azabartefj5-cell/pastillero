@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Pastillero Pilar</title>
+<meta name="description" content="Pastillero inteligente para la gestión de medicación de Pilar con supervisión en tiempo real."/>
+<meta name="theme-color" content="#0061a4"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/png" href="icons/icon-192.png"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-surface-variant":"#404752","surface-tint":"#0061a4","on-tertiary":"#ffffff",
+        "on-secondary":"#ffffff","background":"#fafaf1","on-background":"#1a1c17",
+        "surface-bright":"#fafaf1","inverse-on-surface":"#f1f1e8",
+        "secondary-fixed-dim":"#ffb870","on-primary":"#ffffff",
+        "on-tertiary-container":"#003308","on-error":"#ffffff",
+        "surface-container-highest":"#e3e3da","outline-variant":"#bfc7d4",
+        "inverse-primary":"#9ecaff","error":"#ba1a1a",
+        "surface-container-low":"#f4f4eb","on-surface":"#1a1c17",
+        "surface-container-high":"#e8e9e0","primary-fixed-dim":"#9ecaff",
+        "on-primary-fixed-variant":"#00497d","on-secondary-fixed":"#2c1600",
+        "outline":"#707883","on-secondary-container":"#653900",
+        "inverse-surface":"#2f312b","tertiary-fixed-dim":"#78dc77",
+        "secondary-fixed":"#ffdcbe","on-primary-fixed":"#001d36",
+        "on-primary-container":"#002c4f","primary-fixed":"#d1e4ff",
+        "tertiary":"#006e1c","secondary":"#8b5000",
+        "secondary-container":"#ff9800","surface-dim":"#dadbd2",
+        "primary-container":"#2196f3","primary":"#0061a4",
+        "error-container":"#ffdad6","surface-container-lowest":"#ffffff",
+        "on-error-container":"#93000a","on-tertiary-fixed-variant":"#005313",
+        "on-secondary-fixed-variant":"#693c00","tertiary-fixed":"#94f990",
+        "on-tertiary-fixed":"#002204","surface-container":"#eeeee6",
+        "tertiary-container":"#42a547","surface-variant":"#e3e3da",
+        "surface":"#fafaf1"
+      },
+      borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","2xl":"1rem","3xl":"1.5rem","full":"9999px"},
+      fontFamily:{"headline":["Lexend"],"body":["Public Sans"],"label":["Public Sans"]}
+    }
+  }
+};
+</script>
+<style>
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 48;font-size:2rem;vertical-align:middle}
+.icon-fill{font-variation-settings:'FILL' 1}
+body{font-family:'Public Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
+.no-scrollbar::-webkit-scrollbar{display:none}
+.screen{display:none}.screen.active{display:block}
+.tab-active{background:rgba(33,150,243,0.12);color:#0061a4;border-radius:1rem}
+.tab-inactive{color:#57534e}
+.locked-card{opacity:0.45;pointer-events:none;filter:grayscale(0.6)}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 15px rgba(33,150,243,0.2)}50%{box-shadow:0 0 30px rgba(33,150,243,0.4)}}
+.timer-glow{animation:pulseGlow 2s ease-in-out infinite}
+.fade-in{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes panicPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(186,26,26,0.7)}50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(186,26,26,0)}}
+.panic-btn{animation:panicPulse 2s ease-in-out infinite}
+.panic-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center}
+.panic-overlay.hidden{display:none}
+@keyframes shakeX{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shakeX 0.3s ease 3}
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+
+<!-- ═══════════ TOP APP BAR ═══════════ -->
+<header class="w-full top-0 sticky bg-white z-50 shadow-sm" id="app-header">
+  <div class="flex justify-between items-center px-5 py-3 max-w-lg mx-auto">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary text-3xl icon-fill">medication</span>
+      <h1 class="font-headline font-bold text-xl tracking-tight text-on-surface">Pastillero Pilar</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="sync-indicator" class="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
+        <span class="material-symbols-outlined text-xs icon-fill">cloud_done</span>Sync
+      </span>
+      <span class="material-symbols-outlined text-on-surface-variant text-3xl">account_circle</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<main class="max-w-lg mx-auto px-4 pt-4" id="app-main">
+
+<!-- ══════ SCREEN: CHECK-IN ══════ -->
+<section class="screen space-y-6 fade-in" id="screen-checkin">
+  <div class="space-y-2">
+    <h2 class="font-headline font-black text-3xl leading-tight">Check-in Médico</h2>
+    <p class="text-on-surface-variant font-medium text-lg" id="checkin-subtitle">Introduce tus constantes antes de continuar.</p>
+  </div>
+  <!-- Temperature -->
+  <div class="bg-surface-container-highest rounded-3xl p-6 relative overflow-hidden flex flex-col gap-4">
+    <div class="absolute left-0 top-0 bottom-0 w-3 bg-secondary-container"></div>
+    <div class="flex justify-between items-center pl-4">
+      <span class="font-headline font-bold text-2xl">Temperatura</span>
+      <span class="material-symbols-outlined text-secondary-container text-4xl">thermostat</span>
+    </div>
+    <div class="pl-4 relative">
+      <input id="input-temp" class="w-full h-24 bg-surface-variant/50 border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-secondary-container/30 text-on-surface outline-none" placeholder="36.5" step="0.1" type="number"/>
+      <span class="absolute right-6 top-1/2 -translate-y-1/2 font-headline font-bold text-2xl text-on-surface-variant">°C</span>
+    </div>
+    <div id="temp-alert" class="hidden pl-4 flex items-center gap-3 text-error font-bold p-3 bg-error-container rounded-xl animate-pulse">
+      <span class="material-symbols-outlined icon-fill">error</span>
+      <span class="text-sm">⚠ Alerta: Posible fiebre (&gt;37.5°C)</span>
+    </div>
+  </div>
+  <!-- Glucose -->
+  <div class="bg-surface-container-highest rounded-3xl p-6 relative overflow-hidden flex flex-col gap-4">
+    <div class="absolute left-0 top-0 bottom-0 w-3 bg-primary-container"></div>
+    <div class="flex justify-between items-center pl-4">
+      <span class="font-headline font-bold text-2xl">Glucosa</span>
+      <span class="material-symbols-outlined text-primary-container text-4xl">bloodtype</span>
+    </div>
+    <div class="pl-4 relative">
+      <input id="input-glucose" class="w-full h-24 bg-surface-variant/50 border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-primary-container/30 text-on-surface outline-none" placeholder="110" type="number"/>
+      <span class="absolute right-6 top-1/2 -translate-y-1/2 font-headline font-bold text-2xl text-on-surface-variant">mg/dL</span>
+    </div>
+    <div class="pl-4 flex items-center gap-2 text-on-surface-variant text-sm p-3 bg-surface-container-low rounded-xl">
+      <span class="material-symbols-outlined text-base">info</span>Valor normal en ayunas: 70–110 mg/dL
+    </div>
+  </div>
+  <!-- Sync note -->
+  <div class="flex items-center justify-center gap-3 p-4 bg-surface-container-low rounded-xl">
+    <span class="material-symbols-outlined text-tertiary text-2xl">sync</span>
+    <p class="font-headline text-sm font-medium">Valores sincronizados con el equipo médico</p>
+  </div>
+  <!-- CTA -->
+  <button id="btn-checkin-save" class="w-full h-[90px] bg-gradient-to-b from-tertiary to-tertiary-container text-white font-headline font-black text-2xl rounded-xl shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all">
+    Guardar y Continuar
+    <span class="material-symbols-outlined text-3xl">arrow_forward</span>
+  </button>
+</section>
+
+<!-- ══════ SCREEN: HOY (UNIFIED — ALL PERIODS) ══════ -->
+<section class="screen space-y-8 fade-in" id="screen-hoy">
+  <header class="flex justify-between items-end">
+    <div>
+      <h2 class="font-headline font-black text-3xl">Plan de Hoy</h2>
+      <p class="text-on-surface-variant font-medium" id="hoy-date"></p>
+    </div>
+  </header>
+
+  <!-- ───── DESAYUNO (Amarillo / Mañana) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-secondary-container rounded-full"></div>
+      <h3 class="font-headline font-bold text-2xl">🌅 Desayuno</h3>
+      <span class="text-sm bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Mañana</span>
+    </div>
+    <!-- Omeprazol 40mg (Priority — 30 min BEFORE) -->
+    <div id="card-omeprazol-am" class="bg-surface-container-highest rounded-3xl p-6 shadow-sm relative overflow-hidden ring-4 ring-secondary-container/20">
+      <div class="absolute right-5 top-5"><span class="material-symbols-outlined text-secondary text-3xl">schedule</span></div>
+      <div class="mb-4">
+        <span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-xs font-bold">⏰ 30 MIN ANTES DE DESAYUNAR</span>
+        <h3 class="font-headline font-black text-2xl mt-2">Omeprazol 40mg</h3>
+        <p class="text-on-surface-variant font-bold">1 Cápsula • Protector gástrico</p>
+      </div>
+      <button id="btn-omeprazol-am" class="w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>CONFIRMAR TOMA
+      </button>
+    </div>
+    <!-- Timer AM (hidden by default) -->
+    <div id="timer-omeprazol-am" class="hidden bg-surface-container-highest p-6 rounded-3xl timer-glow">
+      <div class="flex flex-col items-center text-center gap-3">
+        <div class="relative w-40 h-40 flex items-center justify-center">
+          <svg class="absolute inset-0 w-full h-full -rotate-90"><circle class="text-surface-dim" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-width="8"></circle><circle id="timer-circle-am" class="text-primary-container" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-dasharray="452.39" stroke-dashoffset="0" stroke-width="8" stroke-linecap="round"></circle></svg>
+          <span id="timer-text-am" class="text-4xl font-black font-headline text-primary-container">30:00</span>
+        </div>
+        <h3 class="text-xl font-bold">Esperando absorción</h3>
+        <p class="text-on-surface-variant text-sm">Espera 30 min antes de desayunar</p>
+        <button onclick="cancelOmeprazolTimer('am')" class="mt-2 px-6 py-3 bg-error text-on-error rounded-xl font-headline font-bold text-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2 border-none ring-0">
+          <span class="material-symbols-outlined text-lg">cancel</span>Omitir Espera (No Recomendado)
+        </button>
+      </div>
+    </div>
+    <!-- Rest of morning meds (locked until Omeprazol timer ends) -->
+    <div id="meds-manana-locked" class="space-y-3">
+      <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2">Con el desayuno <span class="material-symbols-outlined text-sm" id="lock-icon-am">lock</span></h4>
+      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="kreon_am">
+        <div class="flex items-center gap-4">
+          <div class="bg-secondary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-secondary-container text-4xl icon-fill">medication</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Kreon 35000</h4><p class="text-base text-on-surface-variant font-medium mt-1">2 Cápsulas</p></div>
+        </div>
+        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+      </div>
+
+      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="valsartan">
+        <div class="flex items-center gap-4">
+          <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">monitor_heart</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Valsartan/HTZ 160/25</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comprimido</p></div>
+        </div>
+        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+      </div>
+
+      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="amlodipino">
+        <div class="flex items-center gap-4">
+          <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">favorite</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Amlodipino 5mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comprimido</p></div>
+        </div>
+        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+      </div>
+
+      <div id="card-trangorex-am" class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="trangorex_am">
+        <div class="flex items-center gap-4">
+          <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">vital_signs</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Trangorex 200mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comp. • Solo L–V</p></div>
+        </div>
+        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+      </div>
+
+      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="enoxaparina">
+        <div class="flex items-center gap-4">
+          <div class="bg-primary-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">vaccines</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Enoxaparina 100mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">Inyectable SC</p></div>
+        </div>
+        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+      </div>
+
+      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="insulina_lantus_am">
+        <div class="flex items-center gap-4">
+          <div class="bg-primary-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">bloodtype</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Insulina Lantus</h4><p class="text-base text-on-surface-variant font-medium mt-1">10–12 UI SC</p></div>
+        </div>
+        <button id="btn-insulina-lantus" class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
+          <span class="material-symbols-outlined text-3xl">check</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── COMIDA (Naranja) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-secondary-container rounded-full"></div>
+      <h3 class="font-headline font-bold text-2xl">☀️ Comida</h3>
+      <span class="text-sm bg-secondary-fixed text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Mediodía</span>
+    </div>
+    <div class="bg-surface-container-high border-l-[8px] border-secondary-container p-6 rounded-3xl" data-med="kreon_comida">
+      <div class="flex justify-between items-start mb-4">
+        <div><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant text-lg">2 Cápsulas</p></div>
+        <div class="bg-secondary-fixed p-3 rounded-full"><span class="material-symbols-outlined text-on-secondary-container text-3xl icon-fill">medication</span></div>
+      </div>
+      <button class="btn-toma w-full h-20 bg-gradient-to-b from-secondary to-secondary-fixed-dim text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA
+      </button>
+    </div>
+  </div>
+
+  <!-- ───── MERIENDA (Verde) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-tertiary-container rounded-full"></div>
+      <h3 class="font-headline font-bold text-2xl">🍪 Merienda</h3>
+      <span class="text-sm bg-tertiary-fixed text-on-tertiary-container px-2 py-0.5 rounded-full font-bold">Tarde</span>
+    </div>
+    <div class="bg-surface-container-high border-l-[8px] border-tertiary-container p-6 rounded-3xl flex flex-col gap-4" data-med="kreon_merienda">
+      <div class="flex items-center gap-4">
+        <div class="bg-tertiary-fixed p-3 rounded-full"><span class="material-symbols-outlined text-on-tertiary-container text-3xl icon-fill">bakery_dining</span></div>
+        <div><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant">3 Cápsulas</p></div>
+      </div>
+      <button class="btn-toma w-full h-20 bg-gradient-to-b from-tertiary to-tertiary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA
+      </button>
+    </div>
+  </div>
+
+  <!-- ───── CENA (Azul / Noche) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-primary-container rounded-full"></div>
+      <h3 class="font-headline font-bold text-2xl">🌙 Cena</h3>
+      <span class="text-sm bg-primary-fixed text-on-primary-container px-2 py-0.5 rounded-full font-bold">Noche</span>
+    </div>
+    <!-- Omeprazol 40mg Night (Priority — 30 min BEFORE dinner) -->
+    <div id="card-omeprazol-pm" class="bg-surface-container-highest rounded-3xl p-6 border-l-[8px] border-primary-container relative overflow-hidden">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="material-symbols-outlined text-primary-container text-3xl icon-fill">pill</span>
+        <span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-xs font-bold">⏰ 30 MIN ANTES DE CENAR</span>
+      </div>
+      <h3 class="font-headline text-2xl font-bold mb-1">Omeprazol 40mg</h3>
+      <p class="text-on-surface-variant text-sm mb-4">Tómalo 30 min antes de cenar.</p>
+      <button id="btn-omeprazol-pm" class="w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>Tomar Omeprazol (Cena)
+      </button>
+    </div>
+    <!-- Timer PM (hidden by default) -->
+    <div id="timer-omeprazol-pm" class="hidden bg-surface-container-highest p-6 rounded-3xl timer-glow">
+      <div class="flex flex-col items-center text-center gap-3">
+        <div class="relative w-40 h-40 flex items-center justify-center">
+          <svg class="absolute inset-0 w-full h-full -rotate-90"><circle class="text-surface-dim" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-width="8"></circle><circle id="timer-circle-pm" class="text-primary-container" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-dasharray="452.39" stroke-dashoffset="0" stroke-width="8" stroke-linecap="round"></circle></svg>
+          <span id="timer-text-pm" class="text-4xl font-black font-headline text-primary-container">30:00</span>
+        </div>
+        <h3 class="text-xl font-bold">Cronómetro de 30 min</h3>
+        <p class="text-on-surface-variant text-sm">Espera antes de cenar</p>
+        <button onclick="cancelOmeprazolTimer('pm')" class="mt-2 px-6 py-3 bg-error text-on-error rounded-xl font-headline font-bold text-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2 border-none ring-0">
+          <span class="material-symbols-outlined text-lg">cancel</span>Omitir Espera (No Recomendado)
+        </button>
+      </div>
+    </div>
+    <!-- Dinner meds (locked until Omeprazol timer ends) -->
+    <div id="meds-noche-locked" class="space-y-3">
+      <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2">Con la Cena <span class="material-symbols-outlined text-sm" id="lock-icon-pm">lock</span></h4>
+      <div class="bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-primary-container flex items-center justify-between gap-2 shadow-sm" data-med="kreon_noche">
+        <div class="flex items-center gap-4">
+          <div class="bg-primary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">medication</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Kreon 35000</h4><p class="text-base text-primary font-bold mt-1">2 Cápsulas</p></div>
+        </div>
+        <button id="btn-kreon-noche" class="btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
+          <span class="material-symbols-outlined text-3xl">check</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── RECORDATORIOS ESPECIALES ───── -->
+  <div class="bg-surface-container-highest rounded-3xl p-5 border-l-[8px] border-error">
+    <div class="flex items-center gap-3 mb-3 text-error"><span class="material-symbols-outlined text-3xl icon-fill">event</span><h3 class="font-headline text-xl font-bold">Recordatorios Periódicos</h3></div>
+    <div class="space-y-3">
+      <div class="flex items-center gap-3 bg-white/50 p-4 rounded-xl"><div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center"><span class="material-symbols-outlined text-xl">layers</span></div><div><p class="font-bold text-base">Parche de Morfina</p><p class="text-on-surface-variant text-sm">Cada 3 días — comprobar fecha</p></div></div>
+      <div class="flex items-center gap-3 bg-white/50 p-4 rounded-xl"><div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-xl">calendar_month</span></div><div><p class="font-bold text-base">Hidroferol</p><p class="text-on-surface-variant text-sm">Cada 15 días</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ SCREEN: BOTIQUÍN SOS ══════ -->
+<section class="screen space-y-4 fade-in" id="screen-sos">
+  <div class="mb-2">
+    <h2 class="font-headline font-extrabold text-3xl tracking-tight">Botiquín SOS</h2>
+    <p class="text-on-surface-variant text-sm">Pautas de rescate autorizadas por tu médico.</p>
+  </div>
+  <!-- Dolor / Oramorph -->
+  <button id="btn-oramorph" class="sos-btn group w-full text-left flex flex-col items-start p-5 min-h-[140px] bg-error-container text-on-error-container rounded-3xl active:scale-[0.97] transition-all border-l-[10px] border-error shadow-sm">
+    <div class="flex justify-between items-center w-full mb-3">
+      <span class="material-symbols-outlined text-4xl icon-fill">emergency_home</span>
+      <span class="bg-error text-on-error px-3 py-1 rounded-full text-[10px] font-black uppercase">Urgente</span>
+    </div>
+    <h3 class="font-headline text-2xl font-bold mb-1">Dolor</h3>
+    <span class="text-xl font-bold">Oramorph 2mg/ml</span>
+    <span class="text-sm opacity-80 italic">Tomar 1ml si persiste</span>
+    <div id="oramorph-lockout" class="hidden mt-2 w-full bg-error/20 rounded-xl p-2 text-center">
+      <span class="font-bold text-sm">⏳ Bloqueado — <span id="oramorph-timer-text">6:00:00</span></span>
+    </div>
+  </button>
+  <!-- Náuseas -->
+  <button class="sos-btn w-full text-left flex flex-col items-start p-5 min-h-[140px] bg-surface-container-highest rounded-3xl active:scale-[0.97] transition-all border-l-[10px] border-primary-container shadow-sm" data-med="nauseas">
+    <div class="flex justify-between items-center w-full mb-3">
+      <span class="material-symbols-outlined text-4xl">sick</span>
+      <span class="bg-primary text-on-primary px-3 py-1 rounded-full text-[10px] font-black uppercase">Alivio</span>
+    </div>
+    <h3 class="font-headline text-2xl font-bold mb-1">Náuseas</h3>
+    <span class="text-xl font-bold">Motilium o Zofran</span>
+    <span class="text-sm opacity-80">1 comprimido cada 8h</span>
+  </button>
+  <!-- Diarrea / Fortasec -->
+  <div class="w-full text-left flex flex-col items-start p-5 bg-secondary-container text-on-secondary-container rounded-3xl border-l-[10px] border-secondary shadow-sm">
+    <div class="flex justify-between items-center w-full mb-3">
+      <span class="material-symbols-outlined text-4xl">water_drop</span>
+      <div class="bg-white/30 text-on-secondary-container w-12 h-12 rounded-full flex items-center justify-center font-black text-lg" id="fortasec-counter">0/8</div>
+    </div>
+    <h3 class="font-headline text-2xl font-bold mb-1">Diarrea</h3>
+    <span class="text-xl font-bold">Fortasec</span>
+    <span class="text-sm opacity-80">Tras cada deposición (máx 8/día)</span>
+    <button id="btn-fortasec" class="mt-3 w-full h-16 bg-white/20 rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all">
+      <span class="material-symbols-outlined text-2xl">add</span>REGISTRAR TOMA
+    </button>
+  </div>
+  <!-- Llagas -->
+  <button class="sos-btn w-full text-left flex flex-col items-start p-5 min-h-[140px] bg-tertiary-container text-on-tertiary-container rounded-3xl active:scale-[0.97] transition-all border-l-[10px] border-tertiary shadow-sm" data-med="llagas">
+    <div class="flex justify-between items-center w-full mb-3"><span class="material-symbols-outlined text-4xl">oral_disease</span></div>
+    <h3 class="font-headline text-2xl font-bold mb-1">Llagas</h3>
+    <span class="text-xl font-bold">Mycostatin</span>
+    <span class="text-sm opacity-80 italic">Enjuagues bucales</span>
+  </button>
+  <!-- Warning -->
+  <div class="p-5 bg-surface-container-low rounded-3xl border-2 border-dashed border-outline-variant">
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-error text-2xl shrink-0">warning</span>
+      <div><h4 class="font-headline text-lg font-bold mb-1">Aviso</h4><p class="text-sm text-on-surface-variant">Si los síntomas persisten tras la dosis, contacta con enfermería.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ SCREEN: HISTORIAL ══════ -->
+<section class="screen space-y-6 fade-in" id="screen-historial">
+  <!-- Cloud Banner -->
+  <div class="p-4 rounded-3xl bg-tertiary-container text-on-tertiary-container flex items-center justify-between shadow-lg">
+    <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"><span class="material-symbols-outlined text-2xl icon-fill">cloud_done</span></div><div><p class="font-headline text-lg font-bold">Firebase</p><p class="text-xs opacity-90" id="firebase-status-text">No configurado</p></div></div>
+    <span class="px-3 py-1 rounded-full bg-white/30 text-xs font-black uppercase" id="firebase-status-badge">Offline</span>
+  </div>
+  <!-- Firebase config is hardcoded, hidden textarea for internal use -->
+  <textarea id="firebase-config-input" class="hidden"></textarea>
+  <!-- Vital Signs History -->
+  <div>
+    <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-tertiary text-2xl">monitoring</span><h2 class="font-headline text-xl font-bold">Constantes Vitales</h2></div>
+    <div class="bg-surface-container-low rounded-3xl overflow-hidden text-sm">
+      <table class="w-full text-left"><thead class="bg-surface-container-high"><tr><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Fecha</th><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Glucosa</th><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Temp</th></tr></thead>
+      <tbody id="table-constantes" class="divide-y divide-outline-variant/10"></tbody></table>
+    </div>
+  </div>
+  <!-- Medication History -->
+  <div>
+    <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-primary text-2xl">event_note</span><h2 class="font-headline text-xl font-bold">Historial de Tomas</h2></div>
+    <div class="space-y-2" id="list-tomas"></div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════ PANIC OVERLAY (MODAL) ═══════════ -->
+<div id="panic-overlay" class="panic-overlay hidden">
+  <div class="bg-white rounded-3xl p-8 mx-6 max-w-md w-full space-y-6 shake">
+    <div class="text-center">
+      <span class="material-symbols-outlined text-error text-7xl icon-fill">emergency</span>
+      <h2 class="font-headline font-black text-3xl text-error mt-4">¡ALERTA ENVIADA!</h2>
+      <p class="text-on-surface-variant text-lg mt-2">Se ha notificado a Javier y al equipo médico.</p>
+    </div>
+    <a href="tel:+34600000000" id="btn-call-javier" class="block w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-xl text-center leading-[5rem] active:scale-95 transition-all shadow-lg">
+      📞 LLAMAR A JAVIER
+    </a>
+    <button id="btn-close-panic" class="w-full h-14 bg-surface-variant rounded-xl font-headline font-bold text-lg active:scale-95 transition-all">Cerrar</button>
+  </div>
+</div>
+
+<!-- ═══════════ BOTTOM TAB BAR ═══════════ -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-3 pt-2 pb-6 bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.08)] rounded-t-3xl" id="tab-bar">
+  <button class="tab-btn flex flex-col items-center justify-center px-4 py-2 transition-all tab-active" data-target="hoy">
+    <span class="material-symbols-outlined icon-fill">today</span>
+    <span class="font-headline font-medium text-sm">Hoy</span>
+  </button>
+  <button class="tab-btn flex flex-col items-center justify-center px-4 py-2 transition-all tab-inactive" data-target="sos">
+    <span class="material-symbols-outlined">local_pharmacy</span>
+    <span class="font-headline font-medium text-sm">Botiquín</span>
+  </button>
+  <!-- PANIC BUTTON (center, raised) -->
+  <button id="btn-panic" class="panic-btn -mt-10 w-20 h-20 bg-error text-on-error rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all border-4 border-white" title="BOTÓN DE PÁNICO">
+    <span class="material-symbols-outlined text-4xl icon-fill">campaign</span>
+  </button>
+  <button class="tab-btn flex flex-col items-center justify-center px-4 py-2 transition-all tab-inactive" data-target="historial">
+    <span class="material-symbols-outlined">history</span>
+    <span class="font-headline font-medium text-sm">Historial</span>
+  </button>
+</nav>
+
+<!-- ═══════════ FIREBASE SDK ═══════════ -->
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,setDoc,getDoc,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ══════════════════════════════════════
+// FIREBASE CONFIG (HARDCODED)
+// ══════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAqtsi5m_kqXHKwHcsIXHiyrNti6G5qtMo",
+  authDomain: "pastillero-interactivo.firebaseapp.com",
+  projectId: "pastillero-interactivo",
+  storageBucket: "pastillero-interactivo.firebasestorage.app",
+  messagingSenderId: "59578784468",
+  appId: "1:59578784468:web:79467c7fa1a2cc78fa7941"
+};
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+const APP = {
+  db: null,
+  firebaseReady: false,
+  currentScreen: null,
+  timers: { am: null, pm: null },
+  timerEnds: { am: 0, pm: 0 },
+  meds: {},
+  sosState: { oramorphUnlock: 0, fortasecCount: 0 }
+};
+
+const TODAY = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+
+const PERIOD = () => {
+  const h = new Date().getHours();
+  if (h >= 6 && h < 13) return 'manana';
+  if (h >= 13 && h < 18) return 'comida';
+  return 'noche';
+};
+
+const IS_WEEKDAY = () => { const d = new Date().getDay(); return d >= 1 && d <= 5; };
+
+const SPANISH_DATE = () => {
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const d = new Date();
+  return `${days[d.getDay()]}, ${d.getDate()} de ${months[d.getMonth()]}`;
+};
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  if (el) { el.classList.add('active'); APP.currentScreen = id; }
+}
+
+function navigateToHoy() {
+  const period = PERIOD();
+  const checkinKey = `checkin_${TODAY()}_${period}`;
+  if (!localStorage.getItem(checkinKey)) { showScreen('checkin'); return; }
+  showScreen('hoy');
+}
+
+// Tab bar
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('tab-active'); b.classList.add('tab-inactive'); });
+    btn.classList.remove('tab-inactive'); btn.classList.add('tab-active');
+    const target = btn.dataset.target;
+    if (target === 'hoy') navigateToHoy();
+    else if (target === 'sos') showScreen('sos');
+    else showScreen('historial');
+  });
+});
+
+// ══════════════════════════════════════
+// TRANGOREX WEEKDAY RULE
+// ══════════════════════════════════════
+function applyTrangorexRule() {
+  const show = IS_WEEKDAY();
+  const el = document.getElementById('card-trangorex-am');
+  if (el) el.style.display = show ? '' : 'none';
+}
+
+// ══════════════════════════════════════
+// CHECK-IN
+// ══════════════════════════════════════
+document.getElementById('input-temp').addEventListener('input', e => {
+  const v = parseFloat(e.target.value);
+  document.getElementById('temp-alert').classList.toggle('hidden', !(v > 37.5));
+});
+
+document.getElementById('btn-checkin-save').addEventListener('click', async () => {
+  const temp = parseFloat(document.getElementById('input-temp').value);
+  const gluc = parseFloat(document.getElementById('input-glucose').value);
+  if (isNaN(temp) || isNaN(gluc)) { alert('Por favor, introduce ambos valores.'); return; }
+  const period = PERIOD();
+  const data = { glucosa: gluc, temperatura: temp, timestamp: new Date().toISOString(), periodo: period };
+  // Save locally
+  localStorage.setItem(`checkin_${TODAY()}_${period}`, JSON.stringify(data));
+  // Save history
+  const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
+  hist.unshift({ ...data, fecha: TODAY() });
+  if (hist.length > 50) hist.length = 50;
+  localStorage.setItem('constantes_history', JSON.stringify(hist));
+  // Save to Firebase if connected
+  if (APP.db) {
+    try { await setDoc(doc(APP.db, 'constantes_pilar', TODAY()), { [period]: data }, { merge: true }); } catch(e) { console.warn('Firebase write error:', e); }
+  }
+  renderConstantesHistory();
+  navigateToHoy();
+});
+
+// ══════════════════════════════════════
+// OMEPRAZOL 30-MIN TIMER
+// ══════════════════════════════════════
+function startOmeprazolTimer(period) {
+  const suffix = period === 'manana' ? 'am' : 'pm';
+  const DURATION = 30 * 60; // 30 minutes
+  const endTime = Date.now() + DURATION * 1000;
+  APP.timerEnds[suffix] = endTime;
+  localStorage.setItem(`omeprazol_timer_${suffix}_${TODAY()}`, endTime);
+
+  // Hide button, show timer
+  document.getElementById(`btn-omeprazol-${suffix}`).classList.add('hidden');
+  document.getElementById(`timer-omeprazol-${suffix}`).classList.remove('hidden');
+  document.getElementById(`card-omeprazol-${suffix}`).classList.add('hidden');
+
+  // Lock other meds
+  lockMeds(suffix, true);
+  tickTimer(suffix);
+}
+
+function tickTimer(suffix) {
+  const end = APP.timerEnds[suffix];
+  const remaining = Math.max(0, Math.floor((end - Date.now()) / 1000));
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  document.getElementById(`timer-text-${suffix}`).textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  // Update SVG
+  const circumference = 452.39;
+  const DURATION = 30 * 60;
+  const elapsed = DURATION - remaining;
+  const offset = (elapsed / DURATION) * circumference;
+  document.getElementById(`timer-circle-${suffix}`).setAttribute('stroke-dashoffset', circumference - offset);
+
+  if (remaining <= 0) {
+    finishOmeprazolTimer(suffix);
+    return;
+  }
+  APP.timers[suffix] = setTimeout(() => tickTimer(suffix), 1000);
+}
+
+function finishOmeprazolTimer(suffix) {
+  lockMeds(suffix, false);
+  document.getElementById(`timer-omeprazol-${suffix}`).innerHTML = '<div class="text-center p-6"><span class="material-symbols-outlined text-tertiary text-5xl icon-fill">check_circle</span><h3 class="font-headline text-2xl font-bold text-tertiary mt-3">¡Tiempo cumplido!</h3><p class="text-on-surface-variant mt-1">Ya puedes tomar el resto de medicación.</p></div>';
+  localStorage.removeItem(`omeprazol_timer_${suffix}_${TODAY()}`);
+}
+
+window.cancelOmeprazolTimer = function(suffix) {
+  if (APP.timers[suffix]) clearTimeout(APP.timers[suffix]);
+  finishOmeprazolTimer(suffix);
+};
+
+function lockMeds(suffix, locked) {
+  const container = suffix === 'am' ? 'meds-manana-locked' : 'meds-noche-locked';
+  const el = document.getElementById(container);
+  if (locked) el.classList.add('locked-card'); else el.classList.remove('locked-card');
+  const lockIcon = document.getElementById(`lock-icon-${suffix}`);
+  lockIcon.textContent = locked ? 'lock' : 'lock_open';
+}
+
+function restoreTimers() {
+  ['am','pm'].forEach(suffix => {
+    const stored = localStorage.getItem(`omeprazol_timer_${suffix}_${TODAY()}`);
+    if (stored) {
+      const end = parseInt(stored);
+      if (end > Date.now()) {
+        APP.timerEnds[suffix] = end;
+        document.getElementById(`btn-omeprazol-${suffix}`)?.classList.add('hidden');
+        document.getElementById(`timer-omeprazol-${suffix}`)?.classList.remove('hidden');
+        document.getElementById(`card-omeprazol-${suffix}`)?.classList.add('hidden');
+        lockMeds(suffix, true);
+        tickTimer(suffix);
+      } else {
+        localStorage.removeItem(`omeprazol_timer_${suffix}_${TODAY()}`);
+        lockMeds(suffix, false);
+      }
+    }
+  });
+}
+
+document.getElementById('btn-omeprazol-am').addEventListener('click', async () => {
+  const ts = await saveMedToma('omeprazol_am', 'manana');
+  startOmeprazolTimer('manana');
+});
+document.getElementById('btn-omeprazol-pm').addEventListener('click', async () => {
+  const ts = await saveMedToma('omeprazol_pm', 'noche');
+  startOmeprazolTimer('noche');
+});
+
+// ══════════════════════════════════════
+// MEDICATION TOMA BUTTONS
+// ══════════════════════════════════════
+async function saveMedToma(medId, periodo) {
+  const ts = new Date().toISOString();
+  const key = `med_${TODAY()}_${medId}`;
+  localStorage.setItem(key, ts);
+  // Save to history
+  const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
+  hist.unshift({ med: medId, periodo, timestamp: ts, fecha: TODAY() });
+  if (hist.length > 100) hist.length = 100;
+  localStorage.setItem('tomas_history', JSON.stringify(hist));
+  if (APP.db) {
+    try { await setDoc(doc(APP.db, 'tomas_pilar', TODAY()), { [medId]: { taken: true, timestamp: ts } }, { merge: true }); } catch(e) { console.warn(e); }
+  }
+  renderTomasHistory();
+  return ts;
+}
+
+function markCardTakenUI(card, isoString) {
+  if (!card) return;
+  const timeStr = isoString ? new Date(isoString).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '';
+  // Make the entire card green and change border to a stronger green
+  card.classList.add('!bg-[#e6f4ea]', '!border-[#34a853]', 'shadow-none');
+  const btns = card.querySelectorAll('button');
+  btns.forEach(btn => {
+    // Clear old colors and set to a soft green matching the card
+    btn.className = 'absolute right-5 top-1/2 -translate-y-1/2';
+    btn.style.position = 'relative'; // Override if not absolute natively
+    btn.style.right = 'auto';
+    btn.style.top = 'auto';
+    btn.style.transform = 'none';
+    
+    // For bigger buttons we preserve dimensions if needed, but the original ones are mostly h-14 w-14 or w-full.
+    if(btn.classList.contains('btn-toma') || btn.id === 'btn-omeprazol-am' || btn.id === 'btn-omeprazol-pm') {
+      btn.className = 'w-full h-16 bg-[#cce8d5] rounded-xl flex items-center justify-center gap-2 transition-all font-headline font-bold text-lg text-[#1e8e3e] shadow-none';
+      btn.innerHTML = `<span class="material-symbols-outlined text-3xl icon-fill">task_alt</span> TOMADO A LAS ${timeStr}`;
+    } else {
+      btn.className = 'px-4 h-14 bg-[#cce8d5] rounded-xl flex items-center justify-center gap-2 transition-all font-headline font-bold text-[#1e8e3e] shadow-none min-w-[max-content]';
+      btn.innerHTML = `<span class="material-symbols-outlined text-2xl icon-fill">task_alt</span> ${timeStr}`;
+    }
+    
+    btn.disabled = true;
+  });
+}
+
+// Morning med buttons
+document.querySelectorAll('.btn-med-am').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    const card = btn.closest('[data-med]');
+    if (!card) return;
+    const med = card.dataset.med;
+    const ts = await saveMedToma(med, 'manana');
+    markCardTakenUI(card, ts);
+  });
+});
+
+// General toma buttons
+document.querySelectorAll('.btn-toma').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const card = btn.closest('[data-med]');
+    if (!card) return;
+    const med = card.dataset.med;
+    const periodo = med.includes('merienda') ? 'merienda' : med.includes('comida') ? 'comida' : 'noche';
+    const ts = await saveMedToma(med, periodo);
+    markCardTakenUI(card, ts);
+  });
+});
+
+// Night meds (Kreon)
+document.getElementById('btn-kreon-noche').addEventListener('click', async () => {
+  const ts = await saveMedToma('kreon_noche', 'noche');
+  markCardTakenUI(document.getElementById('btn-kreon-noche').closest('[data-med]'), ts);
+});
+
+// Morning Insulina
+document.getElementById('btn-insulina-lantus').addEventListener('click', async () => {
+  const ts = await saveMedToma('insulina_lantus_am', 'am');
+  markCardTakenUI(document.getElementById('btn-insulina-lantus').closest('[data-med]'), ts);
+});
+
+// ══════════════════════════════════════
+// SOS: ORAMORPH 6-HOUR LOCKOUT
+// ══════════════════════════════════════
+function checkOramorphLockout() {
+  const stored = localStorage.getItem(`oramorph_unlock_${TODAY()}`);
+  if (stored) {
+    const unlock = parseInt(stored);
+    if (Date.now() < unlock) {
+      APP.sosState.oramorphUnlock = unlock;
+      document.getElementById('btn-oramorph').classList.add('opacity-60','pointer-events-none');
+      document.getElementById('oramorph-lockout').classList.remove('hidden');
+      tickOramorph();
+      return;
+    }
+  }
+  document.getElementById('btn-oramorph').classList.remove('opacity-60','pointer-events-none');
+  document.getElementById('oramorph-lockout').classList.add('hidden');
+}
+
+function tickOramorph() {
+  const remaining = Math.max(0, APP.sosState.oramorphUnlock - Date.now());
+  if (remaining <= 0) { checkOramorphLockout(); return; }
+  const h = Math.floor(remaining / 3600000);
+  const m = Math.floor((remaining % 3600000) / 60000);
+  const s = Math.floor((remaining % 60000) / 1000);
+  document.getElementById('oramorph-timer-text').textContent = `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  setTimeout(tickOramorph, 1000);
+}
+
+document.getElementById('btn-oramorph').addEventListener('click', () => {
+  if (APP.sosState.oramorphUnlock > Date.now()) return;
+  const unlock = Date.now() + 6 * 3600000;
+  localStorage.setItem(`oramorph_unlock_${TODAY()}`, unlock);
+  saveMedToma('sos_oramorph', 'sos');
+  checkOramorphLockout();
+});
+
+// ══════════════════════════════════════
+// SOS: FORTASEC 8/DAY CAP
+// ══════════════════════════════════════
+function loadFortasec() {
+  const stored = localStorage.getItem(`fortasec_${TODAY()}`);
+  APP.sosState.fortasecCount = stored ? parseInt(stored) : 0;
+  updateFortasecUI();
+}
+
+function updateFortasecUI() {
+  document.getElementById('fortasec-counter').textContent = `${APP.sosState.fortasecCount}/8`;
+  const btn = document.getElementById('btn-fortasec');
+  if (APP.sosState.fortasecCount >= 8) {
+    btn.disabled = true;
+    btn.classList.add('opacity-40');
+    btn.innerHTML = '<span class="material-symbols-outlined">block</span> LÍMITE ALCANZADO';
+  }
+}
+
+document.getElementById('btn-fortasec').addEventListener('click', () => {
+  if (APP.sosState.fortasecCount >= 8) return;
+  APP.sosState.fortasecCount++;
+  localStorage.setItem(`fortasec_${TODAY()}`, APP.sosState.fortasecCount);
+  saveMedToma('sos_fortasec', 'sos');
+  updateFortasecUI();
+});
+
+// ══════════════════════════════════════
+// FIREBASE CONFIGURATION
+// ══════════════════════════════════════
+
+function connectFirebase(config) {
+  try {
+    const app = initializeApp(config);
+    APP.db = getFirestore(app);
+    APP.firebaseReady = true;
+    document.getElementById('firebase-status-text').textContent = 'Conectado: ' + config.projectId;
+    document.getElementById('firebase-status-badge').textContent = 'Online';
+    document.getElementById('firebase-status-badge').classList.remove('bg-white/30');
+    document.getElementById('firebase-status-badge').classList.add('bg-green-200','text-green-800');
+    document.getElementById('sync-indicator').classList.remove('bg-yellow-100','text-yellow-700');
+    document.getElementById('sync-indicator').classList.add('bg-green-100','text-green-700');
+    // Start listeners
+    startFirebaseListeners();
+  } catch(e) { console.error('Firebase init error:', e); }
+}
+
+function startFirebaseListeners() {
+  if (!APP.db) return;
+  // Listen to today's tomas — SYNC BUTTON STATES FROM REMOTE CHANGES
+  onSnapshot(doc(APP.db, 'tomas_pilar', TODAY()), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    console.log('🔄 Tomas sync:', data);
+    // Update each med button from remote state
+    Object.keys(data).forEach(medId => {
+      if (data[medId]?.taken) {
+        // Mark local storage so state persists
+        const key = `med_${TODAY()}_${medId}`;
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, data[medId].timestamp || new Date().toISOString());
+        }
+        // Update Omeprazol buttons
+        if (medId === 'omeprazol_am' || medId === 'omeprazol_pm') {
+          const suffix = medId === 'omeprazol_am' ? 'am' : 'pm';
+          const btn = document.getElementById(`btn-omeprazol-${suffix}`);
+          if (btn && !btn.disabled) {
+            btn.innerHTML = '<span class="material-symbols-outlined text-3xl icon-fill text-tertiary">check_circle</span> TOMADO';
+            btn.disabled = true;
+          }
+        }
+        // Update generic med cards
+        document.querySelectorAll(`[data-med="${medId}"]`).forEach(card => {
+          const btns = card.querySelectorAll('button');
+          btns.forEach(btn => {
+            if (!btn.disabled) {
+              btn.innerHTML = '<span class="material-symbols-outlined text-2xl text-tertiary icon-fill">check_circle</span>';
+              btn.disabled = true;
+            }
+          });
+        });
+        // Update Fortasec from remote
+        if (medId === 'sos_fortasec' && data[medId].count) {
+          APP.sosState.fortasecCount = data[medId].count;
+          localStorage.setItem(`fortasec_${TODAY()}`, data[medId].count);
+          updateFortasecUI();
+        }
+      }
+    });
+  });
+  // Listen to constantes
+  onSnapshot(doc(APP.db, 'constantes_pilar', TODAY()), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    console.log('🔄 Constantes sync:', data);
+    // If remote check-in exists for current period, save locally
+    const period = PERIOD();
+    if (data[period]) {
+      const checkinKey = `checkin_${TODAY()}_${period}`;
+      if (!localStorage.getItem(checkinKey)) {
+        localStorage.setItem(checkinKey, JSON.stringify(data[period]));
+        // If we're on the check-in screen, auto-navigate to dashboard
+        if (APP.currentScreen === 'checkin') {
+          navigateToHoy();
+        }
+      }
+    }
+    // Update history table
+    renderConstantesHistory();
+  });
+}
+
+// ══════════════════════════════════════
+// PANIC BUTTON
+// ══════════════════════════════════════
+async function sendPanicAlert() {
+  // 1. Show overlay immediately
+  document.getElementById('panic-overlay').classList.remove('hidden');
+  // 2. Vibrate if possible
+  if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
+  // 3. Save to Firebase alertas_urgentes
+  if (APP.db) {
+    try {
+      await addDoc(collection(APP.db, 'alertas_urgentes'), {
+        tipo: 'PANICO',
+        paciente: 'Pilar',
+        timestamp: serverTimestamp(),
+        hora_local: new Date().toISOString(),
+        pantalla_activa: APP.currentScreen || 'unknown',
+        mensaje: 'Pilar ha pulsado el botón de pánico'
+      });
+      console.log('🚨 Alerta de pánico enviada a Firebase');
+    } catch(e) {
+      console.error('Error enviando alerta:', e);
+    }
+  }
+  // 4. Save locally as backup
+  const alerts = JSON.parse(localStorage.getItem('panic_history') || '[]');
+  alerts.unshift({ timestamp: new Date().toISOString(), screen: APP.currentScreen });
+  localStorage.setItem('panic_history', JSON.stringify(alerts));
+}
+
+document.getElementById('btn-panic').addEventListener('click', () => {
+  sendPanicAlert();
+});
+
+document.getElementById('btn-close-panic').addEventListener('click', () => {
+  document.getElementById('panic-overlay').classList.add('hidden');
+});
+
+// ══════════════════════════════════════
+// HISTORY RENDERING
+// ══════════════════════════════════════
+function renderConstantesHistory() {
+  const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
+  const tbody = document.getElementById('table-constantes');
+  tbody.innerHTML = hist.slice(0, 10).map(h => `<tr><td class="p-3"><p class="font-bold text-xs">${h.fecha}</p><p class="text-[10px] text-on-surface-variant">${h.periodo}</p></td><td class="p-3"><span class="font-black">${h.glucosa}</span> <span class="text-[10px]">mg/dL</span></td><td class="p-3"><span class="font-black">${h.temperatura}</span> <span class="text-[10px]">°C</span></td></tr>`).join('');
+}
+
+function renderTomasHistory() {
+  const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
+  const container = document.getElementById('list-tomas');
+  container.innerHTML = hist.slice(0, 15).map(h => {
+    const time = new Date(h.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    return `<div class="flex items-center bg-surface-container-high rounded-2xl p-3 gap-3"><div class="w-10 h-10 rounded-xl bg-secondary-container/20 flex items-center justify-center"><span class="material-symbols-outlined text-lg icon-fill">medication</span></div><div class="flex-1"><p class="font-headline font-bold text-sm">${h.med.replace(/_/g,' ')}</p><p class="text-on-surface-variant text-xs">${h.periodo} — ${h.fecha}</p></div><p class="font-headline text-sm font-bold text-primary">${time}</p></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// RESTORE STATE ON LOAD
+// ══════════════════════════════════════
+function restoreMedStates() {
+  // Check which meds were already taken today
+  document.querySelectorAll('[data-med]').forEach(card => {
+    const med = card.dataset.med;
+    const stored = localStorage.getItem(`med_${TODAY()}_${med}`);
+    if (stored) {
+      markCardTakenUI(card, stored);
+    }
+  });
+  // Omeprazol buttons
+  ['am','pm'].forEach(s => {
+    const stored = localStorage.getItem(`med_${TODAY()}_omeprazol_${s}`);
+    if (stored) {
+      const card = document.getElementById(`card-omeprazol-${s}`);
+      if (card) markCardTakenUI(card, stored);
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init() {
+  // Date label
+  const dateStr = SPANISH_DATE();
+  document.getElementById('hoy-date').textContent = dateStr;
+
+  applyTrangorexRule();
+  restoreTimers();
+  restoreMedStates();
+  checkOramorphLockout();
+  loadFortasec();
+  renderConstantesHistory();
+  renderTomasHistory();
+
+  // Auto-connect Firebase with hardcoded config
+  document.getElementById('firebase-config-input').value = JSON.stringify(FIREBASE_CONFIG, null, 2);
+  connectFirebase(FIREBASE_CONFIG);
+
+  // Initial navigation
+  navigateToHoy();
+}
+
+init();
+</script>
+
+<!-- SERVICE WORKER REGISTRATION -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(e => console.log('SW not registered:', e));
+}
+</script>
+</body>
+</html>

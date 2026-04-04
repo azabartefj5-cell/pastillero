@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Clarion Care - Dashboard Hoy</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#404752",
+                        "on-secondary-container": "#653900",
+                        "surface-container-low": "#f4f4eb",
+                        "primary-fixed": "#d1e4ff",
+                        "surface": "#fafaf1",
+                        "outline-variant": "#bfc7d4",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#005313",
+                        "secondary-container": "#ff9800",
+                        "inverse-primary": "#9ecaff",
+                        "secondary-fixed": "#ffdcbe",
+                        "on-tertiary-container": "#003308",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#fafaf1",
+                        "on-primary-fixed-variant": "#00497d",
+                        "surface-tint": "#0061a4",
+                        "tertiary-fixed-dim": "#78dc77",
+                        "on-primary-fixed": "#001d36",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#2196f3",
+                        "error": "#ba1a1a",
+                        "primary": "#0061a4",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1a1c17",
+                        "on-secondary-fixed": "#2c1600",
+                        "on-background": "#1a1c17",
+                        "inverse-surface": "#2f312b",
+                        "on-secondary-fixed-variant": "#693c00",
+                        "tertiary": "#006e1c",
+                        "on-primary-container": "#002c4f",
+                        "inverse-on-surface": "#f1f1e8",
+                        "primary-fixed-dim": "#9ecaff",
+                        "surface-dim": "#dadbd2",
+                        "secondary": "#8b5000",
+                        "on-tertiary-fixed": "#002204",
+                        "tertiary-fixed": "#94f990",
+                        "surface-variant": "#e3e3da",
+                        "surface-container-highest": "#e3e3da",
+                        "secondary-container": "#ff9800",
+                        "tertiary-container": "#42a547",
+                        "background": "#fafaf1",
+                        "outline": "#707883",
+                        "surface-container-high": "#e8e9e0",
+                        "surface-container": "#eeeee6",
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Public Sans"],
+                        "label": ["Public Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #fafaf1;
+            -webkit-tap-highlight-color: transparent;
+        }
+        h1, h2, h3 {
+            font-family: 'Lexend', sans-serif;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<div class="flex flex-col min-h-screen bg-surface">
+<!-- TopNavBar - Mobile Optimized -->
+<header class="flex justify-between items-center w-full px-6 h-20 bg-[#fafaf1] sticky top-0 z-30 border-b border-surface-variant/30">
+<h1 class="font-headline text-2xl font-black text-[#1a1c17]">Clarion Care</h1>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-3xl text-[#1a1c17]" data-icon="menu">menu</button>
+</div>
+</header>
+<!-- Dashboard Content -->
+<main class="flex-1 p-6 space-y-10 pb-32">
+<!-- Welcome Section -->
+<section>
+<h2 class="font-headline text-4xl font-bold tracking-tight text-on-surface mb-1">Hoy</h2>
+<p class="font-body text-lg text-on-surface-variant">Viernes, 24 de Mayo</p>
+</section>
+<!-- Seccion COMIDA (Naranja) - Mobile Focus -->
+<section class="space-y-6">
+<div class="flex items-center gap-3">
+<div class="w-2 h-10 bg-secondary-container rounded-full"></div>
+<h3 class="font-headline text-3xl font-bold text-on-surface">Comida</h3>
+</div>
+<div class="space-y-4">
+<!-- Check-in Card (Mobile Compact) -->
+<div class="bg-surface-container-low p-6 rounded-xl border border-surface-variant/20 shadow-sm space-y-6">
+<div class="flex items-center justify-between border-b border-surface-variant/20 pb-4">
+<h4 class="font-headline text-xl font-bold">Check-in obligatorio</h4>
+<span class="material-symbols-outlined text-secondary-container text-3xl filled-icon" data-icon="assignment_late">assignment_late</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-highest p-4 rounded-xl">
+<label class="block font-headline text-sm font-bold mb-2">Temp. (°C)</label>
+<input class="w-full bg-transparent border-none p-0 text-2xl font-bold focus:ring-0" placeholder="00.0" type="number"/>
+</div>
+<div class="bg-surface-container-highest p-4 rounded-xl">
+<label class="block font-headline text-sm font-bold mb-2">Glucosa</label>
+<input class="w-full bg-transparent border-none p-0 text-2xl font-bold focus:ring-0" placeholder="000" type="number"/>
+</div>
+</div>
+</div>
+<!-- Medication Card (Kreon) - High Contrast Orange -->
+<div class="bg-surface-container-high border-l-[8px] border-secondary-container p-6 rounded-xl shadow-sm space-y-6">
+<div class="flex justify-between items-start">
+<div class="space-y-1">
+<h4 class="font-headline text-[32px] leading-tight font-extrabold text-on-surface">Kreon 35000</h4>
+<p class="font-body text-lg font-medium text-on-surface-variant">Dosis de Comida</p>
+</div>
+<div class="bg-secondary-fixed p-3 rounded-full">
+<span class="material-symbols-outlined text-4xl text-on-secondary-container filled-icon" data-icon="medication">medication</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-7xl font-black text-secondary">2</span>
+<span class="font-headline text-2xl font-bold text-on-secondary-fixed-variant">Cápsulas</span>
+</div>
+<button class="w-full h-[90px] bg-secondary text-white rounded-2xl flex items-center justify-center gap-4 shadow-lg active:scale-[0.96] transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="check_circle">check_circle</span>
+<span class="font-headline text-2xl font-bold tracking-wide">REGISTRAR TOMA</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Seccion MERIENDA (Verde) - Mobile Focus -->
+<section class="space-y-6">
+<div class="flex items-center gap-3">
+<div class="w-2 h-10 bg-tertiary-container rounded-full"></div>
+<h3 class="font-headline text-3xl font-bold text-on-surface">Merienda</h3>
+</div>
+<!-- Medication Card (Kreon) - High Contrast Green -->
+<div class="bg-surface-container-high border-l-[8px] border-tertiary-container p-6 rounded-xl shadow-sm space-y-6">
+<div class="flex justify-between items-start">
+<div class="space-y-1">
+<h4 class="font-headline text-[32px] leading-tight font-extrabold text-on-surface">Kreon 35000</h4>
+<p class="font-body text-lg font-medium text-on-surface-variant">Dosis de Merienda</p>
+</div>
+<div class="bg-tertiary-fixed p-3 rounded-full">
+<span class="material-symbols-outlined text-4xl text-on-tertiary-container filled-icon" data-icon="bakery_dining">bakery_dining</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline text-7xl font-black text-tertiary">3</span>
+<span class="font-headline text-2xl font-bold text-on-tertiary-fixed-variant">Cápsulas</span>
+</div>
+<button class="w-full h-[90px] bg-tertiary text-white rounded-2xl flex items-center justify-center gap-4 shadow-lg active:scale-[0.96] transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="check_circle">check_circle</span>
+<span class="font-headline text-2xl font-bold tracking-wide">REGISTRAR TOMA</span>
+</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar - Sync Status Only for Mobile -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-center items-center px-6 bg-[#1a1c17] h-16 shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
+<div class="flex items-center justify-center gap-3 text-white/90">
+<span class="material-symbols-outlined text-2xl" data-icon="sync">sync</span>
+<span class="font-headline text-sm font-medium">Sincronización: Al día</span>
+</div>
+</footer>
+</div>
+</body></html>

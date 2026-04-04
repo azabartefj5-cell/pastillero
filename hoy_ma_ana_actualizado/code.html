@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;700;800;900&amp;family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#404752",
+                    "on-secondary-container": "#653900",
+                    "surface-container-low": "#f4f4eb",
+                    "primary-fixed": "#d1e4ff",
+                    "surface": "#fafaf1",
+                    "outline-variant": "#bfc7d4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005313",
+                    "secondary-container": "#ff9800",
+                    "inverse-primary": "#9ecaff",
+                    "secondary-fixed": "#ffdcbe",
+                    "on-tertiary-container": "#003308",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fafaf1",
+                    "on-primary-fixed-variant": "#00497d",
+                    "surface-tint": "#0061a4",
+                    "tertiary-fixed-dim": "#78dc77",
+                    "on-primary-fixed": "#001d36",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#2196f3",
+                    "error": "#ba1a1a",
+                    "primary": "#0061a4",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#1a1c17",
+                    "on-secondary-fixed": "#2c1600",
+                    "on-background": "#1a1c17",
+                    "inverse-surface": "#2f312b",
+                    "on-secondary-fixed-variant": "#693c00",
+                    "tertiary": "#006e1c",
+                    "on-primary-container": "#002c4f",
+                    "inverse-on-surface": "#f1f1e8",
+                    "primary-fixed-dim": "#9ecaff",
+                    "surface-dim": "#dadbd2",
+                    "secondary": "#8b5000",
+                    "on-tertiary-fixed": "#002204",
+                    "tertiary-fixed": "#94f990",
+                    "surface-variant": "#e3e3da",
+                    "surface-container-highest": "#e3e3da",
+                    "secondary-fixed-dim": "#ffb870",
+                    "background": "#fafaf1",
+                    "outline": "#707883",
+                    "surface-container-high": "#e8e9e0",
+                    "surface-container": "#eeeee6",
+                    "tertiary-container": "#42a547"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1.5rem", // Overridden per Giant Button mandate
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Public Sans"],
+                    "label": ["Public Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #fafaf1;
+            color: #1a1c17;
+        }
+        h1, h2, h3, .font-lexend {
+            font-family: 'Lexend', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-8 h-24 bg-[#fafaf1] dark:bg-stone-950 fixed top-0 z-[60] shadow-none">
+<div class="font-lexend text-[2rem] leading-tight font-bold text-3xl font-black text-[#1a1c17] dark:text-stone-100">Clarion Care</div>
+<nav class="hidden md:flex items-center gap-12">
+<a class="text-[#2196f3] border-b-4 border-[#2196f3] pb-2 font-lexend text-xl font-bold" href="#">Hoy</a>
+<a class="text-[#1a1c17] dark:text-stone-300 font-lexend text-xl font-bold hover:bg-stone-200 dark:hover:bg-stone-800 px-4 py-2 rounded-lg transition-all" href="#">Botiquín SOS</a>
+</nav>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-4xl cursor-pointer text-on-surface" data-icon="account_circle">account_circle</span>
+</div>
+</header>
+<div class="flex min-h-screen pt-24">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-[calc(100vh-6rem)] w-80 bg-[#f4f4eb] dark:bg-stone-900 sticky top-24 shadow-xl z-50 p-6 space-y-8">
+<div class="mb-8">
+<h2 class="font-lexend text-2xl font-bold text-on-surface">Mi Horario</h2>
+<p class="font-body text-on-surface-variant">Selecciona un momento</p>
+</div>
+<nav class="flex flex-col space-y-4">
+<!-- ACTIVE: Mañana -->
+<button class="bg-[#e3e3da] dark:bg-stone-800 text-[#2196f3] rounded-xl p-6 flex items-center gap-6 active:scale-95 transition-all w-full text-left font-lexend text-2xl font-bold">
+<span class="material-symbols-outlined text-3xl fill-icon" data-icon="light_mode">light_mode</span>
+                    Mañana
+                </button>
+<button class="text-[#1a1c17] dark:text-stone-400 p-6 flex items-center gap-6 hover:bg-[#e3e3da] dark:hover:bg-stone-800 rounded-xl transition-all w-full text-left font-lexend text-2xl font-bold">
+<span class="material-symbols-outlined text-3xl" data-icon="wb_sunny">wb_sunny</span>
+                    Comida
+                </button>
+<button class="text-[#1a1c17] dark:text-stone-400 p-6 flex items-center gap-6 hover:bg-[#e3e3da] dark:hover:bg-stone-800 rounded-xl transition-all w-full text-left font-lexend text-2xl font-bold">
+<span class="material-symbols-outlined text-3xl" data-icon="bakery_dining">bakery_dining</span>
+                    Merienda
+                </button>
+<button class="text-[#1a1c17] dark:text-stone-400 p-6 flex items-center gap-6 hover:bg-[#e3e3da] dark:hover:bg-stone-800 rounded-xl transition-all w-full text-left font-lexend text-2xl font-bold">
+<span class="material-symbols-outlined text-3xl" data-icon="dark_mode">dark_mode</span>
+                    Noche
+                </button>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 p-8 md:p-12 bg-surface max-w-7xl mx-auto w-full">
+<!-- Hero Header Section -->
+<div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<span class="text-secondary font-bold tracking-widest text-xl mb-2 block uppercase">Domingo, 31 de Marzo de 2026</span>
+<h1 class="text-6xl md:text-8xl font-black font-headline text-on-surface leading-none">MAÑANA</h1>
+<p class="text-2xl text-on-surface-variant mt-4 font-body">Estado del tratamiento y recordatorios clave.</p>
+</div>
+<div class="bg-secondary-container text-on-secondary-container px-8 py-6 rounded-xl flex items-center gap-4 shadow-sm">
+<span class="material-symbols-outlined text-4xl" data-icon="breakfast_dining">breakfast_dining</span>
+<span class="font-headline text-2xl font-bold">Antes del Desayuno</span>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Section 1: Critical Priority - Omeprazol -->
+<section class="lg:col-span-12">
+<div class="bg-surface-container-high rounded-[2rem] p-8 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 border-l-[12px] border-secondary-container">
+<div class="flex-1">
+<h3 class="text-4xl font-headline font-bold mb-2">Paso 1: Protección Gástrica</h3>
+<p class="text-xl font-body text-on-surface-variant mb-6">El Omeprazol debe tomarse en ayunas, 30 minutos antes de cualquier otro fármaco.</p>
+<!-- Giant Button Omeprazol -->
+<button class="w-full md:w-auto h-[100px] px-12 bg-gradient-to-b from-primary to-primary-container text-on-primary rounded-xl text-3xl font-headline font-extrabold flex items-center justify-center gap-4 shadow-lg active:scale-98 transition-transform">
+<span class="material-symbols-outlined text-4xl" data-icon="medication">medication</span>
+                                Tomar Omeprazol (Protección)
+                            </button>
+</div>
+<!-- Wait Timer State -->
+<div class="bg-surface-variant/80 backdrop-blur-md p-10 rounded-xl border border-outline-variant/20 flex flex-col items-center justify-center min-w-[320px]">
+<span class="material-symbols-outlined text-5xl text-primary mb-4" data-icon="hourglass_empty">hourglass_empty</span>
+<div class="text-5xl font-headline font-black text-on-surface mb-2">30:00</div>
+<div class="text-lg font-bold text-on-surface-variant uppercase tracking-widest text-center">Esperar para el resto de la medicación</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Delayed Priority - Insulina -->
+<section class="lg:col-span-5">
+<div class="h-full bg-surface-container-low rounded-[2rem] p-8 flex flex-col justify-between border-l-[12px] border-tertiary">
+<div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-3xl font-headline font-bold">Insulina Lantus</h3>
+<span class="material-symbols-outlined text-4xl text-tertiary" data-icon="opacity">opacity</span>
+</div>
+<p class="text-xl font-body text-on-surface-variant mb-4">Dosis programada: 10-12 UI.</p>
+<div class="bg-error-container text-on-error-container p-4 rounded-xl flex items-start gap-3 mb-8">
+<span class="material-symbols-outlined fill-icon" data-icon="lock">lock</span>
+<span class="font-bold">Requiere Check-in de Glucosa previo en la pantalla de seguimiento.</span>
+</div>
+</div>
+<!-- Giant Button Insulina (Disabled-looking state via grayscale or opacity, per logic) -->
+<button class="w-full h-24 bg-surface-container-highest text-outline rounded-xl text-2xl font-headline font-bold flex items-center justify-center gap-4 cursor-not-allowed opacity-60">
+                            Registrar Insulina
+                        </button>
+</div>
+</section>
+<!-- Section 3: Morning Meds - The Grid -->
+<section class="lg:col-span-7">
+<div class="bg-surface-container-highest rounded-[2rem] p-8 h-full">
+<h3 class="text-3xl font-headline font-bold mb-8 flex items-center gap-4">
+<span class="material-symbols-outlined text-4xl" data-icon="medication_liquid">medication_liquid</span>
+                            Medicación Mañana
+                        </h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<!-- Med Card 1 -->
+<div class="bg-surface p-6 rounded-xl border-l-8 border-secondary-container shadow-sm flex flex-col justify-between h-48">
+<span class="text-sm font-bold text-on-surface-variant uppercase">Digestivo</span>
+<h4 class="text-2xl font-headline font-bold">Kreon 35000</h4>
+<p class="text-lg font-body">2 cápsulas</p>
+</div>
+<!-- Med Card 2 -->
+<div class="bg-surface p-6 rounded-xl border-l-8 border-primary-container shadow-sm flex flex-col justify-between h-48">
+<span class="text-sm font-bold text-on-surface-variant uppercase">Tensión</span>
+<h4 class="text-2xl font-headline font-bold">Valsartan/HTZ</h4>
+<p class="text-lg font-body">1 comprimido (160/25)</p>
+</div>
+<!-- Med Card 3 -->
+<div class="bg-surface p-6 rounded-xl border-l-8 border-primary-container shadow-sm flex flex-col justify-between h-48">
+<span class="text-sm font-bold text-on-surface-variant uppercase">Tensión</span>
+<h4 class="text-2xl font-headline font-bold">Amlodipino</h4>
+<p class="text-lg font-body">1 comp. (5mg)</p>
+</div>
+<!-- Med Card 4 -->
+<div class="bg-surface p-6 rounded-xl border-l-8 border-tertiary-container shadow-sm flex flex-col justify-between h-48">
+<span class="text-sm font-bold text-on-surface-variant uppercase">Ritmo (L a V)</span>
+<h4 class="text-2xl font-headline font-bold">Trangorex</h4>
+<p class="text-lg font-body">200mg</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Injectables/Others -->
+<section class="lg:col-span-12">
+<div class="bg-surface-container rounded-[2rem] p-8 flex flex-col md:flex-row items-center gap-8 border-l-[12px] border-error">
+<img alt="Imagen ilustrativa de inyección médica" class="w-full md:w-64 h-48 object-cover rounded-xl shadow-md" data-alt="close-up of a sterile medical pre-filled syringe on a clean white surface with soft blue lighting and professional clinical atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALOv_iyXPpck_mklJaIw8gQBblU5p0DgOya79tg-o_vDDrTFXccKzx3BKH82QeUp7xhrC8jdYIpYD8dGnt7l26AG5NYip2AO5fbW07fLeyb5UFPGTNpzMNJ8w_UhdFOpg8dUyrxtPbth_dqCdROzlLoLDxmW-3wIf6e3cN91j8HQGF19LDa4gXpobOTRXJaPuo6vSXDr8I9vzHGaoLRa-GkQrWEspyVOXjJPy1rizeC_q5wJbcDg9wzeqlt7FtQzj2g6408mwAug4"/>
+<div class="flex-1">
+<h3 class="text-3xl font-headline font-bold mb-2">Enoxaparina 100mg</h3>
+<p class="text-xl font-body text-on-surface-variant mb-6">Inyección subcutánea diaria. Asegúrese de rotar el lugar de aplicación.</p>
+<button class="h-20 px-10 bg-surface-container-highest text-on-surface border-2 border-outline-variant/30 rounded-xl text-2xl font-headline font-bold flex items-center gap-4 hover:bg-surface-container-high transition-colors active:scale-98">
+<span class="material-symbols-outlined text-3xl" data-icon="add_circle">add_circle</span>
+                                Confirmar Aplicación
+                            </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Spacing for bottom nav -->
+<div class="h-32"></div>
+</main>
+</div>
+<!-- BottomNavBar -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-center items-center px-8 bg-[#1a1c17] dark:bg-black h-20 shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
+<div class="flex items-center justify-center gap-4 text-white">
+<span class="material-symbols-outlined text-3xl" data-icon="sync">sync</span>
+<span class="font-lexend text-xl font-medium">Estado de Sincronización</span>
+</div>
+</footer>
+</body></html>

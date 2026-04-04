@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;700;800;900&amp;family=Public+Sans:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "on-surface": "#1a1c17",
+                        "on-surface-variant": "#404752",
+                        "on-tertiary-container": "#003308",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eeeee6",
+                        "surface": "#fafaf1",
+                        "on-primary-container": "#002c4f",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#94f990",
+                        "background": "#fafaf1",
+                        "surface-variant": "#e3e3da",
+                        "on-primary-fixed": "#001d36",
+                        "surface-container-high": "#e8e9e0",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e3e3da",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary": "#0061a4",
+                        "secondary": "#8b5000",
+                        "primary-container": "#2196f3",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1f1e8",
+                        "surface-dim": "#dadbd2",
+                        "inverse-primary": "#9ecaff",
+                        "secondary-fixed-dim": "#ffb870",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#fafaf1",
+                        "surface-container-low": "#f4f4eb",
+                        "primary-fixed-dim": "#9ecaff",
+                        "on-secondary-fixed-variant": "#693c00",
+                        "tertiary-container": "#42a547",
+                        "primary-fixed": "#d1e4ff",
+                        "secondary-fixed": "#ffdcbe",
+                        "outline": "#707883",
+                        "tertiary-fixed-dim": "#78dc77",
+                        "secondary-container": "#ff9800",
+                        "on-secondary-container": "#653900",
+                        "on-secondary-fixed": "#2c1600",
+                        "outline-variant": "#bfc7d4",
+                        "inverse-surface": "#2f312b",
+                        "tertiary": "#006e1c",
+                        "on-tertiary-fixed-variant": "#005313",
+                        "on-primary-fixed-variant": "#00497d",
+                        "on-background": "#1a1c17",
+                        "surface-tint": "#0061a4",
+                        "on-tertiary-fixed": "#002204"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Lexend"],
+                        "body": ["Public Sans"],
+                        "label": ["Public Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #fafaf1;
+            color: #1a1c17;
+        }
+        .editorial-header {
+            font-family: 'Lexend', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface mb-20">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-20 bg-white dark:bg-stone-900 tonal-shift bg-stone-100 dark:bg-stone-800">
+<div class="text-2xl font-black text-stone-900 dark:text-stone-50 editorial-header">Guardian</div>
+<nav class="flex gap-8 items-end h-full">
+<a class="font-lexend text-body-lg uppercase tracking-wider text-stone-500 dark:text-stone-400 pb-2 hover:text-blue-500 transition-colors active:scale-95" href="#">Hoy</a>
+<a class="font-lexend text-body-lg uppercase tracking-wider text-blue-700 dark:text-blue-300 border-b-4 border-blue-600 pb-2 font-bold hover:text-blue-500 transition-colors active:scale-95" href="#">Botiquín SOS</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-stone-600 dark:text-stone-300 text-3xl" data-icon="settings">settings</button>
+</div>
+</header>
+<main class="pt-28 px-6 max-w-5xl mx-auto pb-12">
+<!-- Hero Section / Editorial Intro -->
+<section class="mb-12">
+<h1 class="editorial-header text-display-lg text-6xl font-extrabold tracking-tight mb-4">Botiquín SOS</h1>
+<p class="text-title-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                Si te sientes mal, aquí tienes las pautas de rescate autorizadas por tu médico. Pulsa sobre el síntoma que tengas para ver el medicamento y la dosis.
+            </p>
+</section>
+<!-- SOS Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Category: Dolor (Critical) -->
+<button class="group relative flex flex-col items-start p-8 min-h-[180px] bg-error-container text-on-error-container rounded-3xl transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md text-left overflow-hidden border-l-[12px] border-error">
+<div class="flex justify-between w-full mb-6">
+<span class="material-symbols-outlined text-5xl fill-icon" data-icon="emergency_home" style="font-variation-settings: 'FILL' 1;">emergency_home</span>
+<span class="bg-error text-on-error px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest">Urgente</span>
+</div>
+<h3 class="editorial-header text-4xl font-bold mb-2">Dolor</h3>
+<div class="flex flex-col">
+<span class="text-2xl font-bold">Oramorph 2mg/ml</span>
+<span class="text-xl opacity-90 italic">Tomar 1ml si persiste</span>
+</div>
+</button>
+<!-- Category: Náuseas -->
+<button class="group relative flex flex-col items-start p-8 min-h-[180px] bg-surface-container-highest rounded-3xl transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md text-left overflow-hidden border-l-[12px] border-primary-container">
+<div class="flex justify-between w-full mb-6">
+<span class="material-symbols-outlined text-5xl" data-icon="sick">sick</span>
+<span class="bg-primary text-on-primary px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest">Alivio</span>
+</div>
+<h3 class="editorial-header text-4xl font-bold mb-2">Náuseas</h3>
+<div class="flex flex-col">
+<span class="text-2xl font-bold">Motilium o Zofran</span>
+<span class="text-xl opacity-90">1 comprimido cada 8h</span>
+</div>
+</button>
+<!-- Category: Diarrea -->
+<button class="group relative flex flex-col items-start p-8 min-h-[180px] bg-secondary-container text-on-secondary-container rounded-3xl transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md text-left overflow-hidden border-l-[12px] border-secondary">
+<div class="flex justify-between w-full mb-6">
+<span class="material-symbols-outlined text-5xl" data-icon="water_drop">water_drop</span>
+</div>
+<h3 class="editorial-header text-4xl font-bold mb-2">Diarrea</h3>
+<div class="flex flex-col">
+<span class="text-2xl font-bold">Fortasec</span>
+<span class="text-xl opacity-90">Tras cada deposición</span>
+</div>
+</button>
+<!-- Category: Llagas -->
+<button class="group relative flex flex-col items-start p-8 min-h-[180px] bg-tertiary-container text-on-tertiary-container rounded-3xl transition-all duration-200 active:scale-[0.98] shadow-sm hover:shadow-md text-left overflow-hidden border-l-[12px] border-tertiary">
+<div class="flex justify-between w-full mb-6">
+<span class="material-symbols-outlined text-5xl" data-icon="mouth">oral_disease</span>
+</div>
+<h3 class="editorial-header text-4xl font-bold mb-2">Llagas</h3>
+<div class="flex flex-col">
+<span class="text-2xl font-bold">Mycostatin</span>
+<span class="text-xl opacity-90 italic">Enjuagues bucales</span>
+</div>
+</button>
+</div>
+<!-- Safety Warning Section -->
+<div class="mt-12 p-8 bg-surface-container-low rounded-3xl border-2 border-dashed border-outline-variant">
+<div class="flex items-start gap-6">
+<span class="material-symbols-outlined text-error text-5xl" data-icon="warning">warning</span>
+<div>
+<h4 class="editorial-header text-2xl font-bold mb-2">Aviso Importante</h4>
+<p class="text-title-lg text-on-surface-variant">
+                        Si los síntomas no mejoran después de la primera dosis de rescate, o si el dolor es muy intenso, contacta inmediatamente con tu equipo de enfermería o pulsa el botón de ayuda.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Secondary Information / Visual Placeholder -->
+<div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="col-span-1 md:col-span-2 relative h-64 rounded-3xl overflow-hidden group">
+<img alt="Safe medical cabinet environment" class="w-full h-full object-cover" data-alt="close-up of a neatly organized medical kit with white clean bottles on a wooden shelf in warm sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjutZ5UZeUpqFiMZXHMW_d5-4aVGLgTkSoA6OSa8BHUyAWXq0C12DCIpK1k7lgaO9qOAxh26xN354dle0rdXsCyIx65ykJmBhHvF06UHilyznK207pb2JOOVfMIO2TSD3y6LRGuYDtE5MPBgpqxNvo20-XVXtdX8eo_57Hfkw4qooSMYebgVZIe8_clgE_bHfho0CxV4l1tXlSfTnB3U8vU3OE5TCbT8aN1gjHbNZriWXdWxrabliYWOT8v4arx_bbq_oKds4_dtU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+<p class="text-white text-xl font-bold">Mantén tu botiquín ordenado y en un lugar fresco.</p>
+</div>
+</div>
+<div class="bg-surface-container-highest p-8 rounded-3xl flex flex-col justify-center text-center">
+<span class="material-symbols-outlined text-6xl mb-4 text-primary" data-icon="contact_support">contact_support</span>
+<p class="font-bold text-xl">¿Dudas con la dosis?</p>
+<p class="text-on-surface-variant">Llamar a Guardian</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Status Bar) -->
+<footer class="fixed bottom-0 left-0 w-full z-50 h-10 flex justify-center items-center px-4 bg-stone-900 dark:bg-black shadow-lg">
+<div class="text-green-400 flex items-center gap-2 font-lexend text-xs font-bold uppercase transition-all duration-300">
+<span class="material-symbols-outlined text-sm" data-icon="cloud_done">cloud_done</span>
+<span>Sincronizado</span>
+<div class="w-2 h-2 rounded-full bg-green-400 animate-pulse ml-2"></div>
+</div>
+</footer>
+</body></html>

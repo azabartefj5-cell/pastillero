@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#404752",
+                    "on-secondary-container": "#653900",
+                    "surface-container-low": "#f4f4eb",
+                    "primary-fixed": "#d1e4ff",
+                    "surface": "#fafaf1",
+                    "outline-variant": "#bfc7d4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005313",
+                    "secondary-container": "#ff9800",
+                    "inverse-primary": "#9ecaff",
+                    "secondary-fixed": "#ffdcbe",
+                    "on-tertiary-container": "#003308",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#fafaf1",
+                    "on-primary-fixed-variant": "#00497d",
+                    "surface-tint": "#0061a4",
+                    "tertiary-fixed-dim": "#78dc77",
+                    "on-primary-fixed": "#001d36",
+                    "on-error-container": "#93000a",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#2196f3",
+                    "error": "#ba1a1a",
+                    "primary": "#0061a4",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#1a1c17",
+                    "on-secondary-fixed": "#2c1600",
+                    "on-background": "#1a1c17",
+                    "inverse-surface": "#2f312b",
+                    "on-secondary-fixed-variant": "#693c00",
+                    "tertiary": "#006e1c",
+                    "on-primary-container": "#002c4f",
+                    "inverse-on-surface": "#f1f1e8",
+                    "primary-fixed-dim": "#9ecaff",
+                    "surface-dim": "#dadbd2",
+                    "secondary": "#8b5000",
+                    "on-tertiary-fixed": "#002204",
+                    "tertiary-fixed": "#94f990",
+                    "surface-variant": "#e3e3da",
+                    "surface-container-highest": "#e3e3da",
+                    "secondary-fixed-dim": "#ffb870",
+                    "background": "#fafaf1",
+                    "outline": "#707883",
+                    "surface-container-high": "#e8e9e0",
+                    "surface-container": "#eeeee6",
+                    "tertiary-container": "#42a547"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Public Sans"],
+                    "label": ["Public Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-pill { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-[#fafaf1] dark:bg-stone-950 flex justify-between items-center w-full px-6 h-20 top-0 z-50">
+<div class="flex items-center gap-4">
+<span class="font-lexend text-2xl leading-tight font-bold text-[#1a1c17] dark:text-stone-100">Clarion Care</span>
+</div>
+<div class="flex items-center">
+<button class="p-2 rounded-full hover:bg-stone-200 dark:hover:bg-stone-800 transition-all active:scale-95">
+<span class="material-symbols-outlined text-3xl" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="flex-1 w-full px-6 py-8 flex flex-col gap-8 pb-32">
+<!-- Header Section -->
+<section class="space-y-3">
+<h1 class="font-headline font-black text-4xl text-on-surface tracking-tight">Check-in Médico</h1>
+<p class="text-on-surface-variant font-headline text-xl leading-snug">Por favor, introduce tus constantes actuales para continuar con tu plan diario.</p>
+</section>
+<!-- Entry Cards (Mobile-focused layout) -->
+<div class="flex flex-col gap-6">
+<!-- Temperature Card -->
+<div class="bg-surface-container-highest rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-2 bg-secondary-container"></div>
+<div class="flex items-center justify-between">
+<span class="font-headline font-bold text-2xl uppercase tracking-tight">TEMPERATURA</span>
+<span class="material-symbols-outlined text-secondary-container text-4xl" data-icon="thermostat">thermostat</span>
+</div>
+<div class="flex flex-col gap-4">
+<div class="relative">
+<input class="w-full h-28 bg-surface-container-low border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-secondary-container transition-all text-on-surface" placeholder="36.5" step="0.1" type="number"/>
+<span class="absolute right-6 top-1/2 -translate-y-1/2 font-headline font-bold text-3xl text-on-surface-variant">°C</span>
+</div>
+</div>
+<!-- Alert State -->
+<div class="bg-error-container text-on-error-container p-4 rounded-xl flex items-center gap-3 border-2 border-error">
+<span class="material-symbols-outlined text-2xl" data-icon="error" style="font-variation-settings: 'FILL' 1;">error</span>
+<span class="font-headline font-bold text-lg uppercase tracking-wide">Alerta: Posible Infección</span>
+</div>
+</div>
+<!-- Glucose Card -->
+<div class="bg-surface-container-highest rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-2 bg-primary-container"></div>
+<div class="flex items-center justify-between">
+<span class="font-headline font-bold text-2xl uppercase tracking-tight">GLUCOSA</span>
+<span class="material-symbols-outlined text-primary-container text-4xl" data-icon="glucose">glucose</span>
+</div>
+<div class="flex flex-col gap-4">
+<div class="relative">
+<input class="w-full h-28 bg-surface-container-low border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-primary-container transition-all text-on-surface" placeholder="110" type="number"/>
+<span class="absolute right-6 top-1/2 -translate-y-1/2 font-headline font-bold text-2xl text-on-surface-variant">mg/dL</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl">
+<p class="text-on-surface-variant font-medium text-base text-center">Utilizado para calcular tu dosis de Insulina Rápida</p>
+</div>
+</div>
+</div>
+<!-- Sync Information -->
+<div class="flex items-start gap-4 p-5 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-tertiary text-2xl shrink-0" data-icon="sync">sync</span>
+<p class="font-headline text-lg font-medium text-on-surface">
+                Valores sincronizados automáticamente con el <span class="font-bold text-tertiary">Dr. Martínez</span>
+</p>
+</div>
+</main>
+<!-- Fixed Bottom Action Button for Mobile -->
+<div class="fixed bottom-0 left-0 w-full p-6 bg-surface/80 backdrop-blur-md border-t border-outline-variant z-50">
+<button class="w-full min-h-[80px] bg-gradient-to-b from-tertiary to-tertiary-container text-on-tertiary font-headline font-black text-2xl rounded-xl shadow-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98]">
+<span>Guardar y Continuar</span>
+<span class="material-symbols-outlined text-3xl" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Profile Background Decoration -->
+<div class="fixed top-0 right-0 -z-10 opacity-10">
+<img alt="Medical theme background" class="w-[300px] h-[300px] object-cover rounded-bl-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnbM77TwNxXkmhOafW-BY6ec5AoHFyqFZvfEcIeoKl6nZsmcZcTm3pomaX0Rsh6DX2ToS1b4LpkDJLiy4aBR5DkMFcwjSoTVglvf2D7ABoSOAJ5G2HY5a1-WOGhCABtUTe0BovWlf6ztRNopI0tKgT8UwNBsl_YTVaA5cZvRCObpp4oomyQ5q7E59znxsYw8Ta435KZ_UkPvP8uyFU3o9RAO707ttN48L-Rz0oF29u6htrgVPrvcATCIZlw64QlkPC8e-muepcEyI"/>
+</div>
+</body></html>

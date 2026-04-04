@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;700;800;900&amp;family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#404752",
+                    "on-secondary-container": "#FFFFFF",
+                    "surface-container-low": "#E3F2FD",
+                    "primary-fixed": "#D1E4FF",
+                    "surface": "#F0F7FF",
+                    "outline-variant": "#BFC7D4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005313",
+                    "secondary-container": "#1565C0",
+                    "inverse-primary": "#9ecaff",
+                    "secondary-fixed": "#D1E4FF",
+                    "on-tertiary-container": "#003308",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#F0F7FF",
+                    "on-primary-fixed-variant": "#00497d",
+                    "surface-tint": "#0D47A1",
+                    "tertiary-fixed-dim": "#78dc77",
+                    "on-primary-fixed": "#001d36",
+                    "on-error-container": "#93000a",
+                    "error-container": "#FFDAD6",
+                    "primary-container": "#1976D2",
+                    "error": "#BA1A1A",
+                    "primary": "#0D47A1",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#001D36",
+                    "on-secondary-fixed": "#001D36",
+                    "on-background": "#001D36",
+                    "inverse-surface": "#2F312B",
+                    "on-secondary-fixed-variant": "#00497D",
+                    "tertiary": "#006E1C",
+                    "on-primary-container": "#FFFFFF",
+                    "inverse-on-surface": "#F1F1E8",
+                    "primary-fixed-dim": "#9ecaff",
+                    "surface-dim": "#DADBD2",
+                    "secondary": "#1565C0",
+                    "on-tertiary-fixed": "#002204",
+                    "tertiary-fixed": "#94F990",
+                    "surface-variant": "#D1E4FF",
+                    "surface-container-highest": "#D1E4FF",
+                    "secondary-fixed-dim": "#9ECAFF",
+                    "background": "#F0F7FF",
+                    "outline": "#707883",
+                    "surface-container-high": "#BBDEFB",
+                    "surface-container": "#E3F2FD",
+                    "tertiary-container": "#4CAF50"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Public Sans"],
+                    "label": ["Public Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-pill-glow {
+            box-shadow: 0 10px 30px rgba(13, 71, 161, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen pb-24">
+<!-- TopNavBar (Mobile Simplified) -->
+<nav class="bg-surface sticky top-0 z-50 flex items-center justify-between px-6 h-20 border-b border-primary-container/10">
+<div class="flex items-center gap-2">
+<span class="font-headline text-2xl font-black text-primary">Clarion Care</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-3xl p-2 text-primary">account_circle</button>
+</div>
+</nav>
+<main class="p-4 space-y-6">
+<!-- Context Header (Mobile Focused) -->
+<div class="flex items-center justify-between bg-primary text-white p-6 rounded-3xl shadow-lg">
+<div class="flex-1">
+<h1 class="font-headline text-3xl font-extrabold tracking-tight">Buenas noches</h1>
+<p class="text-blue-100 font-medium">Hora de tu medicación</p>
+</div>
+<div class="ml-4">
+<img alt="Night moon" class="w-20 h-20 rounded-full object-cover border-4 border-blue-400/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCUCS6nARVj4kWttsT3X3VtdpDRKthhVsx8MfI2bB5I3vwlQlNwPNUDIZf36H5So8Lhuo_1aSzxMdNRA2GewvHO5SMf1hyCw_-dvrAhvMh3sWyQy1b2oo-GiiceLb9E8yBvHpiZbMfnAhETZgdLO_qIyOczwGlt2eEEDWLAfzo25WaCWc7BlY-EcrR21IpQ9s_qA_1e72HunaBoRJ6FvkYqneuvM1UbKQ8AcGTknVOy-auzKOULqnbfVTnfxMTK3zZQyQXM3xIDPs"/>
+</div>
+</div>
+<!-- 1. Omeprazol Section (Mobile Priority) -->
+<section class="bg-surface-container rounded-3xl p-6 border-l-[8px] border-primary-container active-pill-glow">
+<div class="flex flex-col gap-4">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="bg-primary-container text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Pre-Cena</span>
+<span class="bg-white/50 text-primary text-xs font-bold px-3 py-1 rounded-full">Visible solo por 30 días</span>
+</div>
+<h3 class="font-headline text-[28px] font-bold text-on-surface leading-tight">Omeprazol 20mg</h3>
+<p class="text-lg text-on-surface-variant mt-1">30 min antes de cenar.</p>
+</div>
+<!-- Timer Preview -->
+<div class="p-4 bg-primary/5 rounded-2xl flex items-center gap-4 border border-primary/10">
+<div class="relative w-12 h-12 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-white" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-primary" cx="24" cy="24" fill="transparent" r="20" stroke-dasharray="125" stroke-dashoffset="30" stroke-width="4"></circle>
+</svg>
+<span class="material-symbols-outlined text-primary text-xl">timer</span>
+</div>
+<p class="text-sm font-bold text-primary">Cronómetro listo</p>
+</div>
+<button class="w-full min-h-[80px] rounded-2xl bg-primary text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-4 px-6">
+<span class="material-symbols-outlined text-3xl">check_circle</span>
+<span class="font-headline text-xl font-bold">Tomar Omeprazol</span>
+</button>
+</div>
+</section>
+<!-- 2. Records/Alerts (High Visibility) -->
+<section class="bg-error-container/20 rounded-3xl p-6 border-l-[8px] border-error">
+<div class="flex items-center gap-3 mb-4 text-error">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">warning</span>
+<h3 class="font-headline text-xl font-bold">Importante hoy</h3>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-error-container/30">
+<div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-2xl">layers</span>
+</div>
+<div>
+<p class="font-bold text-lg text-on-surface">Parche Morfina</p>
+<p class="text-sm text-on-surface-variant">Toca cambio hoy</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Medication List (Kreon) -->
+<section class="space-y-4">
+<h2 class="font-headline text-2xl font-bold px-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">restaurant</span>
+                Durante la Cena
+            </h2>
+<div class="bg-surface-container rounded-3xl p-6 border-l-[8px] border-tertiary-container shadow-sm space-y-6">
+<div class="flex items-start gap-4">
+<img alt="Kreon capsules" class="w-24 h-24 object-cover rounded-2xl shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGwQpXHkwib7a1zDL235jvESA0q--n0KBXhFKJ5w93wO06dAfFcCIjEBgFi7I0zdV86mc-mwYYkn5kD5HTK_Fy-IpQPuFthW3utah6DvUc6OeLhuCmm5PqWwIai54_Udr03R8d3XNAQ0Qr_6ut6etO0vSJ1OH9NeXX3C04GpQLzgzWkkzTuMYIP4dlXCZpXCIRh0k-aAcPig_0tYw3hbCnkaXtwVxLh4PHtkFz8-c0SmoezZ-Wkz37wsEA9vHmjjVj6lTVtf_gnjo"/>
+<div>
+<h3 class="font-headline text-[28px] font-bold text-on-surface leading-none">Kreon 35000</h3>
+<p class="text-[28px] text-tertiary font-black mt-2">2 Cápsulas</p>
+</div>
+</div>
+<div class="space-y-2">
+<div class="bg-white p-4 rounded-2xl flex items-center gap-3 border border-tertiary-container/10">
+<span class="material-symbols-outlined text-tertiary">info</span>
+<span class="font-bold text-on-surface">Con el primer bocado</span>
+</div>
+</div>
+<button class="w-full min-h-[80px] rounded-2xl bg-tertiary text-white shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-4 px-6">
+<span class="material-symbols-outlined text-3xl">done_all</span>
+<span class="font-headline text-xl font-bold text-white">Confirmar toma</span>
+</button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-8 bg-on-surface text-white h-20 shadow-2xl">
+<div class="flex flex-col items-center gap-1 text-primary-fixed">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">nightlight</span>
+<span class="text-[10px] font-bold uppercase">Noche</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined text-3xl">medical_services</span>
+<span class="text-[10px] font-bold uppercase">SOS</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-2 bg-white/10 rounded-full">
+<span class="material-symbols-outlined text-xl animate-pulse text-blue-300">sync</span>
+<span class="font-headline text-sm font-medium">Sincronizado</span>
+</div>
+</footer>
+</body></html>

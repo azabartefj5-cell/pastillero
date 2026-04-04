@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>The Guardian - Pastillero Inteligente</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;900&amp;family=Public+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#404752",
+                    "surface-tint": "#0061a4",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "background": "#fafaf1",
+                    "on-background": "#1a1c17",
+                    "surface-bright": "#fafaf1",
+                    "inverse-on-surface": "#f1f1e8",
+                    "secondary-fixed-dim": "#ffb870",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-container": "#003308",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#e3e3da",
+                    "outline-variant": "#bfc7d4",
+                    "inverse-primary": "#9ecaff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f4f4eb",
+                    "on-surface": "#1a1c17",
+                    "surface-container-high": "#e8e9e0",
+                    "primary-fixed-dim": "#9ecaff",
+                    "on-primary-fixed-variant": "#00497d",
+                    "on-secondary-fixed": "#2c1600",
+                    "outline": "#707883",
+                    "on-secondary-container": "#653900",
+                    "inverse-surface": "#2f312b",
+                    "tertiary-fixed-dim": "#78dc77",
+                    "secondary-fixed": "#ffdcbe",
+                    "on-primary-fixed": "#001d36",
+                    "on-primary-container": "#002c4f",
+                    "primary-fixed": "#d1e4ff",
+                    "tertiary": "#006e1c",
+                    "secondary": "#8b5000",
+                    "secondary-container": "#ff9800",
+                    "surface-dim": "#dadbd2",
+                    "primary-container": "#2196f3",
+                    "primary": "#0061a4",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#005313",
+                    "on-secondary-fixed-variant": "#693c00",
+                    "tertiary-fixed": "#94f990",
+                    "on-tertiary-fixed": "#002204",
+                    "surface-container": "#eeeee6",
+                    "tertiary-container": "#42a547",
+                    "surface-variant": "#e3e3da",
+                    "surface": "#fafaf1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Lexend"],
+                    "body": ["Public Sans"],
+                    "label": ["Public Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 2rem;
+        }
+        body { font-family: 'Public Sans', sans-serif; }
+        h1, h2, h3, .font-lexend { font-family: 'Lexend', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="w-full top-0 sticky bg-stone-50 dark:bg-stone-950 z-50">
+<div class="flex justify-between items-center px-6 py-4 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">medication</span>
+<h1 class="font-lexend font-bold text-2xl tracking-tight text-stone-900 dark:text-stone-50">The Guardian</h1>
+</div>
+<div class="h-12 w-12 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="Usuario" class="w-full h-full object-cover" data-alt="portrait of a kind elderly person with soft lighting and a warm welcoming smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDScxmy6oS67yVGYv_FzczPMnBVtBquxKuVrdqlDFvEorCEuIQHLnhYeQlsIyA8B35MxXlZFZwmL1BBSWvvtbnQdV6PQBPKPUCoYv9dndgDfTajmm6kD31MWp6VGmv6clS9xXMjX96fs5nABCYQTMo-JhLM92csghlGhtaS0hLJVPnNJvYCt_EE883YjrM3dp0hL29_RqrleV6YaY_wVWMWKalEr6Rvq28NeCXnHXryOddaRJTNa2DBNslqn8ZN3QDAO9U_qs2L9UU"/>
+</div>
+</div>
+</header>
+<main class="max-w-md mx-auto px-4 pt-4">
+<!-- Screen: Check-in (Vital Signs) -->
+<section class="space-y-6" id="check-in">
+<div class="flex flex-col gap-2">
+<h2 class="text-display-lg font-lexend font-black text-4xl leading-tight">Buenos días, Juan.</h2>
+<p class="text-title-lg text-on-surface-variant font-medium">Antes de empezar, necesitamos tus datos.</p>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<!-- Glucose Card -->
+<div class="bg-surface-container-high rounded-[2rem] p-6 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-3 bg-secondary-container"></div>
+<div class="flex justify-between items-center mb-4">
+<span class="font-lexend font-bold text-xl">Glucosa</span>
+<span class="material-symbols-outlined text-secondary">bloodtype</span>
+</div>
+<div class="flex items-baseline gap-2 mb-4">
+<span class="text-5xl font-black font-lexend">--</span>
+<span class="text-xl font-bold text-on-surface-variant">mg/dL</span>
+</div>
+<button class="w-full h-20 bg-surface-variant rounded-xl font-lexend font-bold text-xl flex items-center justify-center gap-3 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                        MEDIR AHORA
+                    </button>
+</div>
+<!-- Temperature Card -->
+<div class="bg-surface-container-high rounded-[2rem] p-6 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-3 bg-primary-container"></div>
+<div class="flex justify-between items-center mb-4">
+<span class="font-lexend font-bold text-xl">Temperatura</span>
+<span class="material-symbols-outlined text-primary">device_thermostat</span>
+</div>
+<div class="flex items-baseline gap-2 mb-4">
+<span class="text-5xl font-black font-lexend">36.5</span>
+<span class="text-xl font-bold text-on-surface-variant">°C</span>
+</div>
+<button class="w-full h-20 bg-primary text-on-primary rounded-xl font-lexend font-bold text-xl flex items-center justify-center gap-3 active:scale-95 transition-all">
+<span class="material-symbols-outlined">check_circle</span>
+                        GUARDADO
+                    </button>
+</div>
+</div>
+<!-- Protocol: Omeprazol Notice -->
+<div class="bg-error-container text-on-error-container p-6 rounded-[2rem] flex gap-4 items-center">
+<span class="material-symbols-outlined text-4xl">warning</span>
+<p class="font-lexend font-bold text-lg">Recuerda: Toma el Omeprazol 30 min antes de desayunar.</p>
+</div>
+</section>
+<!-- Section Spacer -->
+<div class="h-12"></div>
+<!-- Dashboard 'Hoy': Temporal Phases -->
+<section class="space-y-8" id="dashboard-hoy">
+<header class="flex justify-between items-end">
+<div>
+<h2 class="text-headline-lg font-lexend font-black text-3xl">Tu Planificación</h2>
+<p class="text-title-lg text-on-surface-variant">Lunes, 15 de Mayo</p>
+</div>
+<div class="bg-tertiary-container text-on-tertiary-container px-4 py-2 rounded-full font-bold text-sm">
+                    40% COMPLETADO
+                </div>
+</header>
+<!-- Morning Phase (Active) -->
+<div class="space-y-4">
+<h3 class="font-lexend font-bold text-2xl flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary-container"></span>
+                    Mañana
+                </h3>
+<!-- Medication Card: Omeprazol -->
+<div class="bg-surface-container-highest rounded-[2.5rem] p-8 shadow-sm relative overflow-hidden ring-4 ring-secondary-container/20">
+<div class="absolute right-6 top-6">
+<span class="material-symbols-outlined text-secondary text-4xl">schedule</span>
+</div>
+<div class="mb-6">
+<h4 class="text-headline-lg font-lexend font-black text-3xl mb-1">Omeprazol</h4>
+<p class="text-xl font-bold text-on-surface-variant">1 Cápsula • Antes de desayunar</p>
+</div>
+<div class="flex flex-col gap-4">
+<button class="w-full h-24 bg-gradient-to-b from-primary to-primary-container text-on-primary rounded-[1.5rem] font-lexend font-black text-2xl flex items-center justify-center gap-4 active:scale-[0.98] transition-all shadow-lg">
+<span class="material-symbols-outlined text-4xl">check_circle</span>
+                            CONFIRMAR TOMA
+                        </button>
+<p class="text-center text-on-surface-variant font-bold text-lg">Día 12 de 30</p>
+</div>
+</div>
+<!-- Medication Card: Kreon (Dose 2-2-3-2) -->
+<div class="bg-surface-container-low rounded-[2.5rem] p-8 opacity-60">
+<div class="mb-4">
+<h4 class="text-headline-lg font-lexend font-black text-2xl">Kreon 35000</h4>
+<p class="text-lg font-bold text-on-surface-variant">2 Cápsulas • Con el desayuno</p>
+</div>
+<div class="flex items-center gap-2 text-error font-bold">
+<span class="material-symbols-outlined">lock</span>
+<span>Esperar a Omeprazol (30 min)</span>
+</div>
+</div>
+</div>
+<!-- Rest of Phases (Locked/Future) -->
+<div class="grid grid-cols-1 gap-4">
+<div class="bg-surface-container-low rounded-[2rem] p-6 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-container">restaurant</span>
+</div>
+<div>
+<p class="font-lexend font-bold text-xl">Comida</p>
+<p class="text-on-surface-variant">2 Kreon + Trangorex</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+<div class="bg-surface-container-low rounded-[2rem] p-6 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-fixed">bakery_dining</span>
+</div>
+<div>
+<p class="font-lexend font-bold text-xl">Merienda</p>
+<p class="text-on-surface-variant">3 Kreon</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+<div class="bg-surface-container-low rounded-[2rem] p-6 flex justify-between items-center">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-2xl bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">dark_mode</span>
+</div>
+<div>
+<p class="font-lexend font-bold text-xl">Noche</p>
+<p class="text-on-surface-variant">2 Kreon</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- SOS Section -->
+<section class="hidden space-y-8 pt-6" id="sos">
+<div class="text-center space-y-2">
+<h2 class="text-4xl font-lexend font-black text-error">Centro de Ayuda</h2>
+<p class="text-xl font-medium">¿Qué necesitas, Juan?</p>
+</div>
+<div class="grid grid-cols-1 gap-6">
+<!-- Critical SOS -->
+<button class="w-full bg-error text-on-error rounded-[2.5rem] py-12 px-8 flex flex-col items-center gap-4 shadow-xl active:scale-95 transition-all">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">emergency</span>
+<span class="font-lexend font-black text-4xl">BOTÓN S.O.S.</span>
+<span class="text-lg opacity-90">Llamada inmediata a emergencias</span>
+</button>
+<!-- Fortasec Control -->
+<div class="bg-surface-container-highest rounded-[2.5rem] p-8 border-4 border-primary-container/30">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h3 class="text-2xl font-lexend font-black">Fortasec</h3>
+<p class="text-lg font-bold text-on-surface-variant">Solo en caso de diarrea</p>
+</div>
+<div class="bg-primary-container text-on-primary-container w-16 h-16 rounded-full flex items-center justify-center font-black text-2xl">
+                            2/8
+                        </div>
+</div>
+<button class="w-full h-24 bg-surface-variant rounded-[1.5rem] font-lexend font-black text-2xl flex items-center justify-center gap-4 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-4xl">add</span>
+                        REGISTRAR TOMA
+                    </button>
+<p class="mt-4 text-center font-bold text-error">Máximo 8 cápsulas al día</p>
+</div>
+</div>
+</section>
+<!-- History Section -->
+<section class="hidden space-y-6 pt-6" id="historial">
+<h2 class="text-3xl font-lexend font-black">Historial Semanal</h2>
+<div class="bg-surface-container-low rounded-[2rem] p-6">
+<div class="flex justify-around items-end h-40 gap-2">
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 bg-tertiary-container rounded-t-lg h-[80%]"></div>
+<span class="font-bold">L</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 bg-tertiary-container rounded-t-lg h-[95%]"></div>
+<span class="font-bold">M</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 bg-tertiary-container rounded-t-lg h-[40%]"></div>
+<span class="font-bold">X</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 bg-tertiary-container rounded-t-lg h-[100%]"></div>
+<span class="font-bold text-primary">J</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 bg-surface-container-highest rounded-t-lg h-[0%]"></div>
+<span class="font-bold">V</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="bg-surface-container-high rounded-2xl p-4 flex gap-4 items-center">
+<div class="w-14 h-14 bg-white rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+</div>
+<div>
+<p class="font-bold text-xl">Ayer, 20:30</p>
+<p class="text-on-surface-variant">Noche: Todas las tomas realizadas</p>
+</div>
+</div>
+<div class="bg-surface-container-high rounded-2xl p-4 flex gap-4 items-center">
+<div class="w-14 h-14 bg-white rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-error">error</span>
+</div>
+<div>
+<p class="font-bold text-xl">Ayer, 14:15</p>
+<p class="text-on-surface-variant">Comida: Olvido de Kreon</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-4 pb-8 bg-stone-50 dark:bg-stone-950 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] rounded-t-3xl border-t-0">
+<!-- Active Tab: Hoy -->
+<a class="flex flex-col items-center justify-center bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-100 rounded-2xl px-6 py-3 scale-95 active:scale-90 transition-all" href="#dashboard-hoy">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">today</span>
+<span class="font-lexend font-medium text-lg">Hoy</span>
+</a>
+<!-- Tab: SOS -->
+<a class="flex flex-col items-center justify-center text-stone-600 dark:text-stone-400 px-6 py-3 hover:opacity-80 scale-95 active:scale-90 transition-all" href="#sos">
+<span class="material-symbols-outlined">emergency</span>
+<span class="font-lexend font-medium text-lg">SOS</span>
+</a>
+<!-- Tab: Historial -->
+<a class="flex flex-col items-center justify-center text-stone-600 dark:text-stone-400 px-6 py-3 hover:opacity-80 scale-95 active:scale-90 transition-all" href="#historial">
+<span class="material-symbols-outlined">history</span>
+<span class="font-lexend font-medium text-lg">Historial</span>
+</a>
+</nav>
+<!-- Contextual FAB (Only for Main Dashboard) -->
+<button class="fixed bottom-32 right-6 w-20 h-20 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-all z-40">
+<span class="material-symbols-outlined text-4xl">add</span>
+</button>
+<!-- Script Simulation for SPA Behavior -->
+<script>
+        // Simple navigation logic for the prototype
+        const navLinks = document.querySelectorAll('nav a');
+        const sections = document.querySelectorAll('main section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                
+                sections.forEach(section => {
+                    section.classList.add('hidden');
+                });
+                document.getElementById(targetId).classList.remove('hidden');
+
+                // Update active styles
+                navLinks.forEach(l => {
+                    l.className = "flex flex-col items-center justify-center text-stone-600 dark:text-stone-400 px-6 py-3 hover:opacity-80 scale-95 active:scale-90 transition-all";
+                });
+                link.className = "flex flex-col items-center justify-center bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-100 rounded-2xl px-6 py-3 scale-95 active:scale-90 transition-all";
+            });
+        });
+    </script>
+</body></html>
