@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" href="icons/icon-192.png"/>
 <link rel="apple-touch-icon" href="icons/icon-192.png"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
@@ -68,6 +69,8 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 .panic-overlay.hidden{display:none}
 @keyframes shakeX{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .shake{animation:shakeX 0.3s ease 3}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.animate-spin{animation:spin 1s linear infinite}
 </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen pb-32">
@@ -148,6 +151,57 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       <p class="text-on-surface-variant font-medium" id="hoy-date"></p>
     </div>
   </header>
+
+  <!-- ───── REGISTRO RÁPIDO DE CONSTANTES ───── -->
+  <div class="bg-gradient-to-r from-tertiary-container/30 to-primary-container/30 rounded-3xl p-4 border border-tertiary/20">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-tertiary text-2xl icon-fill">monitor_heart</span>
+        <h3 class="font-headline font-bold text-lg">Constantes Vitales</h3>
+      </div>
+      <button id="btn-toggle-constantes" class="text-sm text-primary font-bold flex items-center gap-1 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-lg">add_circle</span>Nueva
+      </button>
+    </div>
+
+    <!-- Quick input form (collapsible) -->
+    <div id="constantes-quick-form" class="hidden space-y-3 mt-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-surface-container-low rounded-xl p-3">
+          <label class="text-xs text-on-surface-variant font-medium">Temperatura</label>
+          <div class="flex items-center gap-1 mt-1">
+            <input id="quick-temp" type="number" step="0.1" placeholder="36.5" class="w-full h-12 bg-surface-variant rounded-lg text-center font-headline font-bold text-xl text-on-surface outline-none focus:ring-2 focus:ring-secondary"/>
+            <span class="text-on-surface-variant font-bold">°C</span>
+          </div>
+        </div>
+        <div class="bg-surface-container-low rounded-xl p-3">
+          <label class="text-xs text-on-surface-variant font-medium">Glucosa</label>
+          <div class="flex items-center gap-1 mt-1">
+            <input id="quick-glucose" type="number" placeholder="110" class="w-full h-12 bg-surface-variant rounded-lg text-center font-headline font-bold text-xl text-on-surface outline-none focus:ring-2 focus:ring-primary"/>
+            <span class="text-on-surface-variant font-bold text-sm">mg/dL</span>
+          </div>
+        </div>
+      </div>
+      <button id="btn-save-constantes" class="w-full h-14 bg-gradient-to-r from-tertiary to-tertiary-container text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-md">
+        <span class="material-symbols-outlined">save</span>Guardar Constantes
+      </button>
+    </div>
+
+    <!-- Last readings display -->
+    <div id="last-constantes" class="flex gap-4 text-sm">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-secondary text-lg">thermostat</span>
+        <span class="font-bold" id="last-temp">--</span>
+        <span class="text-on-surface-variant">°C</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-primary text-lg">bloodtype</span>
+        <span class="font-bold" id="last-glucose">--</span>
+        <span class="text-on-surface-variant">mg/dL</span>
+      </div>
+      <span class="text-on-surface-variant text-xs ml-auto" id="last-constantes-time">--</span>
+    </div>
+  </div>
 
   <!-- ───── DESAYUNO (Amarillo / Mañana) ───── -->
   <div class="space-y-4">
@@ -318,15 +372,62 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
           <span class="material-symbols-outlined text-3xl">check</span>
         </button>
       </div>
+      
+      <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2 mt-4">Antes de dormir</h4>
+      <div class="bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-primary-container flex items-center justify-between gap-2 shadow-sm" data-med="mirtazapina_noche">
+        <div class="flex items-center gap-4">
+          <div class="bg-primary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">bedtime</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Mirtazapina 15mg</h4><p class="text-base text-primary font-bold mt-1">1 Comprimido</p></div>
+        </div>
+        <button id="btn-mirtazapina" class="btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
+          <span class="material-symbols-outlined text-3xl">check</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- ───── RECORDATORIOS ESPECIALES ───── -->
-  <div class="bg-surface-container-highest rounded-3xl p-5 border-l-[8px] border-error">
-    <div class="flex items-center gap-3 mb-3 text-error"><span class="material-symbols-outlined text-3xl icon-fill">event</span><h3 class="font-headline text-xl font-bold">Recordatorios Periódicos</h3></div>
-    <div class="space-y-3">
-      <div class="flex items-center gap-3 bg-white/50 p-4 rounded-xl"><div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center"><span class="material-symbols-outlined text-xl">layers</span></div><div><p class="font-bold text-base">Parche de Morfina</p><p class="text-on-surface-variant text-sm">Cada 3 días — comprobar fecha</p></div></div>
-      <div class="flex items-center gap-3 bg-white/50 p-4 rounded-xl"><div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary"><span class="material-symbols-outlined text-xl">calendar_month</span></div><div><p class="font-bold text-base">Hidroferol</p><p class="text-on-surface-variant text-sm">Cada 15 días</p></div></div>
+  <!-- ───── RECORDATORIOS ESPECIALES (INTERACTIVOS) ───── -->
+  <div class="bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-tertiary shadow-sm">
+    <div class="flex items-center gap-3 mb-4 text-tertiary">
+      <span class="material-symbols-outlined text-3xl icon-fill">event_available</span>
+      <h3 class="font-headline text-xl font-bold text-on-surface">Mantenimiento y Especiales</h3>
+    </div>
+    <div class="space-y-4">
+      <!-- PARCHE MORFINA (3 días) -->
+      <div id="ui-morfina" class="p-4 rounded-2xl border-2 border-surface-variant/50 transition-colors bg-white/40">
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-error-container text-on-error-container flex items-center justify-center">
+              <span class="material-symbols-outlined icon-fill">layers</span>
+            </div>
+            <div>
+              <p class="font-bold text-lg font-headline">Parche de Morfina</p>
+              <p class="text-sm font-medium" id="morfina-status-text">Calculando próxima fecha...</p>
+            </div>
+          </div>
+        </div>
+        <button id="btn-morfina" class="w-full h-12 bg-white rounded-xl border border-outline-variant font-bold text-sm text-on-surface-variant flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-xl">touch_app</span> REGISTRAR CAMBIO HOY
+        </button>
+      </div>
+
+      <!-- HIDROFEROL (15 días) -->
+      <div id="ui-hidroferol" class="p-4 rounded-2xl border-2 border-surface-variant/50 transition-colors bg-white/40">
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+              <span class="material-symbols-outlined icon-fill">calendar_month</span>
+            </div>
+            <div>
+              <p class="font-bold text-lg font-headline">Hidroferol</p>
+              <p class="text-sm font-medium" id="hidroferol-status-text">Calculando próxima fecha...</p>
+            </div>
+          </div>
+        </div>
+        <button id="btn-hidroferol" class="w-full h-12 bg-white rounded-xl border border-outline-variant font-bold text-sm text-on-surface-variant flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-xl">touch_app</span> REGISTRAR TOMA HOY
+        </button>
+      </div>
     </div>
   </div>
 </section>
@@ -398,18 +499,107 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
   </div>
   <!-- Firebase config is hardcoded, hidden textarea for internal use -->
   <textarea id="firebase-config-input" class="hidden"></textarea>
-  <!-- Vital Signs History -->
-  <div>
-    <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-tertiary text-2xl">monitoring</span><h2 class="font-headline text-xl font-bold">Constantes Vitales</h2></div>
-    <div class="bg-surface-container-low rounded-3xl overflow-hidden text-sm">
-      <table class="w-full text-left"><thead class="bg-surface-container-high"><tr><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Fecha</th><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Glucosa</th><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Temp</th></tr></thead>
-      <tbody id="table-constantes" class="divide-y divide-outline-variant/10"></tbody></table>
+
+  <!-- RESET BUTTON -->
+  <button id="btn-reset-day" class="w-full p-4 rounded-3xl bg-error-container text-on-error-container flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-sm border-2 border-error/30">
+    <span class="material-symbols-outlined text-3xl">restart_alt</span>
+    <div class="text-left">
+      <p class="font-headline font-bold text-lg">Resetear Día</p>
+      <p class="text-sm opacity-80">Borrar todas las tomas registradas hoy</p>
+    </div>
+  </button>
+
+  <!-- TABS: Lista / Gráficos -->
+  <div class="flex gap-2 bg-surface-container-highest rounded-2xl p-1">
+    <button id="tab-historial-lista" class="flex-1 py-3 px-4 rounded-xl font-headline font-bold text-sm transition-all bg-primary text-white">Lista</button>
+    <button id="tab-historial-graficos" class="flex-1 py-3 px-4 rounded-xl font-headline font-bold text-sm transition-all text-on-surface-variant">Gráficos</button>
+  </div>
+
+  <!-- VISTA: LISTA -->
+  <div id="view-historial-lista">
+    <!-- Vital Signs History -->
+    <div>
+      <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-tertiary text-2xl">monitoring</span><h2 class="font-headline text-xl font-bold">Constantes Vitales</h2></div>
+      <div class="bg-surface-container-low rounded-3xl overflow-hidden text-sm">
+        <table class="w-full text-left"><thead class="bg-surface-container-high"><tr><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Fecha</th><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Glucosa</th><th class="p-3 font-headline text-xs font-black uppercase text-on-surface-variant">Temp</th></tr></thead>
+          <tbody id="table-constantes" class="divide-y divide-outline-variant/10"></tbody></table>
+      </div>
+    </div>
+
+    <!-- Medication History by Day -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-2xl">event_note</span><h2 class="font-headline text-xl font-bold">Historial de Tomas</h2></div>
+        <button id="btn-load-history" class="flex items-center gap-1 px-3 py-1.5 bg-primary-container/30 rounded-full text-primary text-sm font-bold active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-lg">sync</span>Sincronizar
+        </button>
+      </div>
+      <div id="history-loading" class="hidden p-8 text-center">
+        <span class="material-symbols-outlined text-4xl animate-spin text-primary">sync</span>
+        <p class="mt-2 text-on-surface-variant">Cargando historial de Firebase...</p>
+      </div>
+      <div id="history-empty" class="hidden p-6 text-center bg-surface-container-low rounded-3xl">
+        <span class="material-symbols-outlined text-5xl text-on-surface-variant">history</span>
+        <p class="mt-2 text-on-surface-variant">No hay registros en la nube</p>
+      </div>
+      <div id="history-by-day" class="space-y-4"></div>
     </div>
   </div>
-  <!-- Medication History -->
-  <div>
-    <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-primary text-2xl">event_note</span><h2 class="font-headline text-xl font-bold">Historial de Tomas</h2></div>
-    <div class="space-y-2" id="list-tomas"></div>
+
+  <!-- VISTA: GRÁFICOS -->
+  <div id="view-historial-graficos" class="hidden space-y-6">
+    <!-- Cumplimiento Semanal -->
+    <div class="bg-surface-container-highest rounded-3xl p-5">
+      <h3 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">bar_chart</span>
+        Cumplimiento Semanal
+      </h3>
+      <div class="h-48">
+        <canvas id="chart-weekly"></canvas>
+      </div>
+    </div>
+
+    <!-- Distribución por Medicamento -->
+    <div class="bg-surface-container-highest rounded-3xl p-5">
+      <h3 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-secondary">pie_chart</span>
+        Distribución por Medicamento
+      </h3>
+      <div class="h-56">
+        <canvas id="chart-meds"></canvas>
+      </div>
+    </div>
+
+    <!-- Constantes Vitales -->
+    <div class="bg-surface-container-highest rounded-3xl p-5">
+      <h3 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-tertiary">monitor_heart</span>
+        Constantes Vitales (Últimos 7 días)
+      </h3>
+      <div class="h-48">
+        <canvas id="chart-vitals"></canvas>
+      </div>
+    </div>
+
+    <!-- Estadísticas Resumen -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-primary-container/20 rounded-2xl p-4 text-center">
+        <p class="text-3xl font-black font-headline text-primary" id="stat-total-tomas">0</p>
+        <p class="text-xs text-on-surface-variant font-medium">Total Tomas</p>
+      </div>
+      <div class="bg-secondary-container/20 rounded-2xl p-4 text-center">
+        <p class="text-3xl font-black font-headline text-secondary" id="stat-dias-registrados">0</p>
+        <p class="text-xs text-on-surface-variant font-medium">Días Registrados</p>
+      </div>
+      <div class="bg-tertiary-container/20 rounded-2xl p-4 text-center">
+        <p class="text-3xl font-black font-headline text-tertiary" id="stat-cumplimiento">0%</p>
+        <p class="text-xs text-on-surface-variant font-medium">Cumplimiento</p>
+      </div>
+      <div class="bg-error-container/20 rounded-2xl p-4 text-center">
+        <p class="text-3xl font-black font-headline text-error" id="stat-alertas">0</p>
+        <p class="text-xs text-on-surface-variant font-medium">Alertas Pánico</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -427,6 +617,23 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       📞 LLAMAR A JAVIER
     </a>
     <button id="btn-close-panic" class="w-full h-14 bg-surface-variant rounded-xl font-headline font-bold text-lg active:scale-95 transition-all">Cerrar</button>
+  </div>
+</div>
+
+<!-- ═══════════ RESET DIALOG ═══════════ -->
+<div id="reset-overlay" class="panic-overlay hidden">
+  <div class="bg-white rounded-3xl p-8 mx-6 max-w-md w-full space-y-6">
+    <div class="text-center">
+      <span class="material-symbols-outlined text-error text-7xl icon-fill">restart_alt</span>
+      <h2 class="font-headline font-black text-2xl text-error mt-4">¿Resetear día?</h2>
+      <p class="text-on-surface-variant mt-2">Esto borrará todas las tomas registradas hoy. No se puede deshacer.</p>
+    </div>
+    <button id="btn-confirm-reset" class="w-full h-16 bg-error text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg">
+      <span class="material-symbols-outlined">delete_forever</span> SÍ, RESETEAR
+    </button>
+    <button id="btn-cancel-reset" class="w-full h-14 bg-surface-variant rounded-xl font-headline font-bold text-lg active:scale-95 transition-all">
+      Cancelar
+    </button>
   </div>
 </div>
 
@@ -453,7 +660,7 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 <!-- ═══════════ FIREBASE SDK ═══════════ -->
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getFirestore,doc,setDoc,getDoc,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,doc,setDoc,getDoc,getDocs,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ══════════════════════════════════════
 // FIREBASE CONFIG (HARDCODED)
@@ -537,6 +744,90 @@ function applyTrangorexRule() {
   const el = document.getElementById('card-trangorex-am');
   if (el) el.style.display = show ? '' : 'none';
 }
+
+// ══════════════════════════════════════
+// QUICK CONSTANTES (Anytime)
+// ══════════════════════════════════════
+function updateLastConstantes() {
+  const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
+  if (hist.length > 0) {
+    const last = hist[0];
+    document.getElementById('last-temp').textContent = last.temperatura;
+    document.getElementById('last-glucose').textContent = last.glucosa;
+    const time = new Date(last.timestamp || new Date()).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('last-constantes-time').textContent = time;
+  }
+}
+
+document.getElementById('btn-toggle-constantes')?.addEventListener('click', () => {
+  const form = document.getElementById('constantes-quick-form');
+  form.classList.toggle('hidden');
+});
+
+document.getElementById('btn-save-constantes')?.addEventListener('click', async () => {
+  const temp = parseFloat(document.getElementById('quick-temp').value);
+  const gluc = parseFloat(document.getElementById('quick-glucose').value);
+
+  if (isNaN(temp) || isNaN(gluc)) {
+    alert('Por favor, introduce ambos valores.');
+    return;
+  }
+
+  const now = new Date();
+  const timestamp = now.toISOString();
+  const period = PERIOD();
+  const data = {
+    glucosa: gluc,
+    temperatura: temp,
+    timestamp: timestamp,
+    periodo: period,
+    fecha: TODAY(),
+    hora: now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+  };
+
+  // Save to local history
+  const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
+  hist.unshift(data);
+  if (hist.length > 100) hist.length = 100;
+  localStorage.setItem('constantes_history', JSON.stringify(hist));
+
+  // Save to Firebase with timestamp key for multiple entries per day
+  if (APP.db) {
+    try {
+      const entryKey = `entry_${Date.now()}`;
+      await setDoc(doc(APP.db, 'constantes_pilar', TODAY()), {
+        [entryKey]: data
+      }, { merge: true });
+      console.log('✅ Constantes guardadas en Firebase');
+    } catch (e) {
+      console.warn('Error guardando constantes:', e);
+    }
+  }
+
+  // Update UI
+  updateLastConstantes();
+  renderConstantesHistory();
+
+  // Clear form and hide
+  document.getElementById('quick-temp').value = '';
+  document.getElementById('quick-glucose').value = '';
+  document.getElementById('constantes-quick-form').classList.add('hidden');
+
+  // Refresh history if loaded
+  if (HISTORY_DATA.loaded) {
+    loadFullHistory();
+  }
+
+  // Show confirmation
+  const btn = document.getElementById('btn-save-constantes');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Guardado ✓';
+  btn.classList.add('bg-tertiary');
+  setTimeout(() => {
+    btn.innerHTML = originalText;
+    btn.classList.remove('bg-tertiary');
+  }, 1500);
+});
 
 // ══════════════════════════════════════
 // CHECK-IN
@@ -677,24 +968,35 @@ async function saveMedToma(medId, periodo) {
 function markCardTakenUI(card, isoString) {
   if (!card) return;
   const timeStr = isoString ? new Date(isoString).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '';
-  // Make the entire card green and change border to a stronger green
-  card.classList.add('!bg-[#e6f4ea]', '!border-[#34a853]', 'shadow-none');
+  
+  // Make the entire card a vivid green and update border
+  card.classList.add('!bg-[#22c55e]', '!border-[#16a34a]', 'shadow-none');
+  
+  // Make all text elements white for contrast
+  card.querySelectorAll('h3, h4, p, span').forEach(el => {
+    el.classList.add('!text-white');
+  });
+  
+  // Soften icon bubbles inside the card
+  card.querySelectorAll('.rounded-full.p-3').forEach(el => {
+    el.classList.add('!bg-white/20');
+  });
+
   const btns = card.querySelectorAll('button');
   btns.forEach(btn => {
-    // Clear old colors and set to a soft green matching the card
+    // Reset positioning
     btn.className = 'absolute right-5 top-1/2 -translate-y-1/2';
-    btn.style.position = 'relative'; // Override if not absolute natively
+    btn.style.position = 'relative'; 
     btn.style.right = 'auto';
     btn.style.top = 'auto';
     btn.style.transform = 'none';
     
-    // For bigger buttons we preserve dimensions if needed, but the original ones are mostly h-14 w-14 or w-full.
     if(btn.classList.contains('btn-toma') || btn.id === 'btn-omeprazol-am' || btn.id === 'btn-omeprazol-pm') {
-      btn.className = 'w-full h-16 bg-[#cce8d5] rounded-xl flex items-center justify-center gap-2 transition-all font-headline font-bold text-lg text-[#1e8e3e] shadow-none';
-      btn.innerHTML = `<span class="material-symbols-outlined text-3xl icon-fill">task_alt</span> TOMADO A LAS ${timeStr}`;
+      btn.className = 'w-full h-16 bg-white/25 rounded-xl flex items-center justify-center gap-2 transition-all font-headline font-bold text-lg text-white shadow-none';
+      btn.innerHTML = `<span class="material-symbols-outlined text-3xl icon-fill !text-white">task_alt</span> TOMADO A LAS ${timeStr}`;
     } else {
-      btn.className = 'px-4 h-14 bg-[#cce8d5] rounded-xl flex items-center justify-center gap-2 transition-all font-headline font-bold text-[#1e8e3e] shadow-none min-w-[max-content]';
-      btn.innerHTML = `<span class="material-symbols-outlined text-2xl icon-fill">task_alt</span> ${timeStr}`;
+      btn.className = 'px-4 h-14 bg-white/25 rounded-xl flex items-center justify-center gap-2 transition-all font-headline font-bold text-white shadow-none min-w-[max-content]';
+      btn.innerHTML = `<span class="material-symbols-outlined text-2xl icon-fill !text-white">task_alt</span> ${timeStr}`;
     }
     
     btn.disabled = true;
@@ -728,6 +1030,12 @@ document.querySelectorAll('.btn-toma').forEach(btn => {
 document.getElementById('btn-kreon-noche').addEventListener('click', async () => {
   const ts = await saveMedToma('kreon_noche', 'noche');
   markCardTakenUI(document.getElementById('btn-kreon-noche').closest('[data-med]'), ts);
+});
+
+// Night meds (Mirtazapina)
+document.getElementById('btn-mirtazapina').addEventListener('click', async () => {
+  const ts = await saveMedToma('mirtazapina_noche', 'noche');
+  markCardTakenUI(document.getElementById('btn-mirtazapina').closest('[data-med]'), ts);
 });
 
 // Morning Insulina
@@ -801,6 +1109,85 @@ document.getElementById('btn-fortasec').addEventListener('click', () => {
 });
 
 // ══════════════════════════════════════
+// PERIODIC TASKS: MORFINA & HIDROFEROL
+// ══════════════════════════════════════
+function updatePeriodicUI() {
+  const getDaysDiff = (isoStr) => {
+    if (!isoStr) return null;
+    const past = new Date(isoStr);
+    const now = new Date();
+    // Normalizar a medianoche para contar solo el salto de días
+    past.setHours(0,0,0,0);
+    now.setHours(0,0,0,0);
+    return Math.floor((now - past) / (1000 * 60 * 60 * 24));
+  };
+
+  const updateCardUI = (id, lastDate, maxDays) => {
+    const ui = document.getElementById(`ui-${id}`);
+    const text = document.getElementById(`${id}-status-text`);
+    const btn = document.getElementById(`btn-${id}`);
+    
+    // Si no hay botón (failsafe)
+    if (!ui || !text || !btn) return;
+    
+    const diff = getDaysDiff(lastDate);
+
+    if (diff === null) {
+      text.textContent = 'Sin registros recientes.';
+      ui.className = 'p-4 rounded-2xl border-2 border-surface-variant/50 transition-colors bg-white/40';
+      return;
+    }
+
+    const daysLeft = maxDays - diff;
+    const formatter = new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short' });
+    const formattedDate = formatter.format(new Date(lastDate));
+
+    if (daysLeft > 0) {
+      text.innerHTML = `Faltan <strong>${daysLeft} días</strong> (Último: ${formattedDate})`;
+      ui.className = 'p-4 rounded-2xl border-2 border-secondary/30 transition-colors bg-secondary/5';
+      
+      // Checkmark for taken inside button
+      btn.innerHTML = `<span class="material-symbols-outlined text-xl">check</span> REGISTRADO EL ${formattedDate.toUpperCase()}`;
+      btn.classList.add('opacity-70', 'pointer-events-none');
+    } else if (daysLeft === 0) {
+      text.innerHTML = `<span class="text-error font-black">¡TOCA HOY!</span> (Último: ${formattedDate})`;
+      ui.className = 'p-4 rounded-2xl border-2 border-error/50 transition-colors bg-error/10';
+      
+      // Reset button to allow taking it
+      btn.innerHTML = `<span class="material-symbols-outlined text-xl">touch_app</span> REGISTRAR CAMBIO HOY`;
+      btn.classList.remove('opacity-70', 'pointer-events-none');
+    } else {
+      text.innerHTML = `<span class="text-error font-black">¡VENCIDO HACE ${Math.abs(daysLeft)} DÍAS!</span> (Último: ${formattedDate})`;
+      ui.className = 'p-4 rounded-2xl border-2 border-error transition-colors bg-error/10 shake';
+      
+      btn.innerHTML = `<span class="material-symbols-outlined text-xl">warning</span> REGISTRAR CAMBIO ATRASADO`;
+      btn.classList.remove('opacity-70', 'pointer-events-none');
+      btn.classList.add('bg-error-container', 'text-error', 'border-error');
+    }
+  };
+
+  updateCardUI('morfina', localStorage.getItem('last_morfina_date'), 3);
+  updateCardUI('hidroferol', localStorage.getItem('last_hidroferol_date'), 15);
+}
+
+async function markPeriodicTask(taskId) {
+  const ts = new Date().toISOString();
+  localStorage.setItem(`last_${taskId}_date`, ts);
+  updatePeriodicUI();
+  
+  if (APP.db) {
+    try {
+      await setDoc(doc(APP.db, 'tomas_pilar', 'historico_periodico'), {
+        [taskId]: ts
+      }, { merge: true });
+    } catch (e) { console.warn('Sync periodico fallido', e); }
+  }
+}
+
+document.getElementById('btn-morfina').addEventListener('click', () => markPeriodicTask('morfina'));
+document.getElementById('btn-hidroferol').addEventListener('click', () => markPeriodicTask('hidroferol'));
+
+// ══════════════════════════════════════
 // FIREBASE CONFIGURATION
 // ══════════════════════════════════════
 
@@ -817,18 +1204,45 @@ function connectFirebase(config) {
     document.getElementById('sync-indicator').classList.add('bg-green-100','text-green-700');
     // Start listeners
     startFirebaseListeners();
+    // Auto-load history on connect
+    loadFullHistory();
   } catch(e) { console.error('Firebase init error:', e); }
 }
 
 function startFirebaseListeners() {
   if (!APP.db) return;
+  
+  // Listen to periodic tasks
+  onSnapshot(doc(APP.db, 'tomas_pilar', 'historico_periodico'), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    let updated = false;
+    
+    if (data.morfina && data.morfina !== localStorage.getItem('last_morfina_date')) {
+      localStorage.setItem('last_morfina_date', data.morfina);
+      updated = true;
+    }
+    if (data.hidroferol && data.hidroferol !== localStorage.getItem('last_hidroferol_date')) {
+      localStorage.setItem('last_hidroferol_date', data.hidroferol);
+      updated = true;
+    }
+    if (updated) updatePeriodicUI();
+  });
   // Listen to today's tomas — SYNC BUTTON STATES FROM REMOTE CHANGES
   onSnapshot(doc(APP.db, 'tomas_pilar', TODAY()), (snap) => {
     if (!snap.exists()) return;
     const data = snap.data();
+
+    // Check if this is a reset marker - ignore it
+    if (data._reset) {
+      console.log('🔄 Reset marker detected, ignoring sync');
+      return;
+    }
+
     console.log('🔄 Tomas sync:', data);
     // Update each med button from remote state
     Object.keys(data).forEach(medId => {
+      if (medId.startsWith('_')) return; // Skip metadata fields
       if (data[medId]?.taken) {
         // Mark local storage so state persists
         const key = `med_${TODAY()}_${medId}`;
@@ -929,17 +1343,472 @@ document.getElementById('btn-close-panic').addEventListener('click', () => {
 function renderConstantesHistory() {
   const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
   const tbody = document.getElementById('table-constantes');
-  tbody.innerHTML = hist.slice(0, 10).map(h => `<tr><td class="p-3"><p class="font-bold text-xs">${h.fecha}</p><p class="text-[10px] text-on-surface-variant">${h.periodo}</p></td><td class="p-3"><span class="font-black">${h.glucosa}</span> <span class="text-[10px]">mg/dL</span></td><td class="p-3"><span class="font-black">${h.temperatura}</span> <span class="text-[10px]">°C</span></td></tr>`).join('');
+  if (tbody) tbody.innerHTML = hist.slice(0, 10).map(h => `<tr><td class="p-3"><p class="font-bold text-xs">${h.fecha}</p><p class="text-[10px] text-on-surface-variant">${h.periodo}</p></td><td class="p-3"><span class="font-black">${h.glucosa}</span> <span class="text-[10px]">mg/dL</span></td><td class="p-3"><span class="font-black">${h.temperatura}</span> <span class="text-[10px]">°C</span></td></tr>`).join('');
 }
 
 function renderTomasHistory() {
   const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
   const container = document.getElementById('list-tomas');
-  container.innerHTML = hist.slice(0, 15).map(h => {
-    const time = new Date(h.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    return `<div class="flex items-center bg-surface-container-high rounded-2xl p-3 gap-3"><div class="w-10 h-10 rounded-xl bg-secondary-container/20 flex items-center justify-center"><span class="material-symbols-outlined text-lg icon-fill">medication</span></div><div class="flex-1"><p class="font-headline font-bold text-sm">${h.med.replace(/_/g,' ')}</p><p class="text-on-surface-variant text-xs">${h.periodo} — ${h.fecha}</p></div><p class="font-headline text-sm font-bold text-primary">${time}</p></div>`;
+  if (container) {
+    container.innerHTML = hist.slice(0, 15).map(h => {
+      const time = new Date(h.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      return `<div class="flex items-center bg-surface-container-high rounded-2xl p-3 gap-3"><div class="w-10 h-10 rounded-xl bg-secondary-container/20 flex items-center justify-center"><span class="material-symbols-outlined text-lg icon-fill">medication</span></div><div class="flex-1"><p class="font-headline font-bold text-sm">${h.med.replace(/_/g,' ')}</p><p class="text-on-surface-variant text-xs">${h.periodo} — ${h.fecha}</p></div><p class="font-headline text-sm font-bold text-primary">${time}</p></div>`;
+    }).join('');
+  }
+}
+
+// ══════════════════════════════════════
+// FIREBASE HISTORY LOADER
+// ══════════════════════════════════════
+const HISTORY_DATA = {
+  days: {},
+  loaded: false
+};
+
+const MED_NAMES = {
+  'omeprazol_am': 'Omeprazol (Mañana)',
+  'omeprazol_pm': 'Omeprazol (Noche)',
+  'kreon_am': 'Kreon 35000 (Desayuno)',
+  'kreon_comida': 'Kreon 35000 (Comida)',
+  'kreon_merienda': 'Kreon 35000 (Merienda)',
+  'kreon_noche': 'Kreon 35000 (Cena)',
+  'valsartan': 'Valsartan/HTZ',
+  'amlodipino': 'Amlodipino 5mg',
+  'trangorex_am': 'Trangorex 200mg',
+  'enoxaparina': 'Enoxaparina 100mg',
+  'insulina_lantus_am': 'Insulina Lantus',
+  'mirtazapina_noche': 'Mirtazapina 15mg',
+  'sos_oramorph': 'Oramorph (SOS)',
+  'sos_fortasec': 'Fortasec (SOS)'
+};
+
+const MED_DOSES = {
+  'omeprazol_am': '1 Cápsula',
+  'omeprazol_pm': '1 Cápsula',
+  'kreon_am': '2 Cápsulas',
+  'kreon_comida': '2 Cápsulas',
+  'kreon_merienda': '3 Cápsulas',
+  'kreon_noche': '2 Cápsulas',
+  'valsartan': '1 Comprimido',
+  'amlodipino': '1 Comprimido',
+  'trangorex_am': '1 Comprimido',
+  'enoxaparina': 'Inyectable SC',
+  'insulina_lantus_am': '10-12 UI',
+  'mirtazapina_noche': '1 Comprimido',
+  'sos_oramorph': '1 ml',
+  'sos_fortasec': '1 Cápsula'
+};
+
+async function loadFullHistory() {
+  if (!APP.db) {
+    alert('Firebase no está conectado');
+    return;
+  }
+
+  document.getElementById('history-loading').classList.remove('hidden');
+  document.getElementById('history-empty').classList.add('hidden');
+  document.getElementById('history-by-day').innerHTML = '';
+
+  try {
+    // Get last 30 days of tomas
+    const tomasSnapshot = await getDocs(collection(APP.db, 'tomas_pilar'));
+    const constantesSnapshot = await getDocs(collection(APP.db, 'constantes_pilar'));
+    const alertasSnapshot = await getDocs(collection(APP.db, 'alertas_urgentes'));
+
+    HISTORY_DATA.days = {};
+
+    // Process tomas
+    tomasSnapshot.forEach(doc => {
+      if (doc.id.startsWith('_') || doc.id === 'historico_periodico') return;
+      const data = doc.data();
+      if (data._reset) return; // Skip reset markers
+
+      const date = doc.id;
+      if (!HISTORY_DATA.days[date]) HISTORY_DATA.days[date] = { meds: {}, constantes: {} };
+
+      Object.keys(data).forEach(medId => {
+        if (medId.startsWith('_')) return;
+        if (data[medId]?.taken) {
+          HISTORY_DATA.days[date].meds[medId] = {
+            taken: true,
+            timestamp: data[medId].timestamp
+          };
+        }
+      });
+    });
+
+    // Process constantes (supports both period-based and entry-based formats)
+    constantesSnapshot.forEach(doc => {
+      if (doc.id.startsWith('_')) return;
+      const data = doc.data();
+      const date = doc.id;
+      if (!HISTORY_DATA.days[date]) HISTORY_DATA.days[date] = { meds: {}, constantes: {} };
+
+      // Process period-based entries (old format)
+      ['manana', 'comida', 'merienda', 'noche'].forEach(period => {
+        if (data[period]) {
+          if (!HISTORY_DATA.days[date].constantes.entries) {
+            HISTORY_DATA.days[date].constantes.entries = [];
+          }
+          HISTORY_DATA.days[date].constantes.entries.push({
+            ...data[period],
+            periodo: period
+          });
+        }
+      });
+
+      // Process entry-based entries (new format: entry_XXXXX)
+      Object.keys(data).forEach(key => {
+        if (key.startsWith('entry_') && data[key]) {
+          if (!HISTORY_DATA.days[date].constantes.entries) {
+            HISTORY_DATA.days[date].constantes.entries = [];
+          }
+          HISTORY_DATA.days[date].constantes.entries.push(data[key]);
+        }
+      });
+
+      // Sort entries by timestamp
+      if (HISTORY_DATA.days[date].constantes.entries) {
+        HISTORY_DATA.days[date].constantes.entries.sort((a, b) =>
+          new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+        );
+      }
+    });
+
+    // Count panic alerts
+    let panicCount = 0;
+    alertasSnapshot.forEach(doc => {
+      if (doc.data().tipo === 'PANICO') panicCount++;
+    });
+    HISTORY_DATA.panicCount = panicCount;
+
+    HISTORY_DATA.loaded = true;
+    renderHistoryByDay();
+    renderCharts();
+    updateStats();
+
+  } catch (e) {
+    console.error('Error loading history:', e);
+    document.getElementById('history-empty').classList.remove('hidden');
+  } finally {
+    document.getElementById('history-loading').classList.add('hidden');
+  }
+}
+
+function renderHistoryByDay() {
+  const container = document.getElementById('history-by-day');
+  const dates = Object.keys(HISTORY_DATA.days).sort().reverse();
+
+  if (dates.length === 0) {
+    document.getElementById('history-empty').classList.remove('hidden');
+    return;
+  }
+
+  container.innerHTML = dates.map(date => {
+    const dayData = HISTORY_DATA.days[date];
+    const meds = Object.keys(dayData.meds);
+
+    const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long'
+    });
+
+    const medsList = meds.map(medId => {
+      const med = dayData.meds[medId];
+      const time = med.timestamp ? new Date(med.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+      const name = MED_NAMES[medId] || medId.replace(/_/g, ' ');
+      const dose = MED_DOSES[medId] ? `<span class="text-[10px] bg-surface-variant px-2 py-0.5 rounded-full text-on-surface ml-2">${MED_DOSES[medId]}</span>` : '';
+      return `<div class="flex items-center justify-between py-2 border-b border-outline-variant/20 last:border-0">
+        <span class="text-sm font-medium flex items-center">${name} ${dose}</span>
+        <span class="text-xs text-tertiary font-bold">${time}</span>
+      </div>`;
+    }).join('');
+
+    const constantesEntries = dayData.constantes.entries || [];
+    const constantesHtml = constantesEntries.length > 0 ?
+      constantesEntries.map(c => {
+        const time = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : (c.hora || '--:--');
+        const periodLabel = c.periodo || '';
+        return `<div class="flex items-center justify-between text-xs py-1">
+          <span class="text-on-surface-variant">${time} ${periodLabel ? `<span class="capitalize opacity-70">(${periodLabel})</span>` : ''}</span>
+          <div class="flex gap-3">
+            <span class="text-primary font-bold">${c.glucosa} mg/dL</span>
+            <span class="text-secondary font-bold">${c.temperatura}°C</span>
+          </div>
+        </div>`;
+      }).join('') : '<p class="text-xs text-on-surface-variant">Sin constantes</p>';
+
+    return `<div class="bg-surface-container-high rounded-2xl overflow-hidden">
+      <div class="bg-primary/10 px-4 py-3 flex justify-between items-center">
+        <h4 class="font-headline font-bold text-sm capitalize">${formattedDate}</h4>
+        <span class="text-xs bg-primary text-white px-2 py-0.5 rounded-full">${meds.length} tomas</span>
+      </div>
+      <div class="p-4 space-y-3">
+        <div class="space-y-1">${medsList}</div>
+        <div class="pt-2 border-t border-outline-variant/20">
+          <p class="text-xs font-bold text-on-surface-variant mb-1">Constantes:</p>
+          ${constantesHtml}
+        </div>
+      </div>
+    </div>`;
   }).join('');
 }
+
+function renderCharts() {
+  // Destroy existing charts if any
+  if (HISTORY_DATA.charts) {
+    HISTORY_DATA.charts.forEach(chart => chart.destroy());
+  }
+  HISTORY_DATA.charts = [];
+
+  // Weekly compliance chart
+  const ctxWeekly = document.getElementById('chart-weekly').getContext('2d');
+  const last7Days = [];
+  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const expectedMedsPerDay = 9; // Approximate expected medications per day
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    last7Days.push({
+      label: dayNames[d.getDay()],
+      date: dateStr,
+      count: HISTORY_DATA.days[dateStr]?.meds ? Object.keys(HISTORY_DATA.days[dateStr].meds).length : 0
+    });
+  }
+
+  HISTORY_DATA.charts.push(new Chart(ctxWeekly, {
+    type: 'bar',
+    data: {
+      labels: last7Days.map(d => d.label),
+      datasets: [{
+        label: 'Medicamentos tomados',
+        data: last7Days.map(d => d.count),
+        backgroundColor: 'rgba(33, 150, 243, 0.8)',
+        borderColor: 'rgba(33, 150, 243, 1)',
+        borderWidth: 1,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, max: expectedMedsPerDay + 2 }
+      }
+    }
+  }));
+
+  // Medication distribution (doughnut)
+  const ctxMeds = document.getElementById('chart-meds').getContext('2d');
+  const medCounts = {};
+  Object.values(HISTORY_DATA.days).forEach(day => {
+    Object.keys(day.meds).forEach(medId => {
+      medCounts[medId] = (medCounts[medId] || 0) + 1;
+    });
+  });
+
+  const topMeds = Object.entries(medCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+  HISTORY_DATA.charts.push(new Chart(ctxMeds, {
+    type: 'doughnut',
+    data: {
+      labels: topMeds.map(([id]) => MED_NAMES[id] || id.replace(/_/g, ' ')),
+      datasets: [{
+        data: topMeds.map(([, count]) => count),
+        backgroundColor: [
+          'rgba(33, 150, 243, 0.8)',
+          'rgba(255, 152, 0, 0.8)',
+          'rgba(76, 175, 80, 0.8)',
+          'rgba(156, 39, 176, 0.8)',
+          'rgba(244, 67, 54, 0.8)',
+          'rgba(0, 150, 136, 0.8)'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 } } }
+      }
+    }
+  }));
+
+  // Vitals chart
+  const ctxVitals = document.getElementById('chart-vitals').getContext('2d');
+  const vitalsData = { labels: [], glucose: [], temp: [] };
+
+  last7Days.forEach(d => {
+    vitalsData.labels.push(d.label);
+    const dayConst = HISTORY_DATA.days[d.date]?.constantes;
+    if (dayConst && Object.keys(dayConst).length > 0) {
+      const morningConst = dayConst.manana || dayConst.comida || Object.values(dayConst)[0];
+      vitalsData.glucose.push(morningConst.glucosa || null);
+      vitalsData.temp.push(morningConst.temperatura || null);
+    } else {
+      vitalsData.glucose.push(null);
+      vitalsData.temp.push(null);
+    }
+  });
+
+  HISTORY_DATA.charts.push(new Chart(ctxVitals, {
+    type: 'line',
+    data: {
+      labels: vitalsData.labels,
+      datasets: [{
+        label: 'Glucosa (mg/dL)',
+        data: vitalsData.glucose,
+        borderColor: 'rgba(33, 150, 243, 1)',
+        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+        fill: true,
+        tension: 0.3
+      }, {
+        label: 'Temperatura (°C)',
+        data: vitalsData.temp,
+        borderColor: 'rgba(255, 152, 0, 1)',
+        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+        fill: false,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  }));
+}
+
+function updateStats() {
+  const dates = Object.keys(HISTORY_DATA.days);
+  let totalTomas = 0;
+  dates.forEach(date => {
+    totalTomas += Object.keys(HISTORY_DATA.days[date].meds).length;
+  });
+
+  const avgPerDay = dates.length > 0 ? (totalTomas / dates.length) : 0;
+  const expectedPerDay = 9; // Expected medications per day
+  const cumplimiento = dates.length > 0 ? Math.round((avgPerDay / expectedPerDay) * 100) : 0;
+
+  document.getElementById('stat-total-tomas').textContent = totalTomas;
+  document.getElementById('stat-dias-registrados').textContent = dates.length;
+  document.getElementById('stat-cumplimiento').textContent = Math.min(100, cumplimiento) + '%';
+  document.getElementById('stat-alertas').textContent = HISTORY_DATA.panicCount || 0;
+}
+
+// Tab switching
+document.getElementById('tab-historial-lista').addEventListener('click', () => {
+  document.getElementById('tab-historial-lista').classList.add('bg-primary', 'text-white');
+  document.getElementById('tab-historial-lista').classList.remove('text-on-surface-variant');
+  document.getElementById('tab-historial-graficos').classList.remove('bg-primary', 'text-white');
+  document.getElementById('tab-historial-graficos').classList.add('text-on-surface-variant');
+  document.getElementById('view-historial-lista').classList.remove('hidden');
+  document.getElementById('view-historial-graficos').classList.add('hidden');
+});
+
+document.getElementById('tab-historial-graficos').addEventListener('click', () => {
+  document.getElementById('tab-historial-graficos').classList.add('bg-primary', 'text-white');
+  document.getElementById('tab-historial-graficos').classList.remove('text-on-surface-variant');
+  document.getElementById('tab-historial-lista').classList.remove('bg-primary', 'text-white');
+  document.getElementById('tab-historial-lista').classList.add('text-on-surface-variant');
+  document.getElementById('view-historial-graficos').classList.remove('hidden');
+  document.getElementById('view-historial-lista').classList.add('hidden');
+
+  // Load history if not loaded
+  if (!HISTORY_DATA.loaded && APP.db) {
+    loadFullHistory();
+  }
+});
+
+document.getElementById('btn-load-history').addEventListener('click', loadFullHistory);
+
+// ══════════════════════════════════════
+// RESET DAILY DATA
+// ══════════════════════════════════════
+async function resetTodayData() {
+  const today = TODAY();
+
+  // Clear all medication taken states from localStorage
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith(`med_${today}_`)) {
+      localStorage.removeItem(key);
+    }
+  });
+
+  // Clear check-in for all periods
+  ['manana', 'comida', 'merienda', 'noche'].forEach(period => {
+    localStorage.removeItem(`checkin_${today}_${period}`);
+  });
+
+  // Clear Omeprazol timers
+  localStorage.removeItem(`omeprazol_timer_am_${today}`);
+  localStorage.removeItem(`omeprazol_timer_pm_${today}`);
+
+  // Clear SOS states
+  localStorage.removeItem(`oramorph_unlock_${today}`);
+  localStorage.removeItem(`fortasec_${today}`);
+
+  // Clear timers
+  if (APP.timers.am) clearTimeout(APP.timers.am);
+  if (APP.timers.pm) clearTimeout(APP.timers.pm);
+  APP.timers.am = null;
+  APP.timers.pm = null;
+  APP.timerEnds = { am: 0, pm: 0 };
+  APP.sosState = { oramorphUnlock: 0, fortasecCount: 0 };
+
+  // Force unlock all meds UI
+  lockMeds('am', false);
+  lockMeds('pm', false);
+
+  // Clear history arrays
+  localStorage.removeItem('constantes_history');
+  localStorage.removeItem('tomas_history');
+
+  // Clear Firebase data for today - WAIT for completion
+  if (APP.db) {
+    try {
+      // Delete today's tomas document completely
+      await setDoc(doc(APP.db, 'tomas_pilar', today), {
+        _reset: true,
+        resetAt: serverTimestamp()
+      }, { merge: true });
+
+      // Delete today's constantes document completely
+      await setDoc(doc(APP.db, 'constantes_pilar', today), {
+        _reset: true,
+        resetAt: serverTimestamp()
+      }, { merge: true });
+
+      console.log('✅ Firebase reset completed');
+    } catch(e) {
+      console.warn('Firebase reset error:', e);
+    }
+  }
+
+  // Show success and reload
+  document.getElementById('reset-overlay').classList.add('hidden');
+  location.reload();
+}
+
+// Reset button handlers
+document.getElementById('btn-reset-day').addEventListener('click', () => {
+  document.getElementById('reset-overlay').classList.remove('hidden');
+});
+
+document.getElementById('btn-confirm-reset').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-confirm-reset');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Reseteando...';
+  await resetTodayData();
+});
+
+document.getElementById('btn-cancel-reset').addEventListener('click', () => {
+  document.getElementById('reset-overlay').classList.add('hidden');
+});
 
 // ══════════════════════════════════════
 // RESTORE STATE ON LOAD
@@ -976,6 +1845,7 @@ function init() {
   restoreMedStates();
   checkOramorphLockout();
   loadFortasec();
+  updatePeriodicUI();
   renderConstantesHistory();
   renderTomasHistory();
 
