@@ -152,56 +152,34 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
     </div>
   </header>
 
-  <!-- ───── REGISTRO RÁPIDO DE CONSTANTES ───── -->
-  <div class="bg-gradient-to-r from-tertiary-container/30 to-primary-container/30 rounded-3xl p-4 border border-tertiary/20">
-    <div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-tertiary text-2xl icon-fill">monitor_heart</span>
-        <h3 class="font-headline font-bold text-lg">Constantes Vitales</h3>
-      </div>
-      <button id="btn-toggle-constantes" class="text-sm text-primary font-bold flex items-center gap-1 active:scale-95 transition-all">
-        <span class="material-symbols-outlined text-lg">add_circle</span>Nueva
-      </button>
-    </div>
-
-    <!-- Quick input form (collapsible) -->
-    <div id="constantes-quick-form" class="hidden space-y-3 mt-3">
-      <div class="grid grid-cols-2 gap-3">
-        <div class="bg-surface-container-low rounded-xl p-3">
-          <label class="text-xs text-on-surface-variant font-medium">Temperatura</label>
-          <div class="flex items-center gap-1 mt-1">
-            <input id="quick-temp" type="number" step="0.1" placeholder="36.5" class="w-full h-12 bg-surface-variant rounded-lg text-center font-headline font-bold text-xl text-on-surface outline-none focus:ring-2 focus:ring-secondary"/>
-            <span class="text-on-surface-variant font-bold">°C</span>
-          </div>
-        </div>
-        <div class="bg-surface-container-low rounded-xl p-3">
-          <label class="text-xs text-on-surface-variant font-medium">Glucosa</label>
-          <div class="flex items-center gap-1 mt-1">
-            <input id="quick-glucose" type="number" placeholder="110" class="w-full h-12 bg-surface-variant rounded-lg text-center font-headline font-bold text-xl text-on-surface outline-none focus:ring-2 focus:ring-primary"/>
-            <span class="text-on-surface-variant font-bold text-sm">mg/dL</span>
-          </div>
-        </div>
-      </div>
-      <button id="btn-save-constantes" class="w-full h-14 bg-gradient-to-r from-tertiary to-tertiary-container text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-md">
-        <span class="material-symbols-outlined">save</span>Guardar Constantes
-      </button>
-    </div>
-
     <!-- Last readings display -->
-    <div id="last-constantes" class="flex gap-4 text-sm">
-      <div class="flex items-center gap-1">
-        <span class="material-symbols-outlined text-secondary text-lg">thermostat</span>
-        <span class="font-bold" id="last-temp">--</span>
-        <span class="text-on-surface-variant">°C</span>
+    <div id="last-constantes-container" class="bg-gradient-to-r from-tertiary-container/30 to-primary-container/30 rounded-3xl p-4 border border-tertiary/20 mb-6">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="material-symbols-outlined text-tertiary text-2xl icon-fill">monitor_heart</span>
+        <h3 class="font-headline font-bold text-lg">Últimas Constantes</h3>
       </div>
-      <div class="flex items-center gap-1">
-        <span class="material-symbols-outlined text-primary text-lg">bloodtype</span>
-        <span class="font-bold" id="last-glucose">--</span>
-        <span class="text-on-surface-variant">mg/dL</span>
+      <div id="last-constantes" class="flex flex-wrap gap-x-4 gap-y-2 text-sm items-center">
+        <div class="flex items-center gap-1">
+          <span class="material-symbols-outlined text-secondary text-lg">thermostat</span>
+          <span class="font-bold text-base" id="last-temp">--</span>
+          <span class="text-on-surface-variant text-[10px]">°C</span>
+        </div>
+        <div class="flex items-center gap-1 border-l border-outline-variant/30 pl-4">
+          <span class="material-symbols-outlined text-primary text-lg">bloodtype</span>
+          <span class="font-bold text-base" id="last-glucose">--</span>
+          <span class="text-on-surface-variant text-[10px]">mg/dL</span>
+        </div>
+        <div class="flex items-center gap-1 border-l border-outline-variant/30 pl-4">
+          <span class="material-symbols-outlined text-tertiary text-lg">air</span>
+          <span class="font-bold text-base" id="last-o2">--</span>
+          <span class="text-on-surface-variant text-[10px]">% SpO2</span>
+        </div>
+        <div class="ml-auto flex items-center gap-1 text-on-surface-variant text-[10px] bg-white/40 px-2 py-1 rounded-lg">
+          <span class="material-symbols-outlined text-xs">schedule</span>
+          <span id="last-constantes-time">--</span>
+        </div>
       </div>
-      <span class="text-on-surface-variant text-xs ml-auto" id="last-constantes-time">--</span>
     </div>
-  </div>
 
   <!-- ───── DESAYUNO (Amarillo / Mañana) ───── -->
   <div class="space-y-4">
@@ -622,6 +600,41 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
   </div>
 </div>
 
+<!-- ═══════════ VITALS OVERLAY (MODAL) ═══════════ -->
+<div id="vitals-overlay" class="panic-overlay hidden">
+  <div class="bg-white rounded-3xl p-6 mx-4 max-w-md w-full space-y-6">
+    <div class="text-center">
+      <div class="w-20 h-20 bg-tertiary/10 text-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-5xl icon-fill">monitor_heart</span>
+      </div>
+      <h2 class="font-headline font-black text-2xl tracking-tight">Registrar Constantes</h2>
+      <p class="text-on-surface-variant text-sm font-medium">Todos los campos son opcionales.</p>
+    </div>
+    
+    <div class="space-y-4">
+      <div class="bg-surface-container-low rounded-2xl p-4 border border-outline-variant/30 text-center">
+        <label class="text-[10px] text-secondary font-bold uppercase tracking-widest block mb-1">Temperatura (°C)</label>
+        <input id="quick-temp" type="number" step="0.1" placeholder="36.5" class="w-full h-14 bg-surface-variant rounded-xl text-center font-headline font-bold text-2xl text-on-surface outline-none focus:ring-2 focus:ring-secondary"/>
+      </div>
+      <div class="bg-surface-container-low rounded-2xl p-4 border border-outline-variant/30 text-center">
+        <label class="text-[10px] text-primary font-bold uppercase tracking-widest block mb-1">Glucosa (mg/dL)</label>
+        <input id="quick-glucose" type="number" placeholder="110" class="w-full h-14 bg-surface-variant rounded-xl text-center font-headline font-bold text-2xl text-on-surface outline-none focus:ring-2 focus:ring-primary"/>
+      </div>
+      <div class="bg-surface-container-low rounded-2xl p-4 border border-outline-variant/30 text-center">
+        <label class="text-[10px] text-tertiary font-bold uppercase tracking-widest block mb-1">Oxígeno (% SpO2)</label>
+        <input id="quick-o2" type="number" placeholder="98" class="w-full h-14 bg-surface-variant rounded-xl text-center font-headline font-bold text-2xl text-on-surface outline-none focus:ring-2 focus:ring-tertiary"/>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <button id="btn-save-constantes" class="w-full h-16 bg-gradient-to-r from-tertiary to-tertiary-container text-white rounded-2xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
+        <span class="material-symbols-outlined">save</span> GUARDAR DATOS
+      </button>
+      <button onclick="document.getElementById('vitals-overlay').classList.add('hidden')" class="w-full h-14 bg-surface-variant rounded-xl font-headline font-bold text-on-surface-variant active:scale-95 transition-all">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════ RESET DIALOG ═══════════ -->
 <div id="reset-overlay" class="panic-overlay hidden">
   <div class="bg-white rounded-3xl p-8 mx-6 max-w-md w-full space-y-6">
@@ -640,22 +653,29 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 </div>
 
 <!-- ═══════════ BOTTOM TAB BAR ═══════════ -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-3 pt-2 pb-6 bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.08)] rounded-t-3xl" id="tab-bar">
-  <button class="tab-btn flex flex-col items-center justify-center px-4 py-2 transition-all tab-active" data-target="hoy">
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 pt-2 pb-6 bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.08)] rounded-t-3xl" id="tab-bar">
+  <button class="tab-btn flex flex-col items-center justify-center px-1 py-2 transition-all tab-active" data-target="hoy">
     <span class="material-symbols-outlined icon-fill">today</span>
-    <span class="font-headline font-medium text-sm">Hoy</span>
+    <span class="font-headline font-medium text-[10px]">Hoy</span>
   </button>
-  <button class="tab-btn flex flex-col items-center justify-center px-4 py-2 transition-all tab-inactive" data-target="sos">
+  <button class="tab-btn flex flex-col items-center justify-center px-1 py-2 transition-all tab-inactive" data-target="sos">
     <span class="material-symbols-outlined">local_pharmacy</span>
-    <span class="font-headline font-medium text-sm">Botiquín</span>
+    <span class="font-headline font-medium text-[10px]">Botiquín</span>
   </button>
-  <!-- PANIC BUTTON (center, raised) -->
+  
+  <!-- PANIC CENTER -->
   <button id="btn-panic" class="panic-btn -mt-10 w-20 h-20 bg-error text-on-error rounded-full flex items-center justify-center shadow-2xl active:scale-90 transition-all border-4 border-white" title="BOTÓN DE PÁNICO">
     <span class="material-symbols-outlined text-4xl icon-fill">campaign</span>
   </button>
-  <button class="tab-btn flex flex-col items-center justify-center px-4 py-2 transition-all tab-inactive" data-target="historial">
+
+  <button class="tab-btn flex flex-col items-center justify-center px-1 py-2 transition-all tab-inactive" id="menu-btn-vitals">
+    <span class="material-symbols-outlined">monitor_heart</span>
+    <span class="font-headline font-medium text-[10px]">Constantes</span>
+  </button>
+
+  <button class="tab-btn flex flex-col items-center justify-center px-2 py-2 transition-all tab-inactive" data-target="historial">
     <span class="material-symbols-outlined">history</span>
-    <span class="font-headline font-medium text-sm">Historial</span>
+    <span class="font-headline font-medium text-[10px]">Historial</span>
   </button>
 </nav>
 
@@ -754,26 +774,33 @@ function updateLastConstantes() {
   const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
   if (hist.length > 0) {
     const last = hist[0];
-    document.getElementById('last-temp').textContent = last.temperatura;
-    document.getElementById('last-glucose').textContent = last.glucosa;
-    const time = new Date(last.timestamp || new Date()).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('last-temp').textContent = last.temperatura || '--';
+    document.getElementById('last-glucose').textContent = last.glucosa || '--';
+    document.getElementById('last-o2').textContent = last.oxigeno || '--';
+    const rawTime = last.timestamp || new Date();
+    const time = new Date(rawTime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     document.getElementById('last-constantes-time').textContent = time;
   }
 }
 
-document.getElementById('btn-toggle-constantes')?.addEventListener('click', () => {
-  const form = document.getElementById('constantes-quick-form');
-  form.classList.toggle('hidden');
+// Open modal from Nav Bar
+document.getElementById('menu-btn-vitals')?.addEventListener('click', () => {
+  document.getElementById('vitals-overlay').classList.remove('hidden');
 });
 
 document.getElementById('btn-save-constantes')?.addEventListener('click', async () => {
-  const temp = parseFloat(document.getElementById('quick-temp').value);
-  const gluc = parseFloat(document.getElementById('quick-glucose').value);
+  const tempVal = document.getElementById('quick-temp').value;
+  const glucoseVal = document.getElementById('quick-glucose').value;
+  const o2Val = document.getElementById('quick-o2').value;
 
-  if (isNaN(temp) || isNaN(gluc)) {
-    alert('Por favor, introduce ambos valores.');
+  if (!tempVal && !glucoseVal && !o2Val) {
+    alert('Introduce al menos un valor para registrar.');
     return;
   }
+
+  const temp = tempVal ? parseFloat(tempVal) : null;
+  const gluc = glucoseVal ? parseFloat(glucoseVal) : null;
+  const o2 = o2Val ? parseFloat(o2Val) : null;
 
   const now = new Date();
   const timestamp = now.toISOString();
@@ -781,6 +808,7 @@ document.getElementById('btn-save-constantes')?.addEventListener('click', async 
   const data = {
     glucosa: gluc,
     temperatura: temp,
+    oxigeno: o2,
     timestamp: timestamp,
     periodo: period,
     fecha: TODAY(),
@@ -793,7 +821,7 @@ document.getElementById('btn-save-constantes')?.addEventListener('click', async 
   if (hist.length > 100) hist.length = 100;
   localStorage.setItem('constantes_history', JSON.stringify(hist));
 
-  // Save to Firebase with timestamp key for multiple entries per day
+  // Save to Firebase with timestamp key
   if (APP.db) {
     try {
       const entryKey = `entry_${Date.now()}`;
@@ -806,14 +834,15 @@ document.getElementById('btn-save-constantes')?.addEventListener('click', async 
     }
   }
 
-  // Update UI
+  // Update UI and close modal
   updateLastConstantes();
   renderConstantesHistory();
+  document.getElementById('vitals-overlay').classList.add('hidden');
 
-  // Clear form and hide
+  // Clear inputs
   document.getElementById('quick-temp').value = '';
   document.getElementById('quick-glucose').value = '';
-  document.getElementById('constantes-quick-form').classList.add('hidden');
+  document.getElementById('quick-o2').value = '';
 
   // Refresh history if loaded
   if (HISTORY_DATA.loaded) {
@@ -1347,7 +1376,22 @@ document.getElementById('btn-close-panic').addEventListener('click', () => {
 function renderConstantesHistory() {
   const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
   const tbody = document.getElementById('table-constantes');
-  if (tbody) tbody.innerHTML = hist.slice(0, 10).map(h => `<tr><td class="p-3"><p class="font-bold text-xs">${h.fecha}</p><p class="text-[10px] text-on-surface-variant">${h.periodo}</p></td><td class="p-3"><span class="font-black">${h.glucosa}</span> <span class="text-[10px]">mg/dL</span></td><td class="p-3"><span class="font-black">${h.temperatura}</span> <span class="text-[10px]">°C</span></td></tr>`).join('');
+  if (tbody) tbody.innerHTML = hist.slice(0, 10).map(h => {
+    const o2Span = h.oxigeno ? `<br><span class="text-[9px] text-tertiary">O2: ${h.oxigeno}%</span>` : '';
+    return `<tr>
+      <td class="p-3 text-[10px]">
+        <p class="font-bold">${h.fecha}</p>
+        <p class="text-on-surface-variant opacity-60">${h.periodo}</p>
+      </td>
+      <td class="p-3">
+        <span class="font-black text-primary">${h.glucosa || '--'}</span> <span class="text-[9px]">mg</span>
+      </td>
+      <td class="p-3">
+        <span class="font-black text-secondary">${h.temperatura || '--'}</span> <span class="text-[9px]">°C</span>
+        ${o2Span}
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 function renderTomasHistory() {
