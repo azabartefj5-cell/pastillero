@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pastillero-pilar-v2';
+const CACHE_NAME = 'pastillero-pilar-v3';
 const STATIC_ASSETS = [
   './index.html',
   './manifest.json',

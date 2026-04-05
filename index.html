@@ -589,14 +589,26 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 <div id="panic-overlay" class="panic-overlay hidden">
   <div class="bg-white rounded-3xl p-8 mx-6 max-w-md w-full space-y-6 shake">
     <div class="text-center">
-      <span class="material-symbols-outlined text-error text-7xl icon-fill">emergency</span>
-      <h2 class="font-headline font-black text-3xl text-error mt-4">¡ALERTA ENVIADA!</h2>
-      <p class="text-on-surface-variant text-lg mt-2">Se ha notificado a Javier y al equipo médico.</p>
+      <div class="w-24 h-24 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-6xl icon-fill">emergency</span>
+      </div>
+      <h2 class="font-headline font-black text-3xl text-error tracking-tight">¡ALERTA ENVIADA!</h2>
+      <p class="text-on-surface-variant text-base mt-2 font-medium">Se ha enviado un aviso a la familia.</p>
     </div>
-    <a href="tel:+34600000000" id="btn-call-javier" class="block w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-xl text-center leading-[5rem] active:scale-95 transition-all shadow-lg">
-      📞 LLAMAR A JAVIER
-    </a>
-    <button id="btn-close-panic" class="w-full h-14 bg-surface-variant rounded-xl font-headline font-bold text-lg active:scale-95 transition-all">Cerrar</button>
+
+    <div class="space-y-3">
+      <a href="tel:652126846" class="flex items-center justify-center gap-3 w-full h-16 bg-primary text-white rounded-2xl font-headline font-black text-lg active:scale-95 transition-all shadow-md">
+        <span class="material-symbols-outlined">call</span> FRAN
+      </a>
+      <a href="tel:629527069" class="flex items-center justify-center gap-3 w-full h-16 bg-secondary text-white rounded-2xl font-headline font-black text-lg active:scale-95 transition-all shadow-md">
+        <span class="material-symbols-outlined">call</span> JOSÉ
+      </a>
+      <a href="tel:112" class="flex items-center justify-center gap-3 w-full h-20 bg-error text-white rounded-2xl font-headline font-black text-2xl active:scale-95 transition-all shadow-xl ring-4 ring-error/20">
+        <span class="material-symbols-outlined text-3xl">emergency_share</span> 112
+      </a>
+    </div>
+
+    <button id="btn-close-panic" class="w-full h-14 bg-surface-variant rounded-xl font-headline font-bold text-on-surface-variant active:scale-95 transition-all">Cerrar</button>
   </div>
 </div>
 
