@@ -1533,68 +1533,64 @@ function startFirebaseListeners() {
   });
 
   // ══════════════════════════════════════
-  // ALARM SOUND GENERATOR (Web Audio API — no external files needed)
+  // ALARM SOUND GENERATOR (Custom MP3 Buffer)
   // ══════════════════════════════════════
-  APP._alarmInterval = null;
+  APP._alarmBuffer = null;
+  APP._alarmSource = null;
   APP._audioCtx = null;
 
-  APP.playAlarmSound = function() {
-    // 1. Ensure we have an AudioContext, reuse the unlocked one if available
-    let ctx = APP._audioCtx;
-    if (!ctx) {
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      APP._audioCtx = ctx;
+  async function loadAlarmBuffer() {
+    console.log('🎵 Cargando sonido de alerta...');
+    const ctx = APP._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    APP._audioCtx = ctx;
+
+    try {
+      const response = await fetch('./alerta.mp3');
+      const arrayBuffer = await response.arrayBuffer();
+      APP._alarmBuffer = await ctx.decodeAudioData(arrayBuffer);
+      console.log('✅ Sonido de alerta decodificado y listo');
+    } catch (e) {
+      console.error('❌ Error cargando alerta.mp3:', e);
+      // Fallback a beep si falla la carga
     }
+  }
+
+  APP.playAlarmSound = function() {
+    const ctx = APP._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    APP._audioCtx = ctx;
     
+    // Resume if it's suspended (browsers often suspend background contexts)
+    if (ctx.state === 'suspended') ctx.resume();
+
     // Stop any existing alarm first
     APP.stopAlarmSound();
 
+    if (!APP._alarmBuffer) {
+      console.warn('⚠️ Alarma no cargada aún. Intentando cargar...');
+      loadAlarmBuffer(); 
+      return; 
+    }
+
     try {
-      // Resume if it's suspended (browsers often suspend background contexts)
-      if (ctx.state === 'suspended') ctx.resume();
-
-      function playBeep(freq, startTime, duration) {
-        if (!ctx) return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'square';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.3, startTime); // Reduced a bit for safety
-        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-        osc.start(startTime);
-        osc.stop(startTime + duration);
-      }
-
-      function playAlarmCycle() {
-        if (!APP._audioCtx || APP._audioCtx.state === 'closed') return;
-        const now = APP._audioCtx.currentTime;
-        // Emergency siren pattern: alternating high-low tones
-        playBeep(880, now, 0.15);
-        playBeep(660, now + 0.2, 0.15);
-        playBeep(880, now + 0.4, 0.15);
-        playBeep(660, now + 0.6, 0.15);
-        playBeep(880, now + 0.8, 0.15);
-        playBeep(1100, now + 1.0, 0.3);
-      }
-
-      // Play immediately then repeat every 1.5 seconds
-      playAlarmCycle();
-      APP._alarmInterval = setInterval(playAlarmCycle, 1500);
-
+      const source = ctx.createBufferSource();
+      source.buffer = APP._alarmBuffer;
+      source.loop = true;
+      source.connect(ctx.destination);
+      source.start(0);
+      APP._alarmSource = source;
+      console.log('🔔 Alarm ringing (MP3)...');
     } catch (e) {
-      console.warn('Audio alarm failed:', e);
+      console.warn('Audio alarm source failed:', e);
     }
   };
 
   APP.stopAlarmSound = function() {
-    if (APP._alarmInterval) {
-      clearInterval(APP._alarmInterval);
-      APP._alarmInterval = null;
+    if (APP._alarmSource) {
+      try {
+        APP._alarmSource.stop();
+      } catch(e) {}
+      APP._alarmSource = null;
     }
-    // Don't close the context, just stop the interval. 
-    // We want to keep the "unlocked" context reusable.
   };
 
   // Make stopAlarmSound available globally for the close button
@@ -2282,6 +2278,7 @@ function init() {
   updateLastConstantes();
   renderConstantesHistory();
   renderTomasHistory();
+  loadAlarmBuffer(); // Pre-load custom siren MP3
 
   // Notification button request
   document.getElementById('btn-request-notif')?.addEventListener('click', () => {

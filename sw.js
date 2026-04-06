@@ -1,7 +1,8 @@
-const CACHE_NAME = 'pastillero-pilar-v5';
+const CACHE_NAME = 'pastillero-pilar-v7';
 const STATIC_ASSETS = [
   './index.html',
   './manifest.json',
+  './alerta.mp3',
   'https://cdn.tailwindcss.com?plugins=forms,container-queries',
   'https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&family=Public+Sans:wght@300;400;500;600;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap'
