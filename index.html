@@ -493,14 +493,44 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       </div>
     </button>
     
-    <!-- TEST ALARM BUTTON -->
-    <button id="btn-test-alarm" class="w-full p-4 rounded-3xl bg-secondary-container/20 text-on-secondary-container flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-sm border-2 border-secondary/30">
-      <span class="material-symbols-outlined text-3xl">notification_important</span>
-      <div class="text-left">
+    <!-- TEST ALARM -->
+    <button id="btn-test-alarm" class="flex-1 flex flex-col items-center gap-2 p-5 bg-tertiary/10 rounded-3xl text-tertiary active:scale-95 transition-all text-center">
+      <span class="material-symbols-outlined text-4xl">campaign</span>
+      <div>
         <p class="font-headline font-bold text-lg">Probar Alarma</p>
-        <p class="text-sm opacity-80">Verificar sonido de alerta en este móvil</p>
+        <p class="text-sm opacity-80">Verificar sonido de alerta</p>
       </div>
     </button>
+  </div>
+
+  <!-- NOTIFICATION STATUS & PWA INSTALL GUIDE -->
+  <div class="bg-surface-container-high rounded-3xl p-5 border border-outline/10">
+    <div class="flex items-start justify-between mb-3">
+      <div class="flex items-center gap-3">
+        <div id="notif-status-icon" class="w-10 h-10 rounded-full flex items-center justify-center bg-outline/10 text-on-surface-variant">
+          <span class="material-symbols-outlined text-xl">notifications_off</span>
+        </div>
+        <div>
+          <p class="font-headline font-bold">Estado de Notificaciones</p>
+          <p id="notif-status-text" class="text-xs text-on-surface-variant">No configuradas</p>
+        </div>
+      </div>
+      <button id="btn-request-notif" class="px-4 py-2 bg-primary text-white rounded-full text-xs font-bold active:scale-95 transition-all hidden">
+        Activar
+      </button>
+    </div>
+    
+    <div id="pwa-guide" class="mt-4 p-3 bg-secondary-container/20 rounded-2xl border border-secondary/10 hidden">
+      <div class="flex gap-3">
+        <span class="material-symbols-outlined text-secondary text-xl">info</span>
+        <div class="text-xs space-y-2">
+          <p class="font-bold text-on-secondary-container">Importante para móviles:</p>
+          <p>Para recibir alertas en tiempo real, debes añadir esta app a tu pantalla de inicio:</p>
+          <p class="flex items-center gap-1 font-medium"><span class="material-symbols-outlined text-sm">ios_share</span> 1. Pulsa "Compartir" en Safari</p>
+          <p class="flex items-center gap-1 font-medium"><span class="material-symbols-outlined text-sm">add_box</span> 2. Elige "Añadir a pantalla de inicio"</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- TABS: Lista / Gráficos -->
@@ -2073,6 +2103,46 @@ async function resetTodayData() {
       localStorage.removeItem(key);
     }
   });
+
+  // Notification Permission Request
+  const updateNotifUI = () => {
+    const status = Notification?.permission || 'unsupported';
+    const textEl = document.getElementById('notif-status-text');
+    const iconEl = document.getElementById('notif-status-icon');
+    const btnEl = document.getElementById('btn-request-notif');
+    const pwaGuide = document.getElementById('pwa-guide');
+
+    if (status === 'granted') {
+      textEl.textContent = 'Activas ✅';
+      textEl.classList.add('text-green-600');
+      iconEl.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-green-100 text-green-700';
+      iconEl.innerHTML = '<span class="material-symbols-outlined text-xl">notifications_active</span>';
+      btnEl.classList.add('hidden');
+      pwaGuide.classList.add('hidden');
+    } else if (status === 'denied') {
+      textEl.textContent = 'Bloqueadas ❌ (Cambia en ajustes)';
+      textEl.classList.add('text-error');
+      iconEl.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-error-container/20 text-error';
+      iconEl.innerHTML = '<span class="material-symbols-outlined text-xl">notifications_off</span>';
+      btnEl.classList.add('hidden');
+    } else {
+      textEl.textContent = 'Pendiente de activar';
+      btnEl.classList.remove('hidden');
+      // Show PWA guide specifically for iOS if permission is default
+      if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone) {
+        pwaGuide.classList.remove('hidden');
+      }
+    }
+  };
+
+  document.getElementById('btn-request-notif').addEventListener('click', () => {
+    Notification.requestPermission().then(perm => {
+      console.log('Notification permission:', perm);
+      updateNotifUI();
+    });
+  });
+
+  updateNotifUI();
 
   // Clear check-in for all periods
   ['manana', 'comida', 'merienda', 'noche'].forEach(period => {
