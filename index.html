@@ -1413,11 +1413,75 @@ function startFirebaseListeners() {
     renderConstantesHistory();
   });
 
-  // Listen to alertas_urgentes — show notification on ALL connected devices
+  // ══════════════════════════════════════
+  // ALARM SOUND GENERATOR (Web Audio API — no external files needed)
+  // ══════════════════════════════════════
+  APP._alarmInterval = null;
+  APP._audioCtx = null;
+
+  function playAlarmSound() {
+    // Stop any existing alarm first
+    stopAlarmSound();
+
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      APP._audioCtx = ctx;
+
+      function playBeep(freq, startTime, duration) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.5, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      }
+
+      function playAlarmCycle() {
+        if (!APP._audioCtx) return;
+        const now = APP._audioCtx.currentTime;
+        // Emergency siren pattern: alternating high-low tones
+        playBeep(880, now, 0.15);
+        playBeep(660, now + 0.2, 0.15);
+        playBeep(880, now + 0.4, 0.15);
+        playBeep(660, now + 0.6, 0.15);
+        playBeep(880, now + 0.8, 0.15);
+        playBeep(1100, now + 1.0, 0.3);
+      }
+
+      // Play immediately then repeat every 1.5 seconds
+      playAlarmCycle();
+      APP._alarmInterval = setInterval(playAlarmCycle, 1500);
+
+    } catch (e) {
+      console.warn('Audio alarm failed:', e);
+    }
+  }
+
+  function stopAlarmSound() {
+    if (APP._alarmInterval) {
+      clearInterval(APP._alarmInterval);
+      APP._alarmInterval = null;
+    }
+    if (APP._audioCtx) {
+      APP._audioCtx.close().catch(() => {});
+      APP._audioCtx = null;
+    }
+  }
+
+  // Make stopAlarmSound available globally for the close button
+  window.stopAlarmSound = stopAlarmSound;
+
+  // ══════════════════════════════════════
+  // ALERTAS URGENTES LISTENER — ALL DEVICES
+  // ══════════════════════════════════════
   APP._lastAlertCount = null;
   onSnapshot(collection(APP.db, 'alertas_urgentes'), (snapshot) => {
     const count = snapshot.size;
-    // Only fire notification when a NEW alert is added (not on initial load)
+    // Only fire alarm when a NEW alert is added (not on initial load)
     if (APP._lastAlertCount !== null && count > APP._lastAlertCount) {
       // Find the newest alert
       let newest = null;
@@ -1427,34 +1491,45 @@ function startFirebaseListeners() {
           newest = d;
         }
       });
-      // Show browser notification if permitted
-      if (Notification.permission === 'granted') {
-        const notif = new Notification('🚨 ¡ALERTA DE PÁNICO!', {
-          body: newest?.mensaje || 'Pilar ha pulsado el botón de pánico',
-          icon: 'icons/icon-192.png',
-          badge: 'icons/icon-192.png',
-          tag: 'panic-alert',
-          renotify: true,
-          requireInteraction: true,
-          vibrate: [300, 100, 300, 100, 500]
-        });
-        // Also show overlay if not already visible
-        document.getElementById('panic-overlay').classList.remove('hidden');
-        if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
+
+      console.log('🚨 NUEVA ALERTA DE PÁNICO DETECTADA:', newest);
+
+      // 1. ALWAYS show the panic overlay on this device
+      document.getElementById('panic-overlay').classList.remove('hidden');
+
+      // 2. ALWAYS play alarm sound (works without any permissions)
+      playAlarmSound();
+
+      // 3. Vibrate intensely
+      if (navigator.vibrate) {
+        navigator.vibrate([500, 200, 500, 200, 500, 200, 1000]);
       }
-      // Also use SW showNotification for background notifications
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+
+      // 4. Try system notification via Service Worker (works on Android PWA)
+      if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(reg => {
           reg.showNotification('🚨 ¡ALERTA DE PÁNICO!', {
             body: newest?.mensaje || 'Pilar ha pulsado el botón de pánico',
             icon: 'icons/icon-192.png',
             badge: 'icons/icon-192.png',
-            tag: 'panic-alert-sw',
+            tag: 'panic-alert-' + Date.now(),
             renotify: true,
             requireInteraction: true,
-            vibrate: [300, 100, 300, 100, 500]
-          });
+            vibrate: [500, 200, 500, 200, 500, 200, 1000]
+          }).catch(e => console.warn('SW notification failed:', e));
         });
+      }
+
+      // 5. Fallback: try Notification API directly
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification('🚨 ¡ALERTA DE PÁNICO!', {
+            body: newest?.mensaje || 'Pilar ha pulsado el botón de pánico',
+            icon: 'icons/icon-192.png',
+            tag: 'panic-alert-direct',
+            requireInteraction: true
+          });
+        } catch(e) { /* Silently ignore — SW notification is primary */ }
       }
     }
     APP._lastAlertCount = count;
@@ -1497,6 +1572,9 @@ document.getElementById('btn-panic').addEventListener('click', () => {
 
 document.getElementById('btn-close-panic').addEventListener('click', () => {
   document.getElementById('panic-overlay').classList.add('hidden');
+  // Stop alarm sound and vibration
+  if (window.stopAlarmSound) window.stopAlarmSound();
+  if (navigator.vibrate) navigator.vibrate(0);
 });
 
 // ══════════════════════════════════════
