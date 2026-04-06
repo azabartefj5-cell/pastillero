@@ -86,9 +86,12 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       <h1 class="font-headline font-bold text-xl tracking-tight text-on-surface">Pastillero Pilar</h1>
     </div>
     <div class="flex items-center gap-2">
-      <span id="sync-indicator" class="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
-        <span class="material-symbols-outlined text-xs icon-fill">cloud_done</span>Sync
-      </span>
+          <div id="sync-indicator" class="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full transition-all">
+            <span class="material-symbols-outlined text-sm animate-pulse">sync</span>
+            <span id="sync-time" class="text-[10px] font-black uppercase tracking-widest">Online</span>
+          </div>
+          <div id="firebase-status-badge" class="px-3 py-1.5 bg-white/30 rounded-full text-[10px] font-black uppercase text-on-primary-container tracking-widest transition-all">Offline</div>
+        </div>
       <span class="material-symbols-outlined text-on-surface-variant text-3xl">account_circle</span>
     </div>
   </div>
@@ -738,7 +741,7 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 <!-- ═══════════ FIREBASE SDK ═══════════ -->
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getFirestore,doc,setDoc,getDoc,getDocs,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp,query,orderBy,limit}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,doc,setDoc,getDoc,getDocs,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp,query,orderBy,limit,deleteField}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ══════════════════════════════════════
 // FIREBASE CONFIG (HARDCODED)
@@ -768,6 +771,7 @@ const APP = {
     localStorage.setItem('pilar_device_id', id);
     return id;
   })(),
+  _connectedAt: new Date(Date.now() - 10000), // Slightly in the past to catch very recent alerts
   _alarmInterval: null,
   _audioCtx: null
 };
@@ -1352,13 +1356,26 @@ function startFirebaseListeners() {
     if (!snap.exists()) return;
     const data = snap.data();
 
-    // Check if this is a reset marker - ignore it
-    if (data._reset) {
-      console.log('🔄 Reset marker detected, ignoring sync');
+
+
+    console.log('🔄 Tomas sync:', data);
+    
+    // Check if this is a ONLY a reset marker (no medication data)
+    const hasMeds = Object.keys(data).some(k => !k.startsWith('_'));
+    if (data._reset && !hasMeds) {
+      console.log('🔄 Reseteo activo y sin nuevas tomas, limpiando UI...');
+      // Clear visual state of all cards if they aren't already cleared
+      document.querySelectorAll('[data-med]').forEach(card => {
+        card.classList.remove('opacity-60', 'grayscale-[0.5]', 'border-primary/40');
+        const btn = card.querySelector('.btn-toma, .btn-med-am, #btn-kreon-noche, #btn-mirtazapina-noche');
+        if (btn) {
+           btn.disabled = false;
+           // Restore original labels if needed (simplified here as they'll likely reload)
+        }
+      });
       return;
     }
 
-    console.log('🔄 Tomas sync:', data);
     // Update each med button from remote state
     Object.keys(data).forEach(medId => {
       if (medId.startsWith('_')) return; // Skip metadata fields
@@ -1453,6 +1470,15 @@ function startFirebaseListeners() {
     // Update dashboard header with latest entry
     updateLastConstantes();
     // The collection listener will detect this change and rebuild the history automatically
+    
+    // Update Sync Heartbeat
+    const syncTimeEl = document.getElementById('sync-time');
+    if (syncTimeEl) {
+      const now = new Date();
+      syncTimeEl.textContent = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('sync-indicator').classList.remove('bg-yellow-100', 'text-yellow-700');
+      document.getElementById('sync-indicator').classList.add('bg-green-100', 'text-green-700');
+    }
   });
 
   // ══════════════════════════════════════
@@ -1577,7 +1603,7 @@ function startFirebaseListeners() {
   // ══════════════════════════════════════
   // ALERTAS URGENTES LISTENER — ALL DEVICES
   // ══════════════════════════════════════
-  APP._lastAlertId = null;
+  
   // Use a query to watch only for the absolute latest addition
   const alertsRef = collection(APP.db, 'alertas_urgentes');
   const q = query(alertsRef, orderBy('hora_local', 'desc'), limit(1));
@@ -1586,19 +1612,15 @@ function startFirebaseListeners() {
     if (snapshot.empty) return;
     
     const docSnap = snapshot.docs[0];
-    const alertId = docSnap.id;
     const alertData = docSnap.data();
+    const alertTime = new Date(alertData.hora_local);
 
-    // First run: just save the ID so we don't trigger for old alerts
-    if (APP._lastAlertId === null) {
-      APP._lastAlertId = alertId;
-      console.log('✅ Listener de alertas iniciado. Último ID:', alertId);
-      return;
-    }
-
-    // Subsequent runs: trigger only if the ID changed (NEW alert)
-    if (alertId !== APP._lastAlertId) {
-      APP._lastAlertId = alertId;
+    // Trigger ONLY if the alert is NEWER than when this app session started
+    // (We use a 10s buffer set in APP._connectedAt init)
+    if (alertTime > APP._connectedAt) {
+      // Update connectedAt to the current alert so we don't repeat
+      APP._connectedAt = alertTime;
+      
       console.log('🚨 NUEVA ALERTA DE PÁNICO DETECTADA:', alertData);
 
       // 1. ALWAYS show the panic overlay on this device
@@ -2091,111 +2113,115 @@ document.getElementById('tab-historial-graficos').addEventListener('click', () =
 
 document.getElementById('btn-load-history').addEventListener('click', loadFullHistory);
 
+
+
+// ══════════════════════════════════════
+// NOTIFICATION STATUS LOGIC
+// ══════════════════════════════════════
+function updateNotifUI() {
+  const status = Notification?.permission || 'unsupported';
+  const textEl = document.getElementById('notif-status-text');
+  const iconEl = document.getElementById('notif-status-icon');
+  const btnEl = document.getElementById('btn-request-notif');
+  const pwaGuide = document.getElementById('pwa-guide');
+
+  if (!textEl || !iconEl) return;
+
+  if (status === 'granted') {
+    textEl.textContent = 'Activas ✅';
+    textEl.className = 'text-xs text-green-600 font-bold';
+    iconEl.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-green-100 text-green-700';
+    iconEl.innerHTML = '<span class="material-symbols-outlined text-xl">notifications_active</span>';
+    if (btnEl) btnEl.classList.add('hidden');
+    if (pwaGuide) pwaGuide.classList.add('hidden');
+  } else if (status === 'denied') {
+    textEl.textContent = 'Bloqueadas ❌ (Cambia en ajustes)';
+    textEl.className = 'text-xs text-error font-bold';
+    iconEl.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-error-container/20 text-error';
+    iconEl.innerHTML = '<span class="material-symbols-outlined text-xl">notifications_off</span>';
+    if (btnEl) btnEl.classList.add('hidden');
+  } else {
+    textEl.textContent = 'Pendiente de activar';
+    textEl.className = 'text-xs text-on-surface-variant';
+    if (btnEl) btnEl.classList.remove('hidden');
+    // Show PWA guide specifically for iOS if permission is default
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone) {
+      if (pwaGuide) pwaGuide.classList.remove('hidden');
+    }
+  }
+}
+
+// ══════════════════════════════════════
+// CORE: SAVE MEDICATION TOMA
+// ══════════════════════════════════════
+async function saveMedToma(medId, periodo) {
+  console.log(`💾 Registrando toma: ${medId} (${periodo})`);
+  const today = TODAY();
+  const timestamp = new Date().toISOString();
+  const key = `med_${today}_${medId}`;
+  
+  // 1. Save locally for immediate feedback
+  localStorage.setItem(key, timestamp);
+
+  // 2. Save to Firebase
+  if (APP.db) {
+    try {
+      await setDoc(doc(APP.db, 'tomas_pilar', today), {
+        [medId]: { taken: true, timestamp, periodo },
+        _reset: deleteField ? deleteField() : null // Safety check for deleteField
+      }, { merge: true });
+      console.log('✅ Sincronizado con Firebase');
+    } catch(e) {
+      console.error('❌ Error de sincronización:', e);
+    }
+  }
+  return timestamp;
+}
+
 // ══════════════════════════════════════
 // RESET DAILY DATA
 // ══════════════════════════════════════
 async function resetTodayData() {
   const today = TODAY();
+  console.log('🧹 Reseteando datos de hoy:', today);
 
-  // Clear all medication taken states from localStorage
+  // Clear all localStorage for today
   Object.keys(localStorage).forEach(key => {
-    if (key.startsWith(`med_${today}_`)) {
+    if (key.startsWith(`med_${today}_`) || 
+        key.startsWith(`checkin_${today}_`) || 
+        key.startsWith(`omeprazol_timer_`)) {
       localStorage.removeItem(key);
     }
   });
-
-  // Notification Permission Request
-  const updateNotifUI = () => {
-    const status = Notification?.permission || 'unsupported';
-    const textEl = document.getElementById('notif-status-text');
-    const iconEl = document.getElementById('notif-status-icon');
-    const btnEl = document.getElementById('btn-request-notif');
-    const pwaGuide = document.getElementById('pwa-guide');
-
-    if (status === 'granted') {
-      textEl.textContent = 'Activas ✅';
-      textEl.classList.add('text-green-600');
-      iconEl.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-green-100 text-green-700';
-      iconEl.innerHTML = '<span class="material-symbols-outlined text-xl">notifications_active</span>';
-      btnEl.classList.add('hidden');
-      pwaGuide.classList.add('hidden');
-    } else if (status === 'denied') {
-      textEl.textContent = 'Bloqueadas ❌ (Cambia en ajustes)';
-      textEl.classList.add('text-error');
-      iconEl.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-error-container/20 text-error';
-      iconEl.innerHTML = '<span class="material-symbols-outlined text-xl">notifications_off</span>';
-      btnEl.classList.add('hidden');
-    } else {
-      textEl.textContent = 'Pendiente de activar';
-      btnEl.classList.remove('hidden');
-      // Show PWA guide specifically for iOS if permission is default
-      if (/iPhone|iPad|iPod/.test(navigator.userAgent) && !window.navigator.standalone) {
-        pwaGuide.classList.remove('hidden');
-      }
-    }
-  };
-
-  document.getElementById('btn-request-notif').addEventListener('click', () => {
-    Notification.requestPermission().then(perm => {
-      console.log('Notification permission:', perm);
-      updateNotifUI();
-    });
-  });
-
-  updateNotifUI();
-
-  // Clear check-in for all periods
-  ['manana', 'comida', 'merienda', 'noche'].forEach(period => {
-    localStorage.removeItem(`checkin_${today}_${period}`);
-  });
-
-  // Clear Omeprazol timers
-  localStorage.removeItem(`omeprazol_timer_am_${today}`);
-  localStorage.removeItem(`omeprazol_timer_pm_${today}`);
-
-  // Clear SOS states
-  localStorage.removeItem(`oramorph_unlock_${today}`);
   localStorage.removeItem(`fortasec_${today}`);
+  localStorage.removeItem(`oramorph_unlock_${today}`);
 
-  // Clear timers
+  // Clear memory state
   if (APP.timers.am) clearTimeout(APP.timers.am);
   if (APP.timers.pm) clearTimeout(APP.timers.pm);
-  APP.timers.am = null;
-  APP.timers.pm = null;
+  APP.timers = { am: null, pm: null };
   APP.timerEnds = { am: 0, pm: 0 };
   APP.sosState = { oramorphUnlock: 0, fortasecCount: 0 };
 
-  // Force unlock all meds UI
-  lockMeds('am', false);
-  lockMeds('pm', false);
-
-  // Clear history arrays
-  localStorage.removeItem('constantes_history');
-  localStorage.removeItem('tomas_history');
-
-  // Clear Firebase data for today - WAIT for completion
+  // Clear Firebase data for today
   if (APP.db) {
     try {
-      // Delete today's tomas document completely
       await setDoc(doc(APP.db, 'tomas_pilar', today), {
         _reset: true,
         resetAt: serverTimestamp()
-      }, { merge: true });
-
-      // Delete today's constantes document completely
+      });
       await setDoc(doc(APP.db, 'constantes_pilar', today), {
         _reset: true,
         resetAt: serverTimestamp()
-      }, { merge: true });
-
-      console.log('✅ Firebase reset completed');
+      });
+      console.log('✅ Datos eliminados de la nube');
     } catch(e) {
-      console.warn('Firebase reset error:', e);
+      console.warn('Error borrando en nube:', e);
     }
   }
 
-  // Show success and reload
-  document.getElementById('reset-overlay').classList.add('hidden');
+  // Reload back to home
+  navigateToHoy();
   location.reload();
 }
 
@@ -2214,6 +2240,8 @@ document.getElementById('btn-confirm-reset').addEventListener('click', async () 
 document.getElementById('btn-cancel-reset').addEventListener('click', () => {
   document.getElementById('reset-overlay').classList.add('hidden');
 });
+
+
 
 // ══════════════════════════════════════
 // RESTORE STATE ON LOAD
@@ -2254,6 +2282,15 @@ function init() {
   updateLastConstantes();
   renderConstantesHistory();
   renderTomasHistory();
+
+  // Notification button request
+  document.getElementById('btn-request-notif')?.addEventListener('click', () => {
+    Notification.requestPermission().then(perm => {
+      console.log('Notification permission:', perm);
+      updateNotifUI();
+    });
+  });
+  updateNotifUI();
 
   // Request notification permission for panic alerts across devices
   if ('Notification' in window && Notification.permission === 'default') {
