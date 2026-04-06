@@ -1494,31 +1494,35 @@ function startFirebaseListeners() {
   // ══════════════════════════════════════
   // ALERTAS URGENTES LISTENER — ALL DEVICES
   // ══════════════════════════════════════
-  APP._lastAlertCount = null;
-  // Use a query to only watch for the absolute latest additions
+  APP._lastAlertId = null;
+  // Use a query to watch only for the absolute latest addition
   const alertsRef = collection(APP.db, 'alertas_urgentes');
   const q = query(alertsRef, orderBy('hora_local', 'desc'), limit(1));
   
-  onSnapshot(alertsRef, (snapshot) => {
-    const count = snapshot.size;
-    // Only fire alarm when a NEW alert is added (not on initial load)
-    if (APP._lastAlertCount !== null && count > APP._lastAlertCount) {
-      // Find the newest alert
-      let newest = null;
-      snapshot.forEach(docSnap => {
-        const d = docSnap.data();
-        if (!newest || (d.hora_local && d.hora_local > (newest.hora_local || ''))) {
-          newest = d;
-        }
-      });
+  onSnapshot(q, (snapshot) => {
+    if (snapshot.empty) return;
+    
+    const docSnap = snapshot.docs[0];
+    const alertId = docSnap.id;
+    const alertData = docSnap.data();
 
-      console.log('🚨 NUEVA ALERTA DE PÁNICO DETECTADA:', newest);
+    // First run: just save the ID so we don't trigger for old alerts
+    if (APP._lastAlertId === null) {
+      APP._lastAlertId = alertId;
+      console.log('✅ Listener de alertas iniciado. Último ID:', alertId);
+      return;
+    }
+
+    // Subsequent runs: trigger only if the ID changed (NEW alert)
+    if (alertId !== APP._lastAlertId) {
+      APP._lastAlertId = alertId;
+      console.log('🚨 NUEVA ALERTA DE PÁNICO DETECTADA:', alertData);
 
       // 1. ALWAYS show the panic overlay on this device
       document.getElementById('panic-overlay').classList.remove('hidden');
 
       // 2. Play alarm sound ONLY if this is NOT the device that sent it
-      const isSender = newest.senderId === APP.deviceId;
+      const isSender = alertData.senderId === APP.deviceId;
       
       if (!isSender) {
         console.log('🔔 Sonando alarma en dispositivo receptor');
@@ -1527,14 +1531,14 @@ function startFirebaseListeners() {
           navigator.vibrate([1000, 500, 1000, 500, 1000, 1000]);
         }
       } else {
-        console.log('🔇 Silenciando alarma en dispositivo emisor (confirmación visual única)');
+        console.log('🔇 Silenciando alarma en dispositivo emisor (confirmación visual)');
       }
 
-      // 3. Try system notification via Service Worker (works on Android PWA)
+      // 3. Try system notification via Service Worker (Android PWA)
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(reg => {
           reg.showNotification(isSender ? '✅ Alerta enviada' : '🚨 ¡ALERTA DE PÁNICO!', {
-            body: newest?.mensaje || 'Pilar ha pulsado el botón de pánico',
+            body: alertData.mensaje || 'Pilar ha pulsado el botón de pánico',
             icon: 'icons/icon-192.png',
             badge: 'icons/icon-192.png',
             tag: 'panic-alert-' + (isSender ? 'sender' : 'receiver'),
@@ -1546,7 +1550,6 @@ function startFirebaseListeners() {
         });
       }
     }
-    APP._lastAlertCount = count;
   });
 }
 
