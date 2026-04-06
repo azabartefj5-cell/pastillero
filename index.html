@@ -484,13 +484,24 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
   <textarea id="firebase-config-input" class="hidden"></textarea>
 
   <!-- RESET BUTTON -->
-  <button id="btn-reset-day" class="w-full p-4 rounded-3xl bg-error-container text-on-error-container flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-sm border-2 border-error/30">
-    <span class="material-symbols-outlined text-3xl">restart_alt</span>
-    <div class="text-left">
-      <p class="font-headline font-bold text-lg">Resetear Día</p>
-      <p class="text-sm opacity-80">Borrar todas las tomas registradas hoy</p>
-    </div>
-  </button>
+  <div class="grid grid-cols-1 gap-3">
+    <button id="btn-reset-day" class="w-full p-4 rounded-3xl bg-error-container text-on-error-container flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-sm border-2 border-error/30">
+      <span class="material-symbols-outlined text-3xl">restart_alt</span>
+      <div class="text-left">
+        <p class="font-headline font-bold text-lg">Resetear Día</p>
+        <p class="text-sm opacity-80">Borrar todas las tomas registradas hoy</p>
+      </div>
+    </button>
+    
+    <!-- TEST ALARM BUTTON -->
+    <button id="btn-test-alarm" class="w-full p-4 rounded-3xl bg-secondary-container/20 text-on-secondary-container flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-sm border-2 border-secondary/30">
+      <span class="material-symbols-outlined text-3xl">notification_important</span>
+      <div class="text-left">
+        <p class="font-headline font-bold text-lg">Probar Alarma</p>
+        <p class="text-sm opacity-80">Verificar sonido de alerta en este móvil</p>
+      </div>
+    </button>
+  </div>
 
   <!-- TABS: Lista / Gráficos -->
   <div class="flex gap-2 bg-surface-container-highest rounded-2xl p-1">
@@ -697,7 +708,7 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 <!-- ═══════════ FIREBASE SDK ═══════════ -->
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getFirestore,doc,setDoc,getDoc,getDocs,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getFirestore,doc,setDoc,getDoc,getDocs,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp,query,orderBy,limit}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ══════════════════════════════════════
 // FIREBASE CONFIG (HARDCODED)
@@ -1419,9 +1430,9 @@ function startFirebaseListeners() {
   APP._alarmInterval = null;
   APP._audioCtx = null;
 
-  function playAlarmSound() {
+  APP.playAlarmSound = function() {
     // Stop any existing alarm first
-    stopAlarmSound();
+    APP.stopAlarmSound();
 
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1459,9 +1470,9 @@ function startFirebaseListeners() {
     } catch (e) {
       console.warn('Audio alarm failed:', e);
     }
-  }
+  };
 
-  function stopAlarmSound() {
+  APP.stopAlarmSound = function() {
     if (APP._alarmInterval) {
       clearInterval(APP._alarmInterval);
       APP._alarmInterval = null;
@@ -1470,16 +1481,20 @@ function startFirebaseListeners() {
       APP._audioCtx.close().catch(() => {});
       APP._audioCtx = null;
     }
-  }
+  };
 
   // Make stopAlarmSound available globally for the close button
-  window.stopAlarmSound = stopAlarmSound;
+  window.stopAlarmSound = APP.stopAlarmSound;
 
   // ══════════════════════════════════════
   // ALERTAS URGENTES LISTENER — ALL DEVICES
   // ══════════════════════════════════════
   APP._lastAlertCount = null;
-  onSnapshot(collection(APP.db, 'alertas_urgentes'), (snapshot) => {
+  // Use a query to only watch for the absolute latest additions
+  const alertsRef = collection(APP.db, 'alertas_urgentes');
+  const q = query(alertsRef, orderBy('hora_local', 'desc'), limit(1));
+  
+  onSnapshot(alertsRef, (snapshot) => {
     const count = snapshot.size;
     // Only fire alarm when a NEW alert is added (not on initial load)
     if (APP._lastAlertCount !== null && count > APP._lastAlertCount) {
@@ -1498,11 +1513,11 @@ function startFirebaseListeners() {
       document.getElementById('panic-overlay').classList.remove('hidden');
 
       // 2. ALWAYS play alarm sound (works without any permissions)
-      playAlarmSound();
+      APP.playAlarmSound();
 
       // 3. Vibrate intensely
       if (navigator.vibrate) {
-        navigator.vibrate([500, 200, 500, 200, 500, 200, 1000]);
+        navigator.vibrate([1000, 500, 1000, 500, 1000, 1000]);
       }
 
       // 4. Try system notification via Service Worker (works on Android PWA)
@@ -1519,18 +1534,6 @@ function startFirebaseListeners() {
           }).catch(e => console.warn('SW notification failed:', e));
         });
       }
-
-      // 5. Fallback: try Notification API directly
-      if ('Notification' in window && Notification.permission === 'granted') {
-        try {
-          new Notification('🚨 ¡ALERTA DE PÁNICO!', {
-            body: newest?.mensaje || 'Pilar ha pulsado el botón de pánico',
-            icon: 'icons/icon-192.png',
-            tag: 'panic-alert-direct',
-            requireInteraction: true
-          });
-        } catch(e) { /* Silently ignore — SW notification is primary */ }
-      }
     }
     APP._lastAlertCount = count;
   });
@@ -1540,11 +1543,14 @@ function startFirebaseListeners() {
 // PANIC BUTTON
 // ══════════════════════════════════════
 async function sendPanicAlert() {
-  // 1. Show overlay immediately
+  // 1. Show overlay and play sound immediately on THIS device too
   document.getElementById('panic-overlay').classList.remove('hidden');
-  // 2. Vibrate if possible
-  if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
-  // 3. Save to Firebase alertas_urgentes
+  if (APP.playAlarmSound) APP.playAlarmSound();
+
+  // 2. Vibrate intensely
+  if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500, 200, 1000]);
+
+  // 3. Save to Firebase alertas_urgentes — this triggers ALL other devices
   if (APP.db) {
     try {
       await addDoc(collection(APP.db, 'alertas_urgentes'), {
@@ -1568,6 +1574,13 @@ async function sendPanicAlert() {
 
 document.getElementById('btn-panic').addEventListener('click', () => {
   sendPanicAlert();
+});
+
+document.getElementById('btn-test-alarm')?.addEventListener('click', () => {
+  // Show overlay and play sound locally only
+  document.getElementById('panic-overlay').classList.remove('hidden');
+  if (APP.playAlarmSound) APP.playAlarmSound();
+  if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
 });
 
 document.getElementById('btn-close-panic').addEventListener('click', () => {
