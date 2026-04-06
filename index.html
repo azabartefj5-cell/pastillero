@@ -1002,7 +1002,22 @@ async function saveMedToma(medId, periodo) {
   if (hist.length > 100) hist.length = 100;
   localStorage.setItem('tomas_history', JSON.stringify(hist));
   if (APP.db) {
-    try { await setDoc(doc(APP.db, 'tomas_pilar', TODAY()), { [medId]: { taken: true, timestamp: ts } }, { merge: true }); } catch(e) { console.warn(e); }
+    // Flash sync indicator
+    const syncEl = document.getElementById('sync-indicator');
+    syncEl.innerHTML = '<span class="material-symbols-outlined text-xs animate-spin">sync</span>Sync...';
+    syncEl.classList.add('bg-yellow-100','text-yellow-700');
+    syncEl.classList.remove('bg-green-100','text-green-700');
+    try {
+      await setDoc(doc(APP.db, 'tomas_pilar', TODAY()), { [medId]: { taken: true, timestamp: ts } }, { merge: true });
+      syncEl.innerHTML = '<span class="material-symbols-outlined text-xs icon-fill">cloud_done</span>Sync';
+      syncEl.classList.remove('bg-yellow-100','text-yellow-700');
+      syncEl.classList.add('bg-green-100','text-green-700');
+    } catch(e) {
+      console.warn(e);
+      syncEl.innerHTML = '<span class="material-symbols-outlined text-xs">cloud_off</span>Error';
+      syncEl.classList.remove('bg-yellow-100','text-yellow-700');
+      syncEl.classList.add('bg-red-100','text-red-700');
+    }
   }
   renderTomasHistory();
   return ts;
@@ -1145,11 +1160,19 @@ function updateFortasecUI() {
   }
 }
 
-document.getElementById('btn-fortasec').addEventListener('click', () => {
+document.getElementById('btn-fortasec').addEventListener('click', async () => {
   if (APP.sosState.fortasecCount >= 8) return;
   APP.sosState.fortasecCount++;
   localStorage.setItem(`fortasec_${TODAY()}`, APP.sosState.fortasecCount);
   saveMedToma('sos_fortasec', 'sos');
+  // Also save count to Firebase for cross-device sync
+  if (APP.db) {
+    try {
+      await setDoc(doc(APP.db, 'tomas_pilar', TODAY()), {
+        sos_fortasec: { taken: true, count: APP.sosState.fortasecCount, timestamp: new Date().toISOString() }
+      }, { merge: true });
+    } catch(e) { console.warn('Fortasec sync error:', e); }
+  }
   updateFortasecUI();
 });
 
@@ -1291,28 +1314,55 @@ function startFirebaseListeners() {
       if (data[medId]?.taken) {
         // Mark local storage so state persists
         const key = `med_${TODAY()}_${medId}`;
+        const timestamp = data[medId].timestamp || new Date().toISOString();
         if (!localStorage.getItem(key)) {
-          localStorage.setItem(key, data[medId].timestamp || new Date().toISOString());
+          localStorage.setItem(key, timestamp);
+          // Sync local history array to show in history view real-time without reloading
+          const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
+          if (!hist.some(h => h.med === medId && h.fecha === TODAY())) {
+            const periodo = medId.includes('merienda') ? 'merienda' : (medId.includes('comida') ? 'comida' : (medId.includes('noche') || medId.includes('pm') ? 'noche' : 'manana'));
+            hist.unshift({ med: medId, periodo, timestamp, fecha: TODAY() });
+            localStorage.setItem('tomas_history', JSON.stringify(hist));
+            renderTomasHistory();
+          }
         }
-        // Update Omeprazol buttons
+
+        // Update Omeprazol buttons and start/finish remote timers
         if (medId === 'omeprazol_am' || medId === 'omeprazol_pm') {
           const suffix = medId === 'omeprazol_am' ? 'am' : 'pm';
           const btn = document.getElementById(`btn-omeprazol-${suffix}`);
-          if (btn && !btn.disabled) {
-            btn.innerHTML = '<span class="material-symbols-outlined text-3xl icon-fill text-tertiary">check_circle</span> TOMADO';
-            btn.disabled = true;
+          if (btn && !btn.classList.contains('hidden')) {
+            const elapsed = Date.now() - new Date(timestamp).getTime();
+            const DURATION = 30 * 60 * 1000;
+            if (elapsed < DURATION) {
+              if (APP.timers[suffix]) clearTimeout(APP.timers[suffix]);
+              APP.timerEnds[suffix] = new Date(timestamp).getTime() + DURATION;
+              localStorage.setItem(`omeprazol_timer_${suffix}_${TODAY()}`, APP.timerEnds[suffix]);
+              btn.classList.add('hidden');
+              document.getElementById(`timer-omeprazol-${suffix}`).classList.remove('hidden');
+              document.getElementById(`card-omeprazol-${suffix}`).classList.add('hidden');
+              lockMeds(suffix, true);
+              tickTimer(suffix);
+            } else {
+              btn.classList.add('hidden');
+              document.getElementById(`timer-omeprazol-${suffix}`).classList.remove('hidden');
+              document.getElementById(`card-omeprazol-${suffix}`).classList.add('hidden');
+              finishOmeprazolTimer(suffix);
+            }
           }
-        }
-        // Update generic med cards
-        document.querySelectorAll(`[data-med="${medId}"]`).forEach(card => {
-          const btns = card.querySelectorAll('button');
-          btns.forEach(btn => {
-            if (!btn.disabled) {
-              btn.innerHTML = '<span class="material-symbols-outlined text-2xl text-tertiary icon-fill">check_circle</span>';
-              btn.disabled = true;
+        } 
+        // Update generic med cards using markCardTakenUI to ensure identical visuals across devices
+        else {
+          document.querySelectorAll(`[data-med="${medId}"]`).forEach(card => {
+            const btns = card.querySelectorAll('button');
+            let hasActiveBtn = false;
+            btns.forEach(btn => { if (!btn.disabled) hasActiveBtn = true; });
+            if (hasActiveBtn) {
+              markCardTakenUI(card, timestamp);
             }
           });
-        });
+        }
+        
         // Update Fortasec from remote
         if (medId === 'sos_fortasec' && data[medId].count) {
           APP.sosState.fortasecCount = data[medId].count;
@@ -1322,7 +1372,7 @@ function startFirebaseListeners() {
       }
     });
   });
-  // Listen to constantes
+  // Listen to constantes — full real-time sync
   onSnapshot(doc(APP.db, 'constantes_pilar', TODAY()), (snap) => {
     if (!snap.exists()) return;
     const data = snap.data();
@@ -1333,14 +1383,78 @@ function startFirebaseListeners() {
       const checkinKey = `checkin_${TODAY()}_${period}`;
       if (!localStorage.getItem(checkinKey)) {
         localStorage.setItem(checkinKey, JSON.stringify(data[period]));
-        // If we're on the check-in screen, auto-navigate to dashboard
         if (APP.currentScreen === 'checkin') {
           navigateToHoy();
         }
       }
     }
-    // Update history table
+    // Rebuild local constantes_history from all remote entries for today
+    const remoteEntries = [];
+    ['manana','comida','merienda','noche'].forEach(p => {
+      if (data[p]) remoteEntries.push({ ...data[p], periodo: p, fecha: TODAY() });
+    });
+    Object.keys(data).forEach(key => {
+      if (key.startsWith('entry_') && data[key]) {
+        remoteEntries.push({ ...data[key], fecha: TODAY() });
+      }
+    });
+    // Sort newest first
+    remoteEntries.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    // Merge into local history (replace today's entries, keep other days)
+    const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
+    const otherDays = hist.filter(h => h.fecha !== TODAY());
+    const merged = [...remoteEntries, ...otherDays].slice(0, 100);
+    localStorage.setItem('constantes_history', JSON.stringify(merged));
+    // Update dashboard header with latest entry
+    updateLastConstantes();
     renderConstantesHistory();
+  });
+
+  // Listen to alertas_urgentes — show notification on ALL connected devices
+  APP._lastAlertCount = null;
+  onSnapshot(collection(APP.db, 'alertas_urgentes'), (snapshot) => {
+    const count = snapshot.size;
+    // Only fire notification when a NEW alert is added (not on initial load)
+    if (APP._lastAlertCount !== null && count > APP._lastAlertCount) {
+      // Find the newest alert
+      let newest = null;
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        if (!newest || (d.hora_local && d.hora_local > (newest.hora_local || ''))) {
+          newest = d;
+        }
+      });
+      // Show browser notification if permitted
+      if (Notification.permission === 'granted') {
+        const notif = new Notification('🚨 ¡ALERTA DE PÁNICO!', {
+          body: newest?.mensaje || 'Pilar ha pulsado el botón de pánico',
+          icon: 'icons/icon-192.png',
+          badge: 'icons/icon-192.png',
+          tag: 'panic-alert',
+          renotify: true,
+          requireInteraction: true,
+          vibrate: [300, 100, 300, 100, 500]
+        });
+        // Also show overlay if not already visible
+        document.getElementById('panic-overlay').classList.remove('hidden');
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500]);
+      }
+      // Also use SW showNotification for background notifications
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification('🚨 ¡ALERTA DE PÁNICO!', {
+            body: newest?.mensaje || 'Pilar ha pulsado el botón de pánico',
+            icon: 'icons/icon-192.png',
+            badge: 'icons/icon-192.png',
+            tag: 'panic-alert-sw',
+            renotify: true,
+            requireInteraction: true,
+            vibrate: [300, 100, 300, 100, 500]
+          });
+        });
+      }
+    }
+    APP._lastAlertCount = count;
   });
 }
 
@@ -1906,8 +2020,19 @@ function init() {
   checkOramorphLockout();
   loadFortasec();
   updatePeriodicUI();
+  updateLastConstantes();
   renderConstantesHistory();
   renderTomasHistory();
+
+  // Request notification permission for panic alerts across devices
+  if ('Notification' in window && Notification.permission === 'default') {
+    // Show a gentle prompt after 2s so the user understands the context
+    setTimeout(() => {
+      Notification.requestPermission().then(perm => {
+        console.log('Notification permission:', perm);
+      });
+    }, 2000);
+  }
 
   // Auto-connect Firebase with hardcoded config
   document.getElementById('firebase-config-input').value = JSON.stringify(FIREBASE_CONFIG, null, 2);

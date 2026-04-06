@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pastillero-pilar-v3';
+const CACHE_NAME = 'pastillero-pilar-v4';
 const STATIC_ASSETS = [
   './index.html',
   './manifest.json',
@@ -58,6 +58,25 @@ self.addEventListener('fetch', event => {
           return caches.match('./index.html');
         }
       });
+    })
+  );
+});
+
+// Notification click: open the app when user taps panic alert notification
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      // Focus existing window if available
+      for (const client of clientList) {
+        if (client.url.includes('index.html') && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      if (self.clients.openWindow) {
+        return self.clients.openWindow('./index.html');
+      }
     })
   );
 });
