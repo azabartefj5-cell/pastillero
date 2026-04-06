@@ -737,7 +737,9 @@ const APP = {
     const id = 'dev_' + Math.random().toString(36).substring(2, 15);
     localStorage.setItem('pilar_device_id', id);
     return id;
-  })()
+  })(),
+  _alarmInterval: null,
+  _audioCtx: null
 };
 
 const TODAY = () => {
@@ -1330,20 +1332,14 @@ function startFirebaseListeners() {
     // Update each med button from remote state
     Object.keys(data).forEach(medId => {
       if (medId.startsWith('_')) return; // Skip metadata fields
+      
       if (data[medId]?.taken) {
         // Mark local storage so state persists
         const key = `med_${TODAY()}_${medId}`;
         const timestamp = data[medId].timestamp || new Date().toISOString();
         if (!localStorage.getItem(key)) {
           localStorage.setItem(key, timestamp);
-          // Sync local history array to show in history view real-time without reloading
-          const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
-          if (!hist.some(h => h.med === medId && h.fecha === TODAY())) {
-            const periodo = medId.includes('merienda') ? 'merienda' : (medId.includes('comida') ? 'comida' : (medId.includes('noche') || medId.includes('pm') ? 'noche' : 'manana'));
-            hist.unshift({ med: medId, periodo, timestamp, fecha: TODAY() });
-            localStorage.setItem('tomas_history', JSON.stringify(hist));
-            renderTomasHistory();
-          }
+          // The collection listener will detect this change and update the history automatically
         }
 
         // Update Omeprazol buttons and start/finish remote timers
@@ -1426,7 +1422,58 @@ function startFirebaseListeners() {
     localStorage.setItem('constantes_history', JSON.stringify(merged));
     // Update dashboard header with latest entry
     updateLastConstantes();
+    // The collection listener will detect this change and rebuild the history automatically
+  });
+
+  // ══════════════════════════════════════
+  // FULL HISTORY COLLECTION SYNC — ALL DEVICES
+  // ══════════════════════════════════════
+  
+  // 1. TOMAS COLLECTION SYNC
+  onSnapshot(query(collection(APP.db, 'tomas_pilar'), orderBy('__name__', 'desc'), limit(30)), (snap) => {
+    console.log('🔄 Rebuilding Tomas Global History...');
+    const fullHistory = [];
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      const fecha = docSnap.id;
+      if (fecha === 'historico_periodico' || fecha.startsWith('_')) return;
+      Object.keys(data).forEach(medId => {
+        if (medId.startsWith('_')) return;
+        if (data[medId]?.taken) {
+          const timestamp = data[medId].timestamp || new Date().toISOString();
+          const p = medId.includes('merienda') ? 'merienda' : (medId.includes('comida') ? 'comida' : (medId.includes('noche') || medId.includes('pm') ? 'noche' : 'manana'));
+          fullHistory.push({ med: medId, periodo: p, timestamp, fecha });
+        }
+      });
+    });
+    // Sort newest FIRST globally
+    fullHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    localStorage.setItem('tomas_history', JSON.stringify(fullHistory.slice(0, 100)));
+    renderTomasHistory();
+  });
+
+  // 2. CONSTANTES COLLECTION SYNC
+  onSnapshot(query(collection(APP.db, 'constantes_pilar'), orderBy('__name__', 'desc'), limit(30)), (snap) => {
+    console.log('🔄 Rebuilding Constantes Global History...');
+    const fullHist = [];
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      const fecha = docSnap.id;
+      if (fecha.startsWith('_')) return;
+      
+      // Collect all entries in this day
+      ['manana','comida','merienda','noche'].forEach(p => {
+        if (data[p]) fullHist.push({ ...data[p], periodo: p, fecha });
+      });
+      Object.keys(data).forEach(key => {
+        if (key.startsWith('entry_')) fullHist.push({ ...data[key], fecha });
+      });
+    });
+    // Sort newest FIRST globally
+    fullHist.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    localStorage.setItem('constantes_history', JSON.stringify(fullHist.slice(0, 100)));
     renderConstantesHistory();
+    updateLastConstantes(); // Ensure dashboard header is also synced
   });
 
   // ══════════════════════════════════════
@@ -1436,28 +1483,36 @@ function startFirebaseListeners() {
   APP._audioCtx = null;
 
   APP.playAlarmSound = function() {
+    // 1. Ensure we have an AudioContext, reuse the unlocked one if available
+    let ctx = APP._audioCtx;
+    if (!ctx) {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      APP._audioCtx = ctx;
+    }
+    
     // Stop any existing alarm first
     APP.stopAlarmSound();
 
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      APP._audioCtx = ctx;
+      // Resume if it's suspended (browsers often suspend background contexts)
+      if (ctx.state === 'suspended') ctx.resume();
 
       function playBeep(freq, startTime, duration) {
+        if (!ctx) return;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.type = 'square';
         osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.5, startTime);
+        gain.gain.setValueAtTime(0.3, startTime); // Reduced a bit for safety
         gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
         osc.start(startTime);
         osc.stop(startTime + duration);
       }
 
       function playAlarmCycle() {
-        if (!APP._audioCtx) return;
+        if (!APP._audioCtx || APP._audioCtx.state === 'closed') return;
         const now = APP._audioCtx.currentTime;
         // Emergency siren pattern: alternating high-low tones
         playBeep(880, now, 0.15);
@@ -1482,10 +1537,8 @@ function startFirebaseListeners() {
       clearInterval(APP._alarmInterval);
       APP._alarmInterval = null;
     }
-    if (APP._audioCtx) {
-      APP._audioCtx.close().catch(() => {});
-      APP._audioCtx = null;
-    }
+    // Don't close the context, just stop the interval. 
+    // We want to keep the "unlocked" context reusable.
   };
 
   // Make stopAlarmSound available globally for the close button
@@ -2145,6 +2198,35 @@ function init() {
   // Auto-connect Firebase with hardcoded config
   document.getElementById('firebase-config-input').value = JSON.stringify(FIREBASE_CONFIG, null, 2);
   connectFirebase(FIREBASE_CONFIG);
+
+  // ══════════════════════════════════════
+  // AUDIO UNLOCKER FOR MOBILE — Fixes "No sound" issue
+  // ══════════════════════════════════════
+  const unlockAudio = () => {
+    console.log('🔊 Intentando desbloquear audio...');
+    if (!APP._audioCtx) {
+      APP._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (APP._audioCtx.state === 'suspended') {
+      APP._audioCtx.resume().then(() => {
+        console.log('✅ Audio desbloqueado correctamente');
+        // Play tiny silent beep to verify
+        const osc = APP._audioCtx.createOscillator();
+        const g = APP._audioCtx.createGain();
+        g.gain.value = 0;
+        osc.connect(g);
+        g.connect(APP._audioCtx.destination);
+        osc.start(0); osc.stop(0.01);
+      });
+    }
+    // Remove listeners after first successful unlock
+    ['click', 'touchstart', 'mousedown', 'keydown'].forEach(evt => 
+      document.body.removeEventListener(evt, unlockAudio)
+    );
+  };
+  ['click', 'touchstart', 'mousedown', 'keydown'].forEach(evt => 
+    document.body.addEventListener(evt, unlockAudio)
+  );
 
   // Initial navigation
   navigateToHoy();
