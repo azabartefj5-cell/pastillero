@@ -732,7 +732,12 @@ const APP = {
   timers: { am: null, pm: null },
   timerEnds: { am: 0, pm: 0 },
   meds: {},
-  sosState: { oramorphUnlock: 0, fortasecCount: 0 }
+  sosState: { oramorphUnlock: 0, fortasecCount: 0 },
+  deviceId: localStorage.getItem('pilar_device_id') || (() => {
+    const id = 'dev_' + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('pilar_device_id', id);
+    return id;
+  })()
 };
 
 const TODAY = () => {
@@ -1512,25 +1517,31 @@ function startFirebaseListeners() {
       // 1. ALWAYS show the panic overlay on this device
       document.getElementById('panic-overlay').classList.remove('hidden');
 
-      // 2. ALWAYS play alarm sound (works without any permissions)
-      APP.playAlarmSound();
-
-      // 3. Vibrate intensely
-      if (navigator.vibrate) {
-        navigator.vibrate([1000, 500, 1000, 500, 1000, 1000]);
+      // 2. Play alarm sound ONLY if this is NOT the device that sent it
+      const isSender = newest.senderId === APP.deviceId;
+      
+      if (!isSender) {
+        console.log('🔔 Sonando alarma en dispositivo receptor');
+        if (APP.playAlarmSound) APP.playAlarmSound();
+        if (navigator.vibrate) {
+          navigator.vibrate([1000, 500, 1000, 500, 1000, 1000]);
+        }
+      } else {
+        console.log('🔇 Silenciando alarma en dispositivo emisor (confirmación visual única)');
       }
 
-      // 4. Try system notification via Service Worker (works on Android PWA)
+      // 3. Try system notification via Service Worker (works on Android PWA)
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(reg => {
-          reg.showNotification('🚨 ¡ALERTA DE PÁNICO!', {
+          reg.showNotification(isSender ? '✅ Alerta enviada' : '🚨 ¡ALERTA DE PÁNICO!', {
             body: newest?.mensaje || 'Pilar ha pulsado el botón de pánico',
             icon: 'icons/icon-192.png',
             badge: 'icons/icon-192.png',
-            tag: 'panic-alert-' + Date.now(),
+            tag: 'panic-alert-' + (isSender ? 'sender' : 'receiver'),
             renotify: true,
-            requireInteraction: true,
-            vibrate: [500, 200, 500, 200, 500, 200, 1000]
+            silent: isSender,
+            requireInteraction: !isSender,
+            vibrate: isSender ? [] : [500, 200, 500, 200, 500, 200, 1000]
           }).catch(e => console.warn('SW notification failed:', e));
         });
       }
@@ -1543,19 +1554,19 @@ function startFirebaseListeners() {
 // PANIC BUTTON
 // ══════════════════════════════════════
 async function sendPanicAlert() {
-  // 1. Show overlay and play sound immediately on THIS device too
+  // 1. Show overlay immediately on THIS device (Local visual confirmation ONLY)
   document.getElementById('panic-overlay').classList.remove('hidden');
-  if (APP.playAlarmSound) APP.playAlarmSound();
+  // We NO LONGER play the sound here (as requested, only sound on other devices)
+  // But we vibrate slightly to confirm the button was pressed
+  if (navigator.vibrate) navigator.vibrate(200);
 
-  // 2. Vibrate intensely
-  if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500, 200, 1000]);
-
-  // 3. Save to Firebase alertas_urgentes — this triggers ALL other devices
+  // 2. Save to Firebase alertas_urgentes — this triggers ALL other devices
   if (APP.db) {
     try {
       await addDoc(collection(APP.db, 'alertas_urgentes'), {
         tipo: 'PANICO',
         paciente: 'Pilar',
+        senderId: APP.deviceId, // Important to distinguish sender
         timestamp: serverTimestamp(),
         hora_local: new Date().toISOString(),
         pantalla_activa: APP.currentScreen || 'unknown',
