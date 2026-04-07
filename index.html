@@ -86,12 +86,11 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       <h1 class="font-headline font-bold text-xl tracking-tight text-on-surface">Pastillero Pilar</h1>
     </div>
     <div class="flex items-center gap-2">
-          <div id="sync-indicator" class="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full transition-all">
-            <span class="material-symbols-outlined text-sm animate-pulse">sync</span>
-            <span id="sync-time" class="text-[10px] font-black uppercase tracking-widest">Online</span>
-          </div>
-          <div id="firebase-status-badge" class="px-3 py-1.5 bg-white/30 rounded-full text-[10px] font-black uppercase text-on-primary-container tracking-widest transition-all">Offline</div>
-        </div>
+      <div id="sync-indicator" class="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full transition-all">
+        <span class="material-symbols-outlined text-sm animate-pulse">sync</span>
+        <span id="sync-time" class="text-[10px] font-black uppercase tracking-widest">Online</span>
+      </div>
+      <div id="firebase-status-badge" class="px-3 py-1.5 bg-white/30 rounded-full text-[10px] font-black uppercase text-on-primary-container tracking-widest transition-all">Offline</div>
       <span class="material-symbols-outlined text-on-surface-variant text-3xl">account_circle</span>
     </div>
   </div>
@@ -774,6 +773,217 @@ const SPANISH_DATE = () => {
 };
 
 // ══════════════════════════════════════
+// CORE: SAVE MEDICATION TOMA (defined early for event listeners)
+// ══════════════════════════════════════
+async function saveMedToma(medId, periodo) {
+  console.log(`💾 Registrando toma: ${medId} (${periodo})`);
+  const today = TODAY();
+  const timestamp = new Date().toISOString();
+  const key = `med_${today}_${medId}`;
+
+  // 1. Save locally for immediate feedback
+  localStorage.setItem(key, timestamp);
+
+  // 2. Save to history
+  const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
+  hist.unshift({ med: medId, periodo, timestamp, fecha: today });
+  if (hist.length > 100) hist.length = 100;
+  localStorage.setItem('tomas_history', JSON.stringify(hist));
+
+  // 3. Save to Firebase
+  if (APP.db) {
+    const syncEl = document.getElementById('sync-indicator');
+    syncEl.innerHTML = '<span class="material-symbols-outlined text-xs animate-spin">sync</span>Sync...';
+    syncEl.classList.add('bg-yellow-100','text-yellow-700');
+    syncEl.classList.remove('bg-green-100','text-green-700');
+    try {
+      await setDoc(doc(APP.db, 'tomas_pilar', today), {
+        [medId]: { taken: true, timestamp, periodo }
+      }, { merge: true });
+      syncEl.innerHTML = '<span class="material-symbols-outlined text-xs icon-fill">cloud_done</span>Sync';
+      syncEl.classList.remove('bg-yellow-100','text-yellow-700');
+      syncEl.classList.add('bg-green-100','text-green-700');
+      console.log('✅ Sincronizado con Firebase');
+    } catch(e) {
+      console.error('❌ Error de sincronización:', e);
+      syncEl.innerHTML = '<span class="material-symbols-outlined text-xs">cloud_off</span>Error';
+      syncEl.classList.remove('bg-yellow-100','text-yellow-700');
+      syncEl.classList.add('bg-red-100','text-red-700');
+    }
+  }
+
+  // 4. Update UI
+  renderTomasHistory();
+  return timestamp;
+}
+
+function markCardTakenUI(card, isoString) {
+  if (!card) return;
+  const timeStr = isoString ? new Date(isoString).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '';
+  const medId = card.dataset.med || (card.id === 'card-omeprazol-am' ? 'omeprazol_am' : card.id === 'card-omeprazol-pm' ? 'omeprazol_pm' : '');
+
+  // Make the entire card a vivid green and update border
+  card.classList.add('!bg-[#22c55e]', '!border-[#16a34a]', 'shadow-none');
+
+  // Make all text elements white for contrast
+  card.querySelectorAll('h3, h4, p, span').forEach(el => {
+    el.classList.add('!text-white');
+  });
+
+  // Soften icon bubbles inside the card
+  card.querySelectorAll('.rounded-full.p-3').forEach(el => {
+    el.classList.add('!bg-white/20');
+  });
+
+  const btns = card.querySelectorAll('button');
+  btns.forEach(btn => {
+    // Layout vertical: el botón/etiqueta pasa a abajo del todo
+    card.classList.remove('flex-row', 'items-center', 'justify-between');
+    card.classList.add('flex-col', 'items-stretch', 'gap-4');
+
+    // Contenedor para el botón de "Tomado" y el de borrado
+    const isLarge = btn.classList.contains('btn-toma') || btn.id === 'btn-omeprazol-am' || btn.id === 'btn-omeprazol-pm';
+    btn.className = 'hidden'; // Hide the original button
+
+    let statusDiv = card.querySelector('.taken-status-container');
+    if (!statusDiv) {
+      statusDiv = document.createElement('div');
+      statusDiv.className = 'taken-status-container flex items-center gap-2 w-full';
+      card.appendChild(statusDiv);
+    }
+
+    statusDiv.innerHTML = `
+      <div class="flex-1 h-${isLarge ? '16' : '14'} bg-white/25 rounded-xl flex items-center justify-center gap-2 font-headline font-bold text-white text-${isLarge ? 'lg' : 'sm'}">
+        <span class="material-symbols-outlined ${isLarge ? 'text-3xl' : 'text-2xl'} icon-fill !text-white">task_alt</span>
+        TOMADO A LAS ${timeStr}
+      </div>
+      <button onclick="event.stopPropagation(); if(confirm('¿Anular esta toma?')) deleteMedToma('${medId}', TODAY())" class="h-${isLarge ? '16' : '14'} w-${isLarge ? '16' : '14'} bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all active:scale-90" title="Anular toma">
+        <span class="material-symbols-outlined !text-white">delete</span>
+      </button>
+    `;
+
+    btn.disabled = true;
+  });
+}
+
+function resetCardUI(medId) {
+  // Find the card and revert it to original state
+  const card = document.querySelector(`[data-med="${medId}"]`) ||
+               (medId === 'omeprazol_am' ? document.getElementById('card-omeprazol-am') :
+                medId === 'omeprazol_pm' ? document.getElementById('card-omeprazol-pm') : null);
+
+  if (!card) return;
+
+  // Remove the status container if exists
+  const statusDiv = card.querySelector('.taken-status-container');
+  if (statusDiv) statusDiv.remove();
+
+  // Revert classes
+  card.classList.remove('!bg-[#22c55e]', '!border-[#16a34a]', 'shadow-none', 'flex-col', 'items-stretch', 'gap-4');
+  card.classList.add('flex-row', 'items-center', 'justify-between');
+
+  // Revert text color
+  card.querySelectorAll('.!text-white').forEach(el => {
+    el.classList.remove('!text-white');
+  });
+
+  // Revert icon bubbles
+  card.querySelectorAll('.!bg-white/20').forEach(el => {
+    el.classList.remove('!bg-white/20');
+  });
+
+  // Revert and enable buttons
+  const btns = card.querySelectorAll('button');
+  btns.forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove('hidden');
+    btn.style.position = '';
+    btn.style.right = '';
+    btn.style.top = '';
+    btn.style.transform = '';
+
+    // Restore original HTML/Classes based on ID/Role
+    if (medId === 'omeprazol_am') {
+      btn.className = 'w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg';
+      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>CONFIRMAR TOMA';
+      card.classList.remove('hidden');
+      document.getElementById('timer-omeprazol-am').classList.add('hidden');
+    } else if (medId === 'omeprazol_pm') {
+      btn.className = 'w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg';
+      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>Tomar Omeprazol (Cena)';
+      card.classList.remove('hidden');
+      document.getElementById('timer-omeprazol-pm').classList.add('hidden');
+    } else if (btn.classList.contains('btn-toma')) {
+      const isMerienda = medId.includes('merienda');
+      btn.className = `btn-toma w-full h-20 bg-gradient-to-b from-${isMerienda ? 'tertiary' : 'secondary'} to-${isMerienda ? 'tertiary-container' : 'secondary-fixed-dim'} text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg`;
+      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA';
+    } else if (btn.classList.contains('btn-med-am') || btn.classList.contains('btn-med-pm')) {
+      btn.className = btn.classList.contains('btn-med-am') ? 'btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0' : 'btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0';
+      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check</span>';
+    }
+  });
+
+  // Re-apply Trangorex rule if needed
+  if (medId === 'trangorex_am') applyTrangorexRule();
+}
+
+async function deleteMedToma(medId, fecha) {
+  // 1. Remove from localStorage
+  const medKey = `med_${fecha}_${medId}`;
+  localStorage.removeItem(medKey);
+
+  // 2. Remove from tomas_history in localStorage
+  const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
+  const newHist = hist.filter(h => !(h.med === medId && h.fecha === fecha));
+  localStorage.setItem('tomas_history', JSON.stringify(newHist));
+
+  // 3. Remove from Firebase
+  if (APP.db) {
+    try {
+      const docRef = doc(APP.db, 'tomas_pilar', fecha);
+      await updateDoc(docRef, {
+        [medId]: deleteField()
+      });
+      console.log(`✅ ${medId} eliminado de Firebase para el ${fecha}`);
+    } catch(e) {
+      console.warn('Error eliminando toma de Firebase:', e);
+    }
+  }
+
+  // 4. Special cases: Omeprazol timers
+  if (medId === 'omeprazol_am' || medId === 'omeprazol_pm') {
+    const suffix = medId === 'omeprazol_am' ? 'am' : 'pm';
+    localStorage.removeItem(`omeprazol_timer_${suffix}_${fecha}`);
+  }
+
+  // 5. If it's SOS Fortasec, decrement count
+  if (medId === 'sos_fortasec' && fecha === TODAY()) {
+    APP.sosState.fortasecCount = Math.max(0, APP.sosState.fortasecCount - 1);
+    localStorage.setItem(`fortasec_${fecha}`, APP.sosState.fortasecCount);
+    updateFortasecUI();
+  }
+
+  // 6. Refresh UI
+  renderTomasHistory();
+  if (HISTORY_DATA.loaded) {
+    if (HISTORY_DATA.days[fecha] && HISTORY_DATA.days[fecha].meds[medId]) {
+      delete HISTORY_DATA.days[fecha].meds[medId];
+      renderHistoryByDay();
+      updateStats();
+    }
+  }
+
+  // 7. If date is today, reset the card UI
+  if (fecha === TODAY()) {
+    resetCardUI(medId);
+  }
+}
+
+// Global exports for HTML onclick handlers
+window.deleteMedToma = deleteMedToma;
+window.TODAY = TODAY;
+
+// ══════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════
 function showScreen(id) {
@@ -1026,85 +1236,6 @@ document.getElementById('btn-omeprazol-pm').addEventListener('click', async () =
 // ══════════════════════════════════════
 // MEDICATION TOMA BUTTONS
 // ══════════════════════════════════════
-async function saveMedToma(medId, periodo) {
-  const ts = new Date().toISOString();
-  const key = `med_${TODAY()}_${medId}`;
-  localStorage.setItem(key, ts);
-  // Save to history
-  const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
-  hist.unshift({ med: medId, periodo, timestamp: ts, fecha: TODAY() });
-  if (hist.length > 100) hist.length = 100;
-  localStorage.setItem('tomas_history', JSON.stringify(hist));
-  if (APP.db) {
-    // Flash sync indicator
-    const syncEl = document.getElementById('sync-indicator');
-    syncEl.innerHTML = '<span class="material-symbols-outlined text-xs animate-spin">sync</span>Sync...';
-    syncEl.classList.add('bg-yellow-100','text-yellow-700');
-    syncEl.classList.remove('bg-green-100','text-green-700');
-    try {
-      await setDoc(doc(APP.db, 'tomas_pilar', TODAY()), { [medId]: { taken: true, timestamp: ts } }, { merge: true });
-      syncEl.innerHTML = '<span class="material-symbols-outlined text-xs icon-fill">cloud_done</span>Sync';
-      syncEl.classList.remove('bg-yellow-100','text-yellow-700');
-      syncEl.classList.add('bg-green-100','text-green-700');
-    } catch(e) {
-      console.warn(e);
-      syncEl.innerHTML = '<span class="material-symbols-outlined text-xs">cloud_off</span>Error';
-      syncEl.classList.remove('bg-yellow-100','text-yellow-700');
-      syncEl.classList.add('bg-red-100','text-red-700');
-    }
-  }
-  renderTomasHistory();
-  return ts;
-}
-
-function markCardTakenUI(card, isoString) {
-  if (!card) return;
-  const timeStr = isoString ? new Date(isoString).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '';
-  const medId = card.dataset.med || (card.id === 'card-omeprazol-am' ? 'omeprazol_am' : card.id === 'card-omeprazol-pm' ? 'omeprazol_pm' : '');
-  
-  // Make the entire card a vivid green and update border
-  card.classList.add('!bg-[#22c55e]', '!border-[#16a34a]', 'shadow-none');
-  
-  // Make all text elements white for contrast
-  card.querySelectorAll('h3, h4, p, span').forEach(el => {
-    el.classList.add('!text-white');
-  });
-  
-  // Soften icon bubbles inside the card
-  card.querySelectorAll('.rounded-full.p-3').forEach(el => {
-    el.classList.add('!bg-white/20');
-  });
-
-  const btns = card.querySelectorAll('button');
-  btns.forEach(btn => {
-    // Layout vertical: el botón/etiqueta pasa a abajo del todo
-    card.classList.remove('flex-row', 'items-center', 'justify-between');
-    card.classList.add('flex-col', 'items-stretch', 'gap-4');
-    
-    // Contenedor para el botón de "Tomado" y el de borrado
-    const isLarge = btn.classList.contains('btn-toma') || btn.id === 'btn-omeprazol-am' || btn.id === 'btn-omeprazol-pm';
-    btn.className = 'hidden'; // Hide the original button
-    
-    let statusDiv = card.querySelector('.taken-status-container');
-    if (!statusDiv) {
-      statusDiv = document.createElement('div');
-      statusDiv.className = 'taken-status-container flex items-center gap-2 w-full';
-      card.appendChild(statusDiv);
-    }
-    
-    statusDiv.innerHTML = `
-      <div class="flex-1 h-${isLarge ? '16' : '14'} bg-white/25 rounded-xl flex items-center justify-center gap-2 font-headline font-bold text-white text-${isLarge ? 'lg' : 'sm'}">
-        <span class="material-symbols-outlined ${isLarge ? 'text-3xl' : 'text-2xl'} icon-fill !text-white">task_alt</span> 
-        TOMADO A LAS ${timeStr}
-      </div>
-      <button onclick="event.stopPropagation(); if(confirm('¿Anular esta toma?')) deleteMedToma('${medId}', TODAY())" class="h-${isLarge ? '16' : '14'} w-${isLarge ? '16' : '14'} bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all active:scale-90" title="Anular toma">
-        <span class="material-symbols-outlined !text-white">delete</span>
-      </button>
-    `;
-    
-    btn.disabled = true;
-  });
-}
 
 // Morning med buttons
 document.querySelectorAll('.btn-med-am').forEach(btn => {
@@ -1517,6 +1648,51 @@ function startFirebaseListeners() {
     updateLastConstantes(); // Ensure dashboard header is also synced
   });
 
+  // 3. ALERTAS URGENTES LISTENER — ALL DEVICES — Moved inside to ensure APP.db is ready
+  const alertsRef = collection(APP.db, 'alertas_urgentes');
+  const qAlerts = query(alertsRef, orderBy('hora_local', 'desc'), limit(1));
+  
+  onSnapshot(qAlerts, (snapshot) => {
+    if (snapshot.empty) return;
+    
+    const docSnap = snapshot.docs[0];
+    const alertData = docSnap.data();
+    const alertTime = new Date(alertData.hora_local);
+
+    if (alertTime > APP._connectedAt) {
+      APP._connectedAt = alertTime;
+      console.log('🚨 NUEVA ALERTA DE PÁNICO DETECTADA:', alertData);
+
+      document.getElementById('panic-overlay').classList.remove('hidden');
+
+      const isSender = alertData.senderId === APP.deviceId;
+      
+      if (!isSender) {
+        console.log('🔔 Sonando alarma en dispositivo receptor');
+        if (APP.playAlarmSound) APP.playAlarmSound();
+        if (navigator.vibrate) {
+          navigator.vibrate([1000, 500, 1000, 500, 1000, 1000]);
+        }
+      }
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(isSender ? '✅ Alerta enviada' : '🚨 ¡ALERTA DE PÁNICO!', {
+            body: alertData.mensaje || 'Pilar ha pulsado el botón de pánico',
+            icon: 'icons/icon-192.png',
+            badge: 'icons/icon-192.png',
+            tag: 'panic-alert-' + (isSender ? 'sender' : 'receiver'),
+            renotify: true,
+            silent: isSender,
+            requireInteraction: !isSender,
+            vibrate: isSender ? [] : [500, 200, 500, 200, 500, 200, 1000]
+          }).catch(e => console.warn('SW notification failed:', e));
+        });
+      }
+    }
+  });
+}
+
   // ══════════════════════════════════════
   // ALARM SOUND GENERATOR (Custom MP3 Buffer)
   // ══════════════════════════════════════
@@ -1581,63 +1757,6 @@ function startFirebaseListeners() {
   // Make stopAlarmSound available globally for the close button
   window.stopAlarmSound = APP.stopAlarmSound;
 
-  // ══════════════════════════════════════
-  // ALERTAS URGENTES LISTENER — ALL DEVICES
-  // ══════════════════════════════════════
-  
-  // Use a query to watch only for the absolute latest addition
-  const alertsRef = collection(APP.db, 'alertas_urgentes');
-  const q = query(alertsRef, orderBy('hora_local', 'desc'), limit(1));
-  
-  onSnapshot(q, (snapshot) => {
-    if (snapshot.empty) return;
-    
-    const docSnap = snapshot.docs[0];
-    const alertData = docSnap.data();
-    const alertTime = new Date(alertData.hora_local);
-
-    // Trigger ONLY if the alert is NEWER than when this app session started
-    // (We use a 10s buffer set in APP._connectedAt init)
-    if (alertTime > APP._connectedAt) {
-      // Update connectedAt to the current alert so we don't repeat
-      APP._connectedAt = alertTime;
-      
-      console.log('🚨 NUEVA ALERTA DE PÁNICO DETECTADA:', alertData);
-
-      // 1. ALWAYS show the panic overlay on this device
-      document.getElementById('panic-overlay').classList.remove('hidden');
-
-      // 2. Play alarm sound ONLY if this is NOT the device that sent it
-      const isSender = alertData.senderId === APP.deviceId;
-      
-      if (!isSender) {
-        console.log('🔔 Sonando alarma en dispositivo receptor');
-        if (APP.playAlarmSound) APP.playAlarmSound();
-        if (navigator.vibrate) {
-          navigator.vibrate([1000, 500, 1000, 500, 1000, 1000]);
-        }
-      } else {
-        console.log('🔇 Silenciando alarma en dispositivo emisor (confirmación visual)');
-      }
-
-      // 3. Try system notification via Service Worker (Android PWA)
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(reg => {
-          reg.showNotification(isSender ? '✅ Alerta enviada' : '🚨 ¡ALERTA DE PÁNICO!', {
-            body: alertData.mensaje || 'Pilar ha pulsado el botón de pánico',
-            icon: 'icons/icon-192.png',
-            badge: 'icons/icon-192.png',
-            tag: 'panic-alert-' + (isSender ? 'sender' : 'receiver'),
-            renotify: true,
-            silent: isSender,
-            requireInteraction: !isSender,
-            vibrate: isSender ? [] : [500, 200, 500, 200, 500, 200, 1000]
-          }).catch(e => console.warn('SW notification failed:', e));
-        });
-      }
-    }
-  });
-}
 
 // ══════════════════════════════════════
 // PANIC BUTTON
@@ -2153,153 +2272,6 @@ function updateNotifUI() {
     }
   }
 }
-
-// ══════════════════════════════════════
-// CORE: SAVE MEDICATION TOMA
-// ══════════════════════════════════════
-async function saveMedToma(medId, periodo) {
-  console.log(`💾 Registrando toma: ${medId} (${periodo})`);
-  const today = TODAY();
-  const timestamp = new Date().toISOString();
-  const key = `med_${today}_${medId}`;
-  
-  // 1. Save locally for immediate feedback
-  localStorage.setItem(key, timestamp);
-
-  // 2. Save to Firebase
-  if (APP.db) {
-    try {
-      await setDoc(doc(APP.db, 'tomas_pilar', today), {
-        [medId]: { taken: true, timestamp, periodo },
-        _reset: deleteField ? deleteField() : null // Safety check for deleteField
-      }, { merge: true });
-      console.log('✅ Sincronizado con Firebase');
-    } catch(e) {
-      console.error('❌ Error de sincronización:', e);
-    }
-  }
-  return timestamp;
-}
-
-// ══════════════════════════════════════
-// DELETE INDIVIDUAL MED TOMA
-// ══════════════════════════════════════
-async function deleteMedToma(medId, fecha) {
-  // 1. Remove from localStorage
-  const medKey = `med_${fecha}_${medId}`;
-  localStorage.removeItem(medKey);
-
-  // 2. Remove from tomas_history in localStorage
-  const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
-  const newHist = hist.filter(h => !(h.med === medId && h.fecha === fecha));
-  localStorage.setItem('tomas_history', JSON.stringify(newHist));
-
-  // 3. Remove from Firebase
-  if (APP.db) {
-    try {
-      const docRef = doc(APP.db, 'tomas_pilar', fecha);
-      await updateDoc(docRef, {
-        [medId]: deleteField()
-      });
-      console.log(`✅ ${medId} eliminado de Firebase para el ${fecha}`);
-    } catch(e) {
-      console.warn('Error eliminando toma de Firebase:', e);
-    }
-  }
-
-  // 4. Special cases: Omeprazol timers
-  if (medId === 'omeprazol_am' || medId === 'omeprazol_pm') {
-    const suffix = medId === 'omeprazol_am' ? 'am' : 'pm';
-    localStorage.removeItem(`omeprazol_timer_${suffix}_${fecha}`);
-  }
-
-  // 5. If it's SOS Fortasec, decrement count? 
-  // User asked to "anular esa toma", so for Fortasec we should probably decrement.
-  if (medId === 'sos_fortasec' && fecha === TODAY()) {
-    APP.sosState.fortasecCount = Math.max(0, APP.sosState.fortasecCount - 1);
-    localStorage.setItem(`fortasec_${fecha}`, APP.sosState.fortasecCount);
-    updateFortasecUI();
-  }
-
-  // 6. Refresh UI
-  renderTomasHistory();
-  if (HISTORY_DATA.loaded) {
-    // If history screen data is loaded, we need to update it
-    if (HISTORY_DATA.days[fecha] && HISTORY_DATA.days[fecha].meds[medId]) {
-      delete HISTORY_DATA.days[fecha].meds[medId];
-      renderHistoryByDay();
-      updateStats();
-    }
-  }
-
-  // 7. If date is today, reset the card UI
-  if (fecha === TODAY()) {
-    resetCardUI(medId);
-  }
-}
-
-function resetCardUI(medId) {
-  // Find the card and revert it to original state
-  const card = document.querySelector(`[data-med="${medId}"]`) || 
-               (medId === 'omeprazol_am' ? document.getElementById('card-omeprazol-am') :
-                medId === 'omeprazol_pm' ? document.getElementById('card-omeprazol-pm') : null);
-  
-  if (!card) return;
-
-  // Remove the status container if exists
-  const statusDiv = card.querySelector('.taken-status-container');
-  if (statusDiv) statusDiv.remove();
-
-  // Revert classes
-  card.classList.remove('!bg-[#22c55e]', '!border-[#16a34a]', 'shadow-none', 'flex-col', 'items-stretch', 'gap-4');
-  card.classList.add('flex-row', 'items-center', 'justify-between');
-  
-  // Revert text color
-  card.querySelectorAll('.!text-white').forEach(el => {
-    el.classList.remove('!text-white');
-  });
-
-  // Revert icon bubbles
-  card.querySelectorAll('.!bg-white/20').forEach(el => {
-    el.classList.remove('!bg-white/20');
-  });
-
-  // Revert and enable buttons
-  const btns = card.querySelectorAll('button');
-  btns.forEach(btn => {
-    btn.disabled = false;
-    btn.classList.remove('hidden'); // Show the original button
-    btn.style.position = '';
-    btn.style.right = '';
-    btn.style.top = '';
-    btn.style.transform = '';
-    
-    // Restore original HTML/Classes based on ID/Role
-    if (medId === 'omeprazol_am') {
-      btn.className = 'w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg';
-      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>CONFIRMAR TOMA';
-      card.classList.remove('hidden');
-      document.getElementById('timer-omeprazol-am').classList.add('hidden');
-    } else if (medId === 'omeprazol_pm') {
-      btn.className = 'w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg';
-      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>Tomar Omeprazol (Cena)';
-      card.classList.remove('hidden');
-      document.getElementById('timer-omeprazol-pm').classList.add('hidden');
-    } else if (btn.classList.contains('btn-toma')) {
-      const isMerienda = medId.includes('merienda');
-      btn.className = `btn-toma w-full h-20 bg-gradient-to-b from-${isMerienda ? 'tertiary' : 'secondary'} to-${isMerienda ? 'tertiary-container' : 'secondary-fixed-dim'} text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg`;
-      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA';
-    } else if (btn.classList.contains('btn-med-am') || btn.classList.contains('btn-med-pm')) {
-      btn.className = btn.classList.contains('btn-med-am') ? 'btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0' : 'btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0';
-      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check</span>';
-    }
-  });
-
-  // Re-apply Trangorex rule if needed
-  if (medId === 'trangorex_am') applyTrangorexRule();
-}
-
-
 
 // ══════════════════════════════════════
 // RESTORE STATE ON LOAD
