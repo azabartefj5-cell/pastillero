@@ -797,7 +797,10 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const target = btn.dataset.target;
     if (target === 'hoy') navigateToHoy();
     else if (target === 'sos') showScreen('sos');
-    else showScreen('historial');
+    else if (target === 'historial') {
+      showScreen('historial');
+      loadFullHistory();
+    }
   });
 });
 
