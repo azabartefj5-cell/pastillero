@@ -486,18 +486,9 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
   <!-- Firebase config is hardcoded, hidden textarea for internal use -->
   <textarea id="firebase-config-input" class="hidden"></textarea>
 
-  <!-- RESET BUTTON -->
+  <!-- TEST ALARM -->
   <div class="grid grid-cols-1 gap-3">
-    <button id="btn-reset-day" class="w-full p-4 rounded-3xl bg-error-container text-on-error-container flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-sm border-2 border-error/30">
-      <span class="material-symbols-outlined text-3xl">restart_alt</span>
-      <div class="text-left">
-        <p class="font-headline font-bold text-lg">Resetear Día</p>
-        <p class="text-sm opacity-80">Borrar todas las tomas registradas hoy</p>
-      </div>
-    </button>
-    
-    <!-- TEST ALARM -->
-    <button id="btn-test-alarm" class="flex-1 flex flex-col items-center gap-2 p-5 bg-tertiary/10 rounded-3xl text-tertiary active:scale-95 transition-all text-center">
+    <button id="btn-test-alarm" class="w-full flex flex-col items-center gap-2 p-5 bg-tertiary/10 rounded-3xl text-tertiary active:scale-95 transition-all text-center">
       <span class="material-symbols-outlined text-4xl">campaign</span>
       <div>
         <p class="font-headline font-bold text-lg">Probar Alarma</p>
@@ -694,22 +685,7 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
   </div>
 </div>
 
-<!-- ═══════════ RESET DIALOG ═══════════ -->
-<div id="reset-overlay" class="panic-overlay hidden">
-  <div class="bg-white rounded-3xl p-8 mx-6 max-w-md w-full space-y-6">
-    <div class="text-center">
-      <span class="material-symbols-outlined text-error text-7xl icon-fill">restart_alt</span>
-      <h2 class="font-headline font-black text-2xl text-error mt-4">¿Resetear día?</h2>
-      <p class="text-on-surface-variant mt-2">Esto borrará todas las tomas registradas hoy. No se puede deshacer.</p>
-    </div>
-    <button id="btn-confirm-reset" class="w-full h-16 bg-error text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg">
-      <span class="material-symbols-outlined">delete_forever</span> SÍ, RESETEAR
-    </button>
-    <button id="btn-cancel-reset" class="w-full h-14 bg-surface-variant rounded-xl font-headline font-bold text-lg active:scale-95 transition-all">
-      Cancelar
-    </button>
-  </div>
-</div>
+
 
 <!-- ═══════════ BOTTOM TAB BAR ═══════════ -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 pt-2 pb-6 bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.08)] rounded-t-3xl" id="tab-bar">
@@ -1081,6 +1057,7 @@ async function saveMedToma(medId, periodo) {
 function markCardTakenUI(card, isoString) {
   if (!card) return;
   const timeStr = isoString ? new Date(isoString).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'}) : '';
+  const medId = card.dataset.med || (card.id === 'card-omeprazol-am' ? 'omeprazol_am' : card.id === 'card-omeprazol-pm' ? 'omeprazol_pm' : '');
   
   // Make the entire card a vivid green and update border
   card.classList.add('!bg-[#22c55e]', '!border-[#16a34a]', 'shadow-none');
@@ -1101,18 +1078,26 @@ function markCardTakenUI(card, isoString) {
     card.classList.remove('flex-row', 'items-center', 'justify-between');
     card.classList.add('flex-col', 'items-stretch', 'gap-4');
     
-    btn.className = 'w-full h-14 bg-white/25 rounded-xl flex items-center justify-center gap-2 transition-all font-headline font-bold text-white shadow-none shrink-0';
-    btn.style.position = 'relative'; 
-    btn.style.right = 'auto';
-    btn.style.top = 'auto';
-    btn.style.transform = 'none';
+    // Contenedor para el botón de "Tomado" y el de borrado
+    const isLarge = btn.classList.contains('btn-toma') || btn.id === 'btn-omeprazol-am' || btn.id === 'btn-omeprazol-pm';
+    btn.className = 'hidden'; // Hide the original button
     
-    if(btn.classList.contains('btn-toma') || btn.id === 'btn-omeprazol-am' || btn.id === 'btn-omeprazol-pm') {
-      btn.classList.add('h-16', 'text-lg');
-      btn.innerHTML = `<span class="material-symbols-outlined text-3xl icon-fill !text-white">task_alt</span> TOMADO A LAS ${timeStr}`;
-    } else {
-      btn.innerHTML = `<span class="material-symbols-outlined text-2xl icon-fill !text-white">task_alt</span> TOMADO A LAS ${timeStr}`;
+    let statusDiv = card.querySelector('.taken-status-container');
+    if (!statusDiv) {
+      statusDiv = document.createElement('div');
+      statusDiv.className = 'taken-status-container flex items-center gap-2 w-full';
+      card.appendChild(statusDiv);
     }
+    
+    statusDiv.innerHTML = `
+      <div class="flex-1 h-${isLarge ? '16' : '14'} bg-white/25 rounded-xl flex items-center justify-center gap-2 font-headline font-bold text-white text-${isLarge ? 'lg' : 'sm'}">
+        <span class="material-symbols-outlined ${isLarge ? 'text-3xl' : 'text-2xl'} icon-fill !text-white">task_alt</span> 
+        TOMADO A LAS ${timeStr}
+      </div>
+      <button onclick="event.stopPropagation(); if(confirm('¿Anular esta toma?')) deleteMedToma('${medId}', TODAY())" class="h-${isLarge ? '16' : '14'} w-${isLarge ? '16' : '14'} bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all active:scale-90" title="Anular toma">
+        <span class="material-symbols-outlined !text-white">delete</span>
+      </button>
+    `;
     
     btn.disabled = true;
   });
@@ -1353,46 +1338,48 @@ function startFirebaseListeners() {
   });
   // Listen to today's tomas — SYNC BUTTON STATES FROM REMOTE CHANGES
   onSnapshot(doc(APP.db, 'tomas_pilar', TODAY()), (snap) => {
-    if (!snap.exists()) return;
-    const data = snap.data();
-
-
-
+    const data = snap.exists() ? snap.data() : {};
     console.log('🔄 Tomas sync:', data);
-    
-    // Check if this is a ONLY a reset marker (no medication data)
-    const hasMeds = Object.keys(data).some(k => !k.startsWith('_'));
-    if (data._reset && !hasMeds) {
-      console.log('🔄 Reseteo activo y sin nuevas tomas, limpiando UI...');
-      // Clear visual state of all cards if they aren't already cleared
-      document.querySelectorAll('[data-med]').forEach(card => {
-        card.classList.remove('opacity-60', 'grayscale-[0.5]', 'border-primary/40');
-        const btn = card.querySelector('.btn-toma, .btn-med-am, #btn-kreon-noche, #btn-mirtazapina-noche');
-        if (btn) {
-           btn.disabled = false;
-           // Restore original labels if needed (simplified here as they'll likely reload)
-        }
-      });
-      return;
-    }
 
-    // Update each med button from remote state
+    // 1. Detect and handle removals (Synchronize deletions across devices)
+    document.querySelectorAll('[data-med]').forEach(card => {
+      const medId = card.dataset.med;
+      const isTakenLocally = !!localStorage.getItem(`med_${TODAY()}_${medId}`);
+      const isTakenRemotely = data[medId]?.taken;
+      
+      if (isTakenLocally && !isTakenRemotely) {
+        console.log(`🗑️ Detectada eliminación remota de ${medId}, reseteando UI`);
+        localStorage.removeItem(`med_${TODAY()}_${medId}`);
+        resetCardUI(medId);
+      }
+    });
+
+    ['am', 'pm'].forEach(suffix => {
+      const medId = `omeprazol_${suffix}`;
+      const isTakenLocally = !!localStorage.getItem(`med_${TODAY()}_${medId}`);
+      const isTakenRemotely = data[medId]?.taken;
+      if (isTakenLocally && !isTakenRemotely) {
+        localStorage.removeItem(`med_${TODAY()}_${medId}`);
+        resetCardUI(medId);
+      }
+    });
+
+    // 2. Handle additions/updates
     Object.keys(data).forEach(medId => {
-      if (medId.startsWith('_')) return; // Skip metadata fields
+      if (medId.startsWith('_')) return;
       
       if (data[medId]?.taken) {
-        // Mark local storage so state persists
         const key = `med_${TODAY()}_${medId}`;
         const timestamp = data[medId].timestamp || new Date().toISOString();
         if (!localStorage.getItem(key)) {
           localStorage.setItem(key, timestamp);
-          // The collection listener will detect this change and update the history automatically
         }
 
-        // Update Omeprazol buttons and start/finish remote timers
         if (medId === 'omeprazol_am' || medId === 'omeprazol_pm') {
           const suffix = medId === 'omeprazol_am' ? 'am' : 'pm';
           const btn = document.getElementById(`btn-omeprazol-${suffix}`);
+          const timerEl = document.getElementById(`timer-omeprazol-${suffix}`);
+          
           if (btn && !btn.classList.contains('hidden')) {
             const elapsed = Date.now() - new Date(timestamp).getTime();
             const DURATION = 30 * 60 * 1000;
@@ -1401,31 +1388,26 @@ function startFirebaseListeners() {
               APP.timerEnds[suffix] = new Date(timestamp).getTime() + DURATION;
               localStorage.setItem(`omeprazol_timer_${suffix}_${TODAY()}`, APP.timerEnds[suffix]);
               btn.classList.add('hidden');
-              document.getElementById(`timer-omeprazol-${suffix}`).classList.remove('hidden');
+              timerEl.classList.remove('hidden');
               document.getElementById(`card-omeprazol-${suffix}`).classList.add('hidden');
               lockMeds(suffix, true);
               tickTimer(suffix);
             } else {
               btn.classList.add('hidden');
-              document.getElementById(`timer-omeprazol-${suffix}`).classList.remove('hidden');
+              timerEl.classList.remove('hidden');
               document.getElementById(`card-omeprazol-${suffix}`).classList.add('hidden');
               finishOmeprazolTimer(suffix);
             }
           }
-        } 
-        // Update generic med cards using markCardTakenUI to ensure identical visuals across devices
-        else {
+        } else {
           document.querySelectorAll(`[data-med="${medId}"]`).forEach(card => {
-            const btns = card.querySelectorAll('button');
-            let hasActiveBtn = false;
-            btns.forEach(btn => { if (!btn.disabled) hasActiveBtn = true; });
-            if (hasActiveBtn) {
+            const isTakenUI = card.classList.contains('!bg-[#22c55e]');
+            if (!isTakenUI) {
               markCardTakenUI(card, timestamp);
             }
           });
         }
         
-        // Update Fortasec from remote
         if (medId === 'sos_fortasec' && data[medId].count) {
           APP.sosState.fortasecCount = data[medId].count;
           localStorage.setItem(`fortasec_${TODAY()}`, data[medId].count);
@@ -1735,7 +1717,22 @@ function renderTomasHistory() {
   if (container) {
     container.innerHTML = hist.slice(0, 15).map(h => {
       const time = new Date(h.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-      return `<div class="flex items-center bg-surface-container-high rounded-2xl p-3 gap-3"><div class="w-10 h-10 rounded-xl bg-secondary-container/20 flex items-center justify-center"><span class="material-symbols-outlined text-lg icon-fill">medication</span></div><div class="flex-1"><p class="font-headline font-bold text-sm">${h.med.replace(/_/g,' ')}</p><p class="text-on-surface-variant text-xs">${h.periodo} — ${h.fecha}</p></div><p class="font-headline text-sm font-bold text-primary">${time}</p></div>`;
+      const medName = MED_NAMES[h.med] || h.med.replace(/_/g,' ');
+      return `<div class="flex items-center bg-surface-container-high rounded-2xl p-3 gap-3">
+        <div class="w-10 h-10 rounded-xl bg-secondary-container/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-lg icon-fill">medication</span>
+        </div>
+        <div class="flex-1">
+          <p class="font-headline font-bold text-sm">${medName}</p>
+          <p class="text-on-surface-variant text-xs">${h.periodo} — ${h.fecha}</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <p class="font-headline text-sm font-bold text-primary">${time}</p>
+          <button onclick="event.stopPropagation(); if(confirm('¿Anular esta toma?')) deleteMedToma('${h.med}', '${h.fecha}')" class="w-8 h-8 rounded-full bg-error/10 text-error flex items-center justify-center hover:bg-error/20 active:scale-90 transition-all">
+            <span class="material-symbols-outlined text-sm">delete</span>
+          </button>
+        </div>
+      </div>`;
     }).join('');
   }
 }
@@ -1903,8 +1900,15 @@ function renderHistoryByDay() {
       const name = MED_NAMES[medId] || medId.replace(/_/g, ' ');
       const dose = MED_DOSES[medId] ? `<span class="text-[10px] bg-surface-variant px-2 py-0.5 rounded-full text-on-surface ml-2">${MED_DOSES[medId]}</span>` : '';
       return `<div class="flex items-center justify-between py-2 border-b border-outline-variant/20 last:border-0">
-        <span class="text-sm font-medium flex items-center">${name} ${dose}</span>
-        <span class="text-xs text-tertiary font-bold">${time}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium flex items-center">${name} ${dose}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-tertiary font-bold">${time}</span>
+          <button onclick="event.stopPropagation(); if(confirm('¿Anular esta toma?')) deleteMedToma('${medId}', '${date}')" class="w-8 h-8 rounded-full bg-error/10 text-error flex items-center justify-center hover:bg-error/20 active:scale-90 transition-all">
+            <span class="material-symbols-outlined text-sm">delete</span>
+          </button>
+        </div>
       </div>`;
     }).join('');
 
@@ -2175,67 +2179,122 @@ async function saveMedToma(medId, periodo) {
 }
 
 // ══════════════════════════════════════
-// RESET DAILY DATA
+// DELETE INDIVIDUAL MED TOMA
 // ══════════════════════════════════════
-async function resetTodayData() {
-  const today = TODAY();
-  console.log('🧹 Reseteando datos de hoy:', today);
+async function deleteMedToma(medId, fecha) {
+  // 1. Remove from localStorage
+  const medKey = `med_${fecha}_${medId}`;
+  localStorage.removeItem(medKey);
 
-  // Clear all localStorage for today
-  Object.keys(localStorage).forEach(key => {
-    if (key.startsWith(`med_${today}_`) || 
-        key.startsWith(`checkin_${today}_`) || 
-        key.startsWith(`omeprazol_timer_`)) {
-      localStorage.removeItem(key);
-    }
-  });
-  localStorage.removeItem(`fortasec_${today}`);
-  localStorage.removeItem(`oramorph_unlock_${today}`);
+  // 2. Remove from tomas_history in localStorage
+  const hist = JSON.parse(localStorage.getItem('tomas_history') || '[]');
+  const newHist = hist.filter(h => !(h.med === medId && h.fecha === fecha));
+  localStorage.setItem('tomas_history', JSON.stringify(newHist));
 
-  // Clear memory state
-  if (APP.timers.am) clearTimeout(APP.timers.am);
-  if (APP.timers.pm) clearTimeout(APP.timers.pm);
-  APP.timers = { am: null, pm: null };
-  APP.timerEnds = { am: 0, pm: 0 };
-  APP.sosState = { oramorphUnlock: 0, fortasecCount: 0 };
-
-  // Clear Firebase data for today
+  // 3. Remove from Firebase
   if (APP.db) {
     try {
-      await setDoc(doc(APP.db, 'tomas_pilar', today), {
-        _reset: true,
-        resetAt: serverTimestamp()
+      const docRef = doc(APP.db, 'tomas_pilar', fecha);
+      await updateDoc(docRef, {
+        [medId]: deleteField()
       });
-      await setDoc(doc(APP.db, 'constantes_pilar', today), {
-        _reset: true,
-        resetAt: serverTimestamp()
-      });
-      console.log('✅ Datos eliminados de la nube');
+      console.log(`✅ ${medId} eliminado de Firebase para el ${fecha}`);
     } catch(e) {
-      console.warn('Error borrando en nube:', e);
+      console.warn('Error eliminando toma de Firebase:', e);
     }
   }
 
-  // Reload back to home
-  navigateToHoy();
-  location.reload();
+  // 4. Special cases: Omeprazol timers
+  if (medId === 'omeprazol_am' || medId === 'omeprazol_pm') {
+    const suffix = medId === 'omeprazol_am' ? 'am' : 'pm';
+    localStorage.removeItem(`omeprazol_timer_${suffix}_${fecha}`);
+  }
+
+  // 5. If it's SOS Fortasec, decrement count? 
+  // User asked to "anular esa toma", so for Fortasec we should probably decrement.
+  if (medId === 'sos_fortasec' && fecha === TODAY()) {
+    APP.sosState.fortasecCount = Math.max(0, APP.sosState.fortasecCount - 1);
+    localStorage.setItem(`fortasec_${fecha}`, APP.sosState.fortasecCount);
+    updateFortasecUI();
+  }
+
+  // 6. Refresh UI
+  renderTomasHistory();
+  if (HISTORY_DATA.loaded) {
+    // If history screen data is loaded, we need to update it
+    if (HISTORY_DATA.days[fecha] && HISTORY_DATA.days[fecha].meds[medId]) {
+      delete HISTORY_DATA.days[fecha].meds[medId];
+      renderHistoryByDay();
+      updateStats();
+    }
+  }
+
+  // 7. If date is today, reset the card UI
+  if (fecha === TODAY()) {
+    resetCardUI(medId);
+  }
 }
 
-// Reset button handlers
-document.getElementById('btn-reset-day').addEventListener('click', () => {
-  document.getElementById('reset-overlay').classList.remove('hidden');
-});
+function resetCardUI(medId) {
+  // Find the card and revert it to original state
+  const card = document.querySelector(`[data-med="${medId}"]`) || 
+               (medId === 'omeprazol_am' ? document.getElementById('card-omeprazol-am') :
+                medId === 'omeprazol_pm' ? document.getElementById('card-omeprazol-pm') : null);
+  
+  if (!card) return;
 
-document.getElementById('btn-confirm-reset').addEventListener('click', async () => {
-  const btn = document.getElementById('btn-confirm-reset');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Reseteando...';
-  await resetTodayData();
-});
+  // Remove the status container if exists
+  const statusDiv = card.querySelector('.taken-status-container');
+  if (statusDiv) statusDiv.remove();
 
-document.getElementById('btn-cancel-reset').addEventListener('click', () => {
-  document.getElementById('reset-overlay').classList.add('hidden');
-});
+  // Revert classes
+  card.classList.remove('!bg-[#22c55e]', '!border-[#16a34a]', 'shadow-none', 'flex-col', 'items-stretch', 'gap-4');
+  card.classList.add('flex-row', 'items-center', 'justify-between');
+  
+  // Revert text color
+  card.querySelectorAll('.!text-white').forEach(el => {
+    el.classList.remove('!text-white');
+  });
+
+  // Revert icon bubbles
+  card.querySelectorAll('.!bg-white/20').forEach(el => {
+    el.classList.remove('!bg-white/20');
+  });
+
+  // Revert and enable buttons
+  const btns = card.querySelectorAll('button');
+  btns.forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove('hidden'); // Show the original button
+    btn.style.position = '';
+    btn.style.right = '';
+    btn.style.top = '';
+    btn.style.transform = '';
+    
+    // Restore original HTML/Classes based on ID/Role
+    if (medId === 'omeprazol_am') {
+      btn.className = 'w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg';
+      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>CONFIRMAR TOMA';
+      card.classList.remove('hidden');
+      document.getElementById('timer-omeprazol-am').classList.add('hidden');
+    } else if (medId === 'omeprazol_pm') {
+      btn.className = 'w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg';
+      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>Tomar Omeprazol (Cena)';
+      card.classList.remove('hidden');
+      document.getElementById('timer-omeprazol-pm').classList.add('hidden');
+    } else if (btn.classList.contains('btn-toma')) {
+      const isMerienda = medId.includes('merienda');
+      btn.className = `btn-toma w-full h-20 bg-gradient-to-b from-${isMerienda ? 'tertiary' : 'secondary'} to-${isMerienda ? 'tertiary-container' : 'secondary-fixed-dim'} text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg`;
+      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA';
+    } else if (btn.classList.contains('btn-med-am') || btn.classList.contains('btn-med-pm')) {
+      btn.className = btn.classList.contains('btn-med-am') ? 'btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0' : 'btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0';
+      btn.innerHTML = '<span class="material-symbols-outlined text-3xl">check</span>';
+    }
+  });
+
+  // Re-apply Trangorex rule if needed
+  if (medId === 'trangorex_am') applyTrangorexRule();
+}
 
 
 
@@ -2335,6 +2394,12 @@ function init() {
   // Initial navigation
   navigateToHoy();
 }
+
+// ══════════════════════════════════════
+// GLOBAL EXPORTS (For HTML onclick handlers)
+// ══════════════════════════════════════
+window.TODAY = TODAY;
+window.deleteMedToma = deleteMedToma;
 
 init();
 </script>
