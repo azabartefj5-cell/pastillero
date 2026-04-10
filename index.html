@@ -74,6 +74,28 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 .shake{animation:shakeX 0.3s ease 3}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .animate-spin{animation:spin 1s linear infinite}
+  /* Guided Mode Styles */
+  .screen-guided { position: fixed; inset: 0; background: #fafaf1; z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+  .screen-guided.active { display: flex; }
+  .guided-card { background: white; border-radius: 3rem; padding: 3rem; width: 100%; max-width: 600px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); }
+  .guided-title { font-size: 3rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; color: #1a1c17; }
+  .guided-subtitle { font-size: 1.5rem; color: #404752; margin-bottom: 2.5rem; font-weight: 500; }
+  .guided-btn-main { width: 100%; height: 120px; border-radius: 2rem; font-size: 2rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 1rem; transition: all 0.2s; box-shadow: 0 10px 25px rgba(0,97,164,0.2); border: none; }
+  .guided-btn-main:active { transform: scale(0.95); opacity: 0.9; }
+  .guided-input { font-size: 5rem; font-weight: 900; text-align: center; width: 100%; background: transparent; border: none; color: #0061a4; outline: none; margin-bottom: 2rem; }
+  .guided-nav { position: fixed; bottom: 3rem; left: 0; right: 0; padding: 0 2rem; display: flex; justify-content: center; }
+  .guided-exit { position: fixed; top: 1.5rem; right: 1.5rem; width: 50px; height: 50px; border-radius: 25px; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: #404752; }
+  .resting-screen { position: fixed; inset: 0; background: #001d36; z-index: 900; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 2rem; text-align: center; }
+  .resting-screen.active { display: flex; }
+  .screen-welcome { position: fixed; inset: 0; background: #1a73e8; z-index: 1100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; }
+  .screen-welcome.active { display: flex; }
+  .welcome-card { background: #1a6cb9; border-radius: 3.5rem; padding: 3rem 2rem; width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+  .welcome-play-icon { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 2.5rem; color: #1a6cb9; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+  .welcome-play-icon span { font-size: 50px; margin-left: 5px; }
+  .welcome-title { color: white; font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem; font-family: 'Lexend', sans-serif; }
+  .welcome-msg { color: white; font-size: 1.4rem; line-height: 1.4; margin-bottom: 3.5rem; opacity: 0.95; font-weight: 500; padding: 0 1rem; }
+  .welcome-btn { width: 100%; height: 100px; background: white; color: #1a6cb9; border-radius: 2.5rem; font-size: 2.2rem; font-weight: 900; border: none; box-shadow: 0 15px 30px rgba(0,0,0,0.15); transition: all 0.2s; text-transform: uppercase; }
+  .welcome-btn:active { transform: scale(0.96); opacity: 0.9; }
 </style>
 </head>
 <body class="bg-surface text-on-surface min-h-screen pb-32">
@@ -95,6 +117,20 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
     </div>
   </div>
 </header>
+
+<!-- ══════ SCREEN: WELCOME SPLASH ══════ -->
+<section id="screen-welcome" class="screen-welcome">
+  <div class="welcome-card">
+    <div class="welcome-play-icon">
+      <span class="material-symbols-outlined icon-fill">play_arrow</span>
+    </div>
+    <h2 class="welcome-title">¡Hola Pilar!</h2>
+    <p class="welcome-msg">Pulsa aquí para empezar tus tomas guiadas paso a paso.</p>
+    <button onclick="startGuidedMode()" class="welcome-btn">
+      INICIAR DÍA
+    </button>
+  </div>
+</section>
 
 <!-- ═══════════ MAIN CONTENT ═══════════ -->
 <main class="max-w-lg mx-auto px-4 pt-4" id="app-main">
@@ -182,12 +218,27 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 
 <!-- ══════ SCREEN: HOY (UNIFIED — ALL PERIODS) ══════ -->
 <section class="screen space-y-8 fade-in" id="screen-hoy">
-  <header class="flex justify-between items-end">
-    <div>
-      <h2 class="font-headline font-black text-3xl">Plan de Hoy</h2>
-      <p class="text-on-surface-variant font-medium" id="hoy-date"></p>
+  <header class="flex flex-col gap-4">
+    <div id="guided-trigger-box" class="p-6 bg-primary text-white rounded-[2.5rem] shadow-xl flex flex-col items-center gap-4 text-center animate-pulse cursor-pointer" onclick="startGuidedMode()">
+      <span class="material-symbols-outlined text-6xl icon-fill">play_circle</span>
+      <div>
+        <h3 class="font-headline font-black text-3xl">Modo Guiado</h3>
+        <p class="text-lg opacity-90">Pulsa aquí para que te guíe paso a paso con tus medicinas.</p>
+      </div>
+      <button class="w-full h-20 bg-white text-primary rounded-3xl font-black text-2xl shadow-lg pointer-events-none">
+        EMPEZAR TOMAS
+      </button>
     </div>
-  </header>
+    <div class="flex justify-between items-end">
+      <div>
+        <h2 class="font-headline font-black text-3xl">Plan de Hoy</h2>
+        <p class="text-on-surface-variant font-bold text-lg" id="current-date-hoy"></p>
+      </div>
+      <div class="flex flex-col items-end">
+        <span id="period-badge" class="px-4 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed font-black text-xs uppercase tracking-widest shadow-sm">Mañana</span>
+      </div>
+      </div>
+    </div>
 
     <!-- Last readings display -->
     <div id="last-constantes-container" class="bg-gradient-to-r from-tertiary-container/30 to-primary-container/30 rounded-3xl p-4 border border-tertiary/20 mb-6">
@@ -751,7 +802,27 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 
 
 
-<!-- ═══════════ BOTTOM TAB BAR ═══════════ -->
+  <!-- ══════ SCREEN: GUIDED MODE ══════ -->
+  <section id="screen-guided" class="screen-guided">
+    <button onclick="exitGuidedMode()" class="guided-exit"><span class="material-symbols-outlined">close</span></button>
+    <div id="guided-content" class="guided-card fade-in">
+      <!-- Dynamic Content -->
+    </div>
+  </section>
+
+  <!-- ══════ SCREEN: RESTING ══════ -->
+  <section id="screen-resting" class="resting-screen">
+    <div class="space-y-6 max-w-sm px-8">
+      <span class="material-symbols-outlined text-8xl text-primary-fixed-dim icon-fill animate-pulse">bedtime</span>
+      <h2 class="text-4xl font-black font-headline">Descanso Activo</h2>
+      <p class="text-xl opacity-80">Pilar, ahora puedes descansar. Te avisaremos cuando llegue el momento de la siguiente toma.</p>
+      <button onclick="exitRestingScreen()" class="w-full h-20 bg-white/10 hover:bg-white/20 border border-white/20 rounded-3xl font-bold text-xl transition-all">
+        Ver tablero general
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════ BOTTOM TAB BAR ═══════════ -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 pt-2 pb-6 bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.08)] rounded-t-3xl" id="tab-bar">
   <button class="tab-btn flex flex-col items-center justify-center px-1 py-2 transition-all tab-active" data-target="hoy">
     <span class="material-symbols-outlined icon-fill">today</span>
@@ -813,8 +884,34 @@ const APP = {
   })(),
   _connectedAt: new Date(Date.now() - 10000), // Slightly in the past to catch very recent alerts
   _alarmInterval: null,
-  _audioCtx: null
+  _audioCtx: null,
+  guided: {
+    active: false,
+    currentStep: 0,
+    steps: [],
+    period: null
+  }
 };
+
+// ══════════════════════════════════════
+// VOICE SYNTHESIS (TTS)
+// ══════════════════════════════════════
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'es-ES';
+  utterance.rate = 0.85; // Slightly slower for elderly
+  utterance.pitch = 1.0;
+  
+  // Choose a female voice if available (often clearer for seniors)
+  const voices = window.speechSynthesis.getVoices();
+  const femaleVoice = voices.find(v => v.lang.startsWith('es') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('google-es')));
+  if (femaleVoice) utterance.voice = femaleVoice;
+  
+  window.speechSynthesis.speak(utterance);
+}
+window.speak = speak;
 
 const TODAY = () => {
   const d = new Date();
@@ -1052,17 +1149,353 @@ window.TODAY = TODAY;
 // NAVIGATION
 // ══════════════════════════════════════
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  // Clear all active states
+  document.querySelectorAll('.screen, .screen-guided, .resting-screen, .screen-welcome').forEach(s => s.classList.remove('active'));
+  
   const el = document.getElementById('screen-' + id);
-  if (el) { el.classList.add('active'); APP.currentScreen = id; }
+  if (el) { 
+    el.classList.add('active'); 
+    APP.currentScreen = id; 
+    console.log('Active Screen:', id);
+  } else {
+    console.warn('Screen not found:', id);
+  }
+  
+  // Clean up guided state if transitioning back to normal screens
+  if (id !== 'guided' && id !== 'resting' && id !== 'welcome') {
+    APP.guided.active = false;
+  }
 }
 
 function navigateToHoy() {
   const period = PERIOD();
   const checkinKey = `checkin_${TODAY()}_${period}`;
-  if (!localStorage.getItem(checkinKey)) { showScreen('checkin'); return; }
+  
+  // 1. If guided was active today, resume it immediately
+  const storedGuided = localStorage.getItem(`guided_active_${TODAY()}`);
+  if (storedGuided === 'true') {
+    startGuidedMode(true); // true means resume
+    return;
+  }
+  
+  // 2. If it's a new session AND check-in is pending, show Welcome Splash
+  const checkinData = JSON.parse(localStorage.getItem(checkinKey) || '{}');
+  const checkinPending = !checkinData.temperatura || !checkinData.glucosa || !checkinData.oxigeno;
+
+  if (!localStorage.getItem(`guided_started_${TODAY()}_${period}`) && checkinPending) {
+    showScreen('welcome');
+    return;
+  }
+  
+  // 3. Normal flow (Always show the dashboard if we reach here)
   showScreen('hoy');
 }
+
+function startGuidedMode(resume = false) {
+  APP.guided.active = true;
+  APP.guided.period = PERIOD();
+  localStorage.setItem(`guided_active_${TODAY()}`, 'true');
+  localStorage.setItem(`guided_started_${TODAY()}_${APP.guided.period}`, 'true');
+  
+  if (resume) {
+    APP.guided.currentStep = parseInt(localStorage.getItem(`guided_step_${TODAY()}`) || '0');
+  } else {
+    APP.guided.currentStep = 0;
+    localStorage.setItem(`guided_step_${TODAY()}`, '0');
+  }
+  
+  // Helper for Periodic Logic
+  const getDaysLeft = (id, maxDays) => {
+    const lastDate = localStorage.getItem(`last_${id}_date`);
+    if (!lastDate) return null;
+    const diff = Math.floor((new Date() - new Date(lastDate)) / (1000 * 60 * 60 * 24));
+    return maxDays - diff;
+  };
+
+  if (APP.guided.period === 'manana') {
+    APP.guided.steps.push({ 
+      type: 'welcome', 
+      title: '¡Hola Pilar!', 
+      msg: 'Qué alegría saludarte. Vamos a ver qué necesitamos hoy para que te sientas fenomenal.',
+      voice: 'Buenos días Pilar. Qué alegría saludarte. Vamos a ver qué necesitamos hoy para que te sientas fenomenal. ¿Empezamos?'
+    });
+    
+    if (!checkinData.temperatura) {
+      APP.guided.steps.push({ type: 'vital', vital: 'temperatura', title: 'Tu Temperatura', voice: 'Pilar, vamos a ver qué tal vas de temperatura hoy. Por favor, dímelo con cuidado.', icon: 'thermostat', unit: '°C', default: 36.5, delta: 0.1 });
+    }
+    if (!checkinData.glucosa) {
+      APP.guided.steps.push({ type: 'vital', vital: 'glucosa', title: 'Tu Azúcar', voice: 'Muy bien. Ahora vamos a registrar cuánto tienes de azúcar, para tenerlo todo bajo control.', icon: 'bloodtype', unit: 'mg', default: 110, delta: 5 });
+    }
+    if (!checkinData.oxigeno) {
+      APP.guided.steps.push({ type: 'vital', vital: 'oxigeno', title: 'Tu Oxígeno', voice: 'Y por último, Pilar, pon el aparatito en el dedo y dime cuánto oxígeno marca. Así sabremos que respiras como una campeona.', icon: 'air', unit: '%', default: 98, delta: 1 });
+    }
+    
+    const omeprazolSkipped = localStorage.getItem(`omeprazol_wait_finished_am_${TODAY()}`) === 'true';
+    if (!localStorage.getItem(`med_${TODAY()}_omeprazol_am`)) {
+      APP.guided.steps.push({ 
+        type: 'med', 
+        med: 'omeprazol_am', 
+        title: 'Protector Gástrico', 
+        dose: '1 Cápsula', 
+        voice: 'Ahora es el momento del protector gástrico. Tómalo con un poquito de agua para que tu estómago esté bien preparado.', 
+        icon: 'pill' 
+      });
+      if (!omeprazolSkipped) {
+        APP.guided.steps.push({ 
+          type: 'wait', 
+          title: 'Tiempo de Espera', 
+          voice: 'Pilar, ahora debemos tener un poquito de paciencia. El protector necesita treinta minutos para hacer su efecto antes de desayunar. Yo te avisaré.' 
+        });
+      }
+    } else if (localStorage.getItem(`omeprazol_timer_am_${TODAY()}`) && !omeprazolSkipped) {
+      APP.guided.steps.push({ 
+        type: 'wait', 
+        title: 'Tiempo de Espera', 
+        voice: 'Recuerda Pilar que aún falta un ratito de espera por el protector gástrico. Ten un poco de paciencia, falta muy poco.' 
+      });
+    }
+
+    // Special Reminders
+    const dMorfina = getDaysLeft('morfina', 3);
+    if (dMorfina !== null && dMorfina <= 0) {
+      APP.guided.steps.push({ type: 'welcome', title: 'Aviso: Parche', msg: 'Hoy toca cambiar el parche de morfina.', voice: 'Aprovecho para recordarte, Pilar, que hoy toca cambiar el parche de morfina. Es importante para no tener molestias.' });
+    }
+    const dHidro = getDaysLeft('hidroferol', 15);
+    if (dHidro !== null && dHidro <= 0) {
+      APP.guided.steps.push({ type: 'welcome', title: 'Aviso: Hidroferol', msg: 'Hoy toca la ampolla de Hidroferol.', voice: 'También Pilar, hoy toca la ampolla de Hidroferol para tus huesos. Tómala con el desayuno.' });
+    }
+
+    // Breakfast meds
+    const meds = [
+      { id: 'valsartan', name: 'Valsartan', dose: '1 Comprimido', voice: 'el Valsartán para tu corazón' },
+      { id: 'amlodipino', name: 'Amlodipino', dose: '1 Comprimido', voice: 'el Amlodipino para la tensión' },
+      { id: 'trangorex_am', name: 'Trangorex', dose: '1 Comprimido', voice: 'el Trangorex para el ritmo del corazón' },
+      { id: 'kreon_am', name: 'Kreon 35000', dose: '1 Cápsula', voice: 'tu cápsula de Kreon para la digestión' },
+      { id: 'enoxaparina', name: 'Enoxaparina', dose: 'Inyectable SC', voice: 'la inyección de Enoxaparina' },
+      { id: 'insulina_lantus_am', name: 'Insulina Lantus', dose: '10–12 UI SC', voice: 'las unidades de Insulina' }
+    ];
+    meds.forEach(m => {
+      if (m.id === 'trangorex_am' && !IS_WEEKDAY()) return;
+      if (!localStorage.getItem(`med_${TODAY()}_${m.id}`)) {
+        APP.guided.steps.push({ type: 'med', med: m.id, title: m.name, dose: m.dose, voice: `Muy bien Pilar. Ahora vamos a tomar ${m.voice}. Son ${m.dose}. Hazlo con calma.`, icon: 'medication' });
+      }
+    });
+
+    APP.guided.steps.push({ type: 'end', title: '¡Desayuno Terminado!', msg: 'Hemos cumplido con todo Pilar. ¡Qué orgullosa puedes estar!', voice: '¡Genial Pilar! Hemos terminado todas las tomas del desayuno correctamente. Qué orgullosa puedes estar de lo bien que te cuidas. Ahora descansa y vive la mañana. Yo te avisaré cuando llegue la comida.' });
+  } else if (APP.guided.period === 'comida') {
+    APP.guided.steps.push({ 
+      type: 'welcome', 
+      title: 'Hora de Comer', 
+      msg: 'Pilar, qué olor más rico sale de la cocina. Vamos con la medicina.',
+      voice: 'Hola Pilar. Qué olor más rico sale de la cocina. Antes de disfrutar de la comida, vamos a registrar tu medicina.'
+    });
+    if (!localStorage.getItem(`med_${TODAY()}_kreon_comida`)) {
+      APP.guided.steps.push({ type: 'med', med: 'kreon_comida', title: 'Kreon 35000 (Comida)', dose: '2 Cápsulas', voice: 'Tómate ahora tus dos cápsulas de Kreon para ayudarte con la digestión de la comida.', icon: 'medication' });
+    }
+    APP.guided.steps.push({ type: 'end', title: '¡Buen provecho!', msg: 'Ya está todo registrado.', voice: 'Muy bien Pilar, ya está todo listo. Que disfrutes mucho de la comida. ¡Buen provecho!' });
+  } else if (APP.guided.period === 'merienda') {
+    APP.guided.steps.push({ 
+      type: 'welcome', 
+      title: 'La Merienda', 
+      msg: 'Es hora de merendar algo rico, Pilar. No olvidemos el Kreon.',
+      voice: 'Hola Pilar. Es la hora de la merienda. Vamos a tomarnos el Kreon antes de que se enfríe lo que hayas preparado.'
+    });
+    if (!localStorage.getItem(`med_${TODAY()}_kreon_merienda`)) {
+      APP.guided.steps.push({ type: 'med', med: 'kreon_merienda', title: 'Kreon 35000 (Merienda)', dose: '3 Cápsulas', voice: 'Para merendar te tocan tres cápsulas de Kreon. Tómales con un poquito de agua.', icon: 'bakery_dining' });
+    }
+    APP.guided.steps.push({ type: 'end', title: 'A descansar', msg: 'Merienda registrada. ¡A disfrutar de la tarde!', voice: 'Estupendo Pilar. Ya hemos terminado por ahora. Disfruta de lo que queda de tarde y nos vemos en la cena.' });
+  } else {
+    // NOCHE
+    APP.guided.steps.push({ 
+      type: 'welcome', 
+      title: 'Hora de Cenar', 
+      msg: 'Ya se acaba el día, Pilar. Vamos con la última tanda de hoy.',
+      voice: 'Hola Pilar. Ya se acaba el día y pronto podrás descansar. Vamos a hacer las últimas tareas de hoy para que duermas tranquila.'
+    });
+    const omeprazolSkipped = localStorage.getItem(`omeprazol_wait_finished_pm_${TODAY()}`) === 'true';
+    if (!localStorage.getItem(`med_${TODAY()}_omeprazol_pm`)) {
+      APP.guided.steps.push({ type: 'med', med: 'omeprazol_pm', title: 'Protector Gástrico', dose: '1 Cápsula', voice: 'Empezamos con el protector de la noche. Tómalo ahora Pilar.', icon: 'pill' });
+      if (!omeprazolSkipped) {
+        APP.guided.steps.push({ type: 'wait', title: 'Tiempo de Espera', voice: 'Como siempre, vamos a esperar unos minutos antes de cenar para que el protector haga su función.' });
+      }
+    }
+    if (!localStorage.getItem(`med_${TODAY()}_kreon_noche`)) {
+      APP.guided.steps.push({ type: 'med', med: 'kreon_noche', title: 'Kreon 35000 (Cena)', dose: '2 Cápsulas', voice: 'Ahora, Pilar, las dos cápsulas de Kreon para la cena.', icon: 'medication' });
+    }
+    if (!localStorage.getItem(`med_${TODAY()}_mirtazapina_noche`)) {
+      APP.guided.steps.push({ type: 'med', med: 'mirtazapina_noche', title: 'Mirtazapina', dose: '1 Comprimido', voice: 'Y por último, la Mirtazapina, para que duermas de maravilla y tengas un sueño dulce y reparador.', icon: 'bedtime' });
+    }
+    APP.guided.steps.push({ type: 'end', title: '¡Buenas Noches!', msg: 'Has terminado todo tu plan de hoy perfectamente. ¡A descansar!', voice: '¡Felicidades Pilar! Has cumplido con todo el plan de hoy perfectamente. Eres un ejemplo de constancia. Ahora ya puedes descansar tranquila. ¡Buenas noches y dulces sueños!' });
+  }
+
+  showScreen('guided');
+  renderGuidedStep();
+}
+
+function renderGuidedStep() {
+  const step = APP.guided.steps[APP.guided.currentStep];
+  if (!step) { exitGuidedMode(); return; }
+  
+  const container = document.getElementById('guided-content');
+  container.innerHTML = '';
+  
+  if (step.voice) speak(step.voice);
+
+  switch (step.type) {
+    case 'welcome':
+      container.innerHTML = `<h2 class="guided-title">${step.title}</h2><p class="guided-subtitle">${step.msg}</p><button onclick="nextGuidedStep()" class="guided-btn-main bg-primary text-white">EMPEZAR <span class="material-symbols-outlined">play_arrow</span></button>`;
+      break;
+    
+    case 'vital':
+      container.innerHTML = `
+        <span class="material-symbols-outlined text-6xl text-primary mb-4">${step.icon}</span>
+        <h2 class="guided-title">${step.title}</h2>
+        <div class="flex items-center gap-4 mb-8">
+          <button onclick="adjustGuidedVital(${step.delta * -1}, ${step.delta < 1 ? 1 : 0})" class="w-20 h-24 bg-surface-container rounded-2xl flex items-center justify-center active:scale-90 transition-all font-black text-4xl">－</button>
+          <input id="guided-input-val" class="guided-input" type="number" value="${step.default}" readonly />
+          <span class="text-4xl font-bold text-on-surface-variant">${step.unit}</span>
+          <button onclick="adjustGuidedVital(${step.delta}, ${step.delta < 1 ? 1 : 0})" class="w-20 h-24 bg-surface-container rounded-2xl flex items-center justify-center active:scale-90 transition-all font-black text-4xl">＋</button>
+        </div>
+        <button onclick="saveGuidedVital('${step.vital}')" class="guided-btn-main bg-tertiary text-white">CONFIRMAR <span class="material-symbols-outlined">check_circle</span></button>
+      `;
+      break;
+    
+    case 'med':
+      container.innerHTML = `
+        <div class="w-24 h-24 bg-primary-container text-white rounded-full flex items-center justify-center mx-auto mb-6"><span class="material-symbols-outlined text-5xl icon-fill">${step.icon || 'pill'}</span></div>
+        <h2 class="guided-title">${step.title}</h2>
+        <p class="guided-subtitle text-3xl font-black text-primary">${step.dose}</p>
+        <button onclick="saveGuidedMed('${step.med}')" class="guided-btn-main bg-primary text-white">YA ME LA HE TOMADO <span class="material-symbols-outlined font-black">check</span></button>
+      `;
+      break;
+    
+    case 'wait':
+      container.innerHTML = `
+        <h2 class="guided-title">${step.title}</h2>
+        <div id="guided-timer" class="text-7xl font-black text-primary my-10">30:00</div>
+        <p class="guided-subtitle">Espera a que pase el tiempo antes de continuar.</p>
+        <button onclick="nextGuidedStep()" class="mt-4 px-8 py-4 bg-error/10 text-error rounded-2xl font-bold text-sm">Omitir (No recomendado)</button>
+      `;
+      startGuidedTimer();
+      break;
+    
+    case 'end':
+      container.innerHTML = `<h2 class="guided-title">${step.title}</h2><p class="guided-subtitle text-2xl">${step.msg}</p><button onclick="enterRestingScreen()" class="guided-btn-main bg-primary text-white">ENTENDIDO <span class="material-symbols-outlined">check_circle</span></button>`;
+      break;
+  }
+}
+
+function nextGuidedStep() {
+  APP.guided.currentStep++;
+  localStorage.setItem(`guided_step_${TODAY()}`, APP.guided.currentStep.toString());
+  renderGuidedStep();
+}
+
+function adjustGuidedVital(delta, dec) {
+  const input = document.getElementById('guided-input-val');
+  let val = parseFloat(input.value);
+  input.value = (val + delta).toFixed(dec);
+}
+
+async function saveGuidedVital(type) {
+  const val = parseFloat(document.getElementById('guided-input-val').value);
+  const period = APP.guided.period;
+  const now = new Date();
+  
+  // 1. Firebase Save (Incremental Merge)
+  if (APP.db) {
+    const docRef = doc(APP.db, 'constantes_pilar', TODAY());
+    const updateObj = {};
+    updateObj[`${period}.${type}`] = val;
+    updateObj[`${period}.timestamp`] = now.toISOString();
+    try {
+      await updateDoc(docRef, updateObj);
+    } catch (e) {
+      // If doc doesn't exist yet, use setDoc
+      await setDoc(docRef, { [period]: { [type]: val, timestamp: now.toISOString(), periodo: period } }, { merge: true });
+    }
+  }
+
+  // 2. Local History Sync
+  const hist = JSON.parse(localStorage.getItem('constantes_history') || '[]');
+  let existing = hist.find(h => h.fecha === TODAY() && h.periodo === period);
+  if (existing) {
+    existing[type] = val;
+    existing.timestamp = now.toISOString();
+  } else {
+    hist.unshift({ [type]: val, timestamp: now.toISOString(), periodo: period, fecha: TODAY() });
+  }
+  localStorage.setItem('constantes_history', JSON.stringify(hist.slice(0, 100)));
+
+  // 3. Check-in Flag Sync (to satisfy dashboard logic)
+  const checkinKey = `checkin_${TODAY()}_${period}`;
+  const currentCheckin = JSON.parse(localStorage.getItem(checkinKey) || '{}');
+  currentCheckin[type] = val;
+  currentCheckin.timestamp = now.toISOString();
+  currentCheckin.periodo = period;
+  localStorage.setItem(checkinKey, JSON.stringify(currentCheckin));
+
+  nextGuidedStep();
+}
+
+async function saveGuidedMed(medId) {
+  await saveMedToma(medId, APP.guided.period);
+  if (medId.includes('omeprazol')) {
+    startOmeprazolTimer(APP.guided.period);
+  }
+  nextGuidedStep();
+}
+
+function startGuidedTimer() {
+  const tick = () => {
+    const suffix = APP.guided.period === 'manana' ? 'am' : 'pm';
+    const end = APP.timerEnds[suffix];
+    if (!end) return;
+    const remaining = Math.max(0, Math.floor((end - Date.now()) / 1000));
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    const display = document.getElementById('guided-timer');
+    if (display) {
+      display.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      if (remaining <= 0) {
+        display.innerHTML = '<span class="text-tertiary">¡TIEMPO LISTO!</span>';
+        speak("Pilar, el tiempo de espera ha terminado. Ya puedes continuar.");
+        const btn = document.createElement('button');
+        btn.onclick = nextGuidedStep;
+        btn.className = "guided-btn-main bg-tertiary text-white mt-4 fade-in";
+        btn.innerHTML = "CONTINUAR <span class='material-symbols-outlined'>arrow_forward</span>";
+        display.parentNode.appendChild(btn);
+      } else {
+        setTimeout(tick, 1000);
+      }
+    }
+  };
+  tick();
+}
+
+function exitGuidedMode() {
+  APP.guided.active = false;
+  localStorage.removeItem(`guided_active_${TODAY()}`);
+  localStorage.removeItem(`guided_step_${TODAY()}`);
+  showScreen('hoy');
+}
+
+function enterRestingScreen() {
+  showScreen('resting');
+}
+
+function exitRestingScreen() {
+  showScreen('hoy');
+}
+
+window.startGuidedMode = startGuidedMode;
+window.nextGuidedStep = nextGuidedStep;
+window.adjustGuidedVital = adjustGuidedVital;
+window.saveGuidedVital = saveGuidedVital;
+window.saveGuidedMed = saveGuidedMed;
+window.enterRestingScreen = enterRestingScreen;
+window.exitRestingScreen = exitRestingScreen;
+window.exitGuidedMode = exitGuidedMode;
 
 // Tab bar
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1276,10 +1709,12 @@ function finishOmeprazolTimer(suffix) {
   lockMeds(suffix, false);
   document.getElementById(`timer-omeprazol-${suffix}`).innerHTML = '<div class="text-center p-6"><span class="material-symbols-outlined text-tertiary text-5xl icon-fill">check_circle</span><h3 class="font-headline text-2xl font-bold text-tertiary mt-3">¡Tiempo cumplido!</h3><p class="text-on-surface-variant mt-1">Ya puedes tomar el resto de medicación.</p></div>';
   localStorage.removeItem(`omeprazol_timer_${suffix}_${TODAY()}`);
+  localStorage.setItem(`omeprazol_wait_finished_${suffix}_${TODAY()}`, 'true');
 }
 
 window.cancelOmeprazolTimer = function(suffix) {
   if (APP.timers[suffix]) clearTimeout(APP.timers[suffix]);
+  localStorage.setItem(`omeprazol_wait_finished_${suffix}_${TODAY()}`, 'true');
   finishOmeprazolTimer(suffix);
 };
 
@@ -2420,7 +2855,10 @@ function restoreMedStates() {
 function init() {
   // Date label
   const dateStr = SPANISH_DATE();
-  document.getElementById('hoy-date').textContent = dateStr;
+  const dateEl = document.getElementById('current-date-hoy');
+  if (dateEl) dateEl.textContent = dateStr;
+  const oldDateEl = document.getElementById('hoy-date');
+  if (oldDateEl) oldDateEl.textContent = dateStr;
 
   applyTrangorexRule();
   restoreTimers();
@@ -2452,8 +2890,15 @@ function init() {
     }, 2000);
   }
 
-  // Auto-connect Firebase with hardcoded config
-  document.getElementById('firebase-config-input').value = JSON.stringify(FIREBASE_CONFIG, null, 2);
+  // Preload voices
+  if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+    const utterance = new SpeechSynthesisUtterance('');
+    utterance.volume = 0;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  // Auto-connect Firebase
   connectFirebase(FIREBASE_CONFIG);
 
   // ══════════════════════════════════════
