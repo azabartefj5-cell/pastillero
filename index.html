@@ -103,8 +103,9 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 <section class="screen space-y-6 fade-in" id="screen-checkin">
   <div class="space-y-2">
     <h2 class="font-headline font-black text-3xl leading-tight">Check-in Médico</h2>
-    <p class="text-on-surface-variant font-medium text-lg" id="checkin-subtitle">Introduce tus constantes antes de continuar.</p>
+    <p class="text-on-surface-variant font-medium text-lg" id="checkin-subtitle">Valores iniciales del día.</p>
   </div>
+  
   <!-- Temperature -->
   <div class="bg-surface-container-highest rounded-3xl p-6 relative overflow-hidden flex flex-col gap-4">
     <div class="absolute left-0 top-0 bottom-0 w-3 bg-secondary-container"></div>
@@ -112,15 +113,24 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       <span class="font-headline font-bold text-2xl">Temperatura</span>
       <span class="material-symbols-outlined text-secondary-container text-4xl">thermostat</span>
     </div>
-    <div class="pl-4 relative">
-      <input id="input-temp" class="w-full h-24 bg-surface-variant/50 border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-secondary-container/30 text-on-surface outline-none" placeholder="36.5" step="0.1" type="number"/>
-      <span class="absolute right-6 top-1/2 -translate-y-1/2 font-headline font-bold text-2xl text-on-surface-variant">°C</span>
+    <div class="flex items-center gap-2 pl-4">
+      <button onclick="adjustValue('input-temp', -0.1, 1)" class="w-16 h-20 bg-white/50 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
+        <span class="material-symbols-outlined text-3xl font-black">remove</span>
+      </button>
+      <div class="flex-1 relative">
+        <input id="input-temp" class="w-full h-24 bg-surface-variant/50 border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-secondary-container/30 text-on-surface outline-none" value="36.5" step="0.1" type="number"/>
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-headline font-bold text-xl text-on-surface-variant">°C</span>
+      </div>
+      <button onclick="adjustValue('input-temp', 0.1, 1)" class="w-16 h-20 bg-white/50 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
+        <span class="material-symbols-outlined text-3xl font-black">add</span>
+      </button>
     </div>
     <div id="temp-alert" class="hidden pl-4 flex items-center gap-3 text-error font-bold p-3 bg-error-container rounded-xl animate-pulse">
       <span class="material-symbols-outlined icon-fill">error</span>
       <span class="text-sm">⚠ Alerta: Posible fiebre (&gt;37.5°C)</span>
     </div>
   </div>
+
   <!-- Glucose -->
   <div class="bg-surface-container-highest rounded-3xl p-6 relative overflow-hidden flex flex-col gap-4">
     <div class="absolute left-0 top-0 bottom-0 w-3 bg-primary-container"></div>
@@ -128,23 +138,45 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       <span class="font-headline font-bold text-2xl">Glucosa</span>
       <span class="material-symbols-outlined text-primary-container text-4xl">bloodtype</span>
     </div>
-    <div class="pl-4 relative">
-      <input id="input-glucose" class="w-full h-24 bg-surface-variant/50 border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-primary-container/30 text-on-surface outline-none" placeholder="110" type="number"/>
-      <span class="absolute right-6 top-1/2 -translate-y-1/2 font-headline font-bold text-2xl text-on-surface-variant">mg/dL</span>
-    </div>
-    <div class="pl-4 flex items-center gap-2 text-on-surface-variant text-sm p-3 bg-surface-container-low rounded-xl">
-      <span class="material-symbols-outlined text-base">info</span>Valor normal en ayunas: 70–110 mg/dL
+    <div class="flex items-center gap-2 pl-4">
+      <button onclick="adjustValue('input-glucose', -5, 0)" class="w-16 h-20 bg-white/50 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
+        <span class="material-symbols-outlined text-3xl font-black">remove</span>
+      </button>
+      <div class="flex-1 relative">
+        <input id="input-glucose" class="w-full h-24 bg-surface-variant/50 border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-primary-container/30 text-on-surface outline-none" value="110" type="number"/>
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-headline font-bold text-xl text-on-surface-variant">mg</span>
+      </div>
+      <button onclick="adjustValue('input-glucose', 5, 0)" class="w-16 h-20 bg-white/50 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
+        <span class="material-symbols-outlined text-3xl font-black">add</span>
+      </button>
     </div>
   </div>
-  <!-- Sync note -->
-  <div class="flex items-center justify-center gap-3 p-4 bg-surface-container-low rounded-xl">
-    <span class="material-symbols-outlined text-tertiary text-2xl">sync</span>
-    <p class="font-headline text-sm font-medium">Valores sincronizados con el equipo médico</p>
+
+  <!-- Oxygen (New) -->
+  <div class="bg-surface-container-highest rounded-3xl p-6 relative overflow-hidden flex flex-col gap-4">
+    <div class="absolute left-0 top-0 bottom-0 w-3 bg-tertiary-container"></div>
+    <div class="flex justify-between items-center pl-4">
+      <span class="font-headline font-bold text-2xl">Oxígeno</span>
+      <span class="material-symbols-outlined text-tertiary-container text-4xl">air</span>
+    </div>
+    <div class="flex items-center gap-2 pl-4">
+      <button onclick="adjustValue('input-o2', -1, 0)" class="w-16 h-20 bg-white/50 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
+        <span class="material-symbols-outlined text-3xl font-black">remove</span>
+      </button>
+      <div class="flex-1 relative">
+        <input id="input-o2" class="w-full h-24 bg-surface-variant/50 border-none rounded-xl text-center font-headline font-black text-5xl focus:ring-4 focus:ring-tertiary-container/30 text-on-surface outline-none" value="98" type="number"/>
+        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-headline font-bold text-xl text-on-surface-variant">%</span>
+      </div>
+      <button onclick="adjustValue('input-o2', 1, 0)" class="w-16 h-20 bg-white/50 rounded-xl flex items-center justify-center active:scale-90 transition-all shadow-sm">
+        <span class="material-symbols-outlined text-3xl font-black">add</span>
+      </button>
+    </div>
   </div>
+
   <!-- CTA -->
   <button id="btn-checkin-save" class="w-full h-[90px] bg-gradient-to-b from-tertiary to-tertiary-container text-white font-headline font-black text-2xl rounded-xl shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all">
-    Guardar y Continuar
-    <span class="material-symbols-outlined text-3xl">arrow_forward</span>
+    Confirmar y Comenzar
+    <span class="material-symbols-outlined text-3xl">play_circle</span>
   </button>
 </section>
 
@@ -189,87 +221,111 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
   <!-- ───── DESAYUNO (Amarillo / Mañana) ───── -->
   <div class="space-y-4">
     <div class="flex items-center gap-3">
-      <div class="w-4 h-12 bg-secondary-container rounded-full"></div>
+      <div class="w-4 h-12 bg-yellow-400 rounded-full"></div>
       <h3 class="font-headline font-bold text-2xl">🌅 Desayuno</h3>
-      <span class="text-sm bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Mañana</span>
+      <span class="text-sm bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full font-bold">Mañana</span>
     </div>
-    <!-- Omeprazol 40mg (Priority — 30 min BEFORE) -->
-    <div id="card-omeprazol-am" class="bg-surface-container-highest rounded-3xl p-6 shadow-sm relative overflow-hidden ring-4 ring-secondary-container/20">
-      <div class="absolute right-5 top-5"><span class="material-symbols-outlined text-secondary text-3xl">schedule</span></div>
-      <div class="mb-4">
-        <span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-xs font-bold">⏰ 30 MIN ANTES DE DESAYUNAR</span>
-        <h3 class="font-headline font-black text-2xl mt-2">Omeprazol 40mg</h3>
-        <p class="text-on-surface-variant font-bold">1 Cápsula • Protector gástrico</p>
-      </div>
-      <button id="btn-omeprazol-am" class="w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
-        <span class="material-symbols-outlined text-3xl">check_circle</span>CONFIRMAR TOMA
-      </button>
-    </div>
-    <!-- Timer AM (hidden by default) -->
-    <div id="timer-omeprazol-am" class="hidden bg-surface-container-highest p-6 rounded-3xl timer-glow">
-      <div class="flex flex-col items-center text-center gap-3">
-        <div class="relative w-40 h-40 flex items-center justify-center">
-          <svg class="absolute inset-0 w-full h-full -rotate-90"><circle class="text-surface-dim" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-width="8"></circle><circle id="timer-circle-am" class="text-primary-container" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-dasharray="452.39" stroke-dashoffset="0" stroke-width="8" stroke-linecap="round"></circle></svg>
-          <span id="timer-text-am" class="text-4xl font-black font-headline text-primary-container">30:00</span>
+
+    <div class="bg-yellow-100/60 p-5 rounded-[2.5rem] border border-yellow-200/50 space-y-4">
+      <!-- Omeprazol 40mg (Priority — 30 min BEFORE) -->
+      <div id="card-omeprazol-am" class="bg-white rounded-3xl p-6 shadow-sm relative overflow-hidden ring-4 ring-yellow-400/20">
+        <div class="absolute right-5 top-5"><span class="material-symbols-outlined text-yellow-600 text-3xl">schedule</span></div>
+        <div class="mb-4">
+          <span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-xs font-bold">⏰ 30 MIN ANTES DE DESAYUNAR</span>
+          <h3 class="font-headline font-black text-2xl mt-2">Omeprazol 40mg</h3>
+          <p class="text-on-surface-variant font-bold">1 Cápsula • Protector gástrico</p>
         </div>
-        <h3 class="text-xl font-bold">Esperando absorción</h3>
-        <p class="text-on-surface-variant text-sm">Espera 30 min antes de desayunar</p>
-        <button onclick="cancelOmeprazolTimer('am')" class="mt-2 px-6 py-3 bg-error text-on-error rounded-xl font-headline font-bold text-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2 border-none ring-0">
-          <span class="material-symbols-outlined text-lg">cancel</span>Omitir Espera (No Recomendado)
+        <button id="btn-omeprazol-am" class="w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
+          <span class="material-symbols-outlined text-3xl">check_circle</span>CONFIRMAR TOMA
         </button>
       </div>
+
+      <!-- Timer AM (hidden by default) -->
+      <div id="timer-omeprazol-am" class="hidden bg-white/80 p-6 rounded-3xl timer-glow">
+        <div class="flex flex-col items-center text-center gap-3">
+          <div class="relative w-40 h-40 flex items-center justify-center">
+            <svg class="absolute inset-0 w-full h-full -rotate-90"><circle class="text-surface-dim" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-width="8"></circle><circle id="timer-circle-am" class="text-primary-container" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-dasharray="452.39" stroke-dashoffset="0" stroke-width="8" stroke-linecap="round"></circle></svg>
+            <span id="timer-text-am" class="text-4xl font-black font-headline text-primary-container">30:00</span>
+          </div>
+          <h3 class="text-xl font-bold">Esperando absorción</h3>
+          <p class="text-on-surface-variant text-sm">Espera 30 min antes de desayunar</p>
+          <button onclick="cancelOmeprazolTimer('am')" class="mt-2 px-6 py-3 bg-error text-on-error rounded-xl font-headline font-bold text-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2 border-none ring-0">
+            <span class="material-symbols-outlined text-lg">cancel</span>Omitir Espera (No Recomendado)
+          </button>
+        </div>
+      </div>
+
+      <!-- Rest of morning meds (locked until Omeprazol timer ends) -->
+      <div id="meds-manana-locked" class="space-y-3">
+        <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2">Con el desayuno <span class="material-symbols-outlined text-sm" id="lock-icon-am">lock</span></h4>
+        
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-2 shadow-sm" data-med="kreon_am">
+          <div class="flex items-center gap-4">
+            <div class="bg-yellow-100 p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-yellow-950 text-4xl icon-fill">medication</span></div>
+            <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Kreon 35000</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Cápsula</p></div>
+          </div>
+          <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+        </div>
+
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-2 shadow-sm" data-med="valsartan">
+          <div class="flex items-center gap-4">
+            <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">monitor_heart</span></div>
+            <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Valsartan/HTZ 160/25</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comprimido</p></div>
+          </div>
+          <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+        </div>
+  
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-2 shadow-sm" data-med="amlodipino">
+          <div class="flex items-center gap-4">
+            <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">favorite</span></div>
+            <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Amlodipino 5mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comprimido</p></div>
+          </div>
+          <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+        </div>
+  
+        <div id="card-trangorex-am" class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-2 shadow-sm" data-med="trangorex_am">
+          <div class="flex items-center gap-4">
+            <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">vital_signs</span></div>
+            <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Trangorex 200mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comp. • Solo L–V</p></div>
+          </div>
+          <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+        </div>
+
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-2 shadow-sm" data-med="enoxaparina">
+          <div class="flex items-center gap-4">
+            <div class="bg-primary-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">vaccines</span></div>
+            <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Enoxaparina 100mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">Inyectable SC</p></div>
+          </div>
+          <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
+        </div>
+  
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-2 shadow-sm" data-med="insulina_lantus_am">
+          <div class="flex items-center gap-4">
+            <div class="bg-primary-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">bloodtype</span></div>
+            <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Insulina Lantus</h4><p class="text-base text-on-surface-variant font-medium mt-1">10–12 UI SC</p></div>
+          </div>
+          <button id="btn-insulina-lantus" class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
+            <span class="material-symbols-outlined text-3xl">check</span>
+          </button>
+        </div>
+      </div>
     </div>
-    <!-- Rest of morning meds (locked until Omeprazol timer ends) -->
-    <div id="meds-manana-locked" class="space-y-3">
-      <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2">Con el desayuno <span class="material-symbols-outlined text-sm" id="lock-icon-am">lock</span></h4>
-      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="kreon_am">
+  </div>
+  
+  <!-- ───── ALMUERZO (Media Mañana) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-yellow-400 rounded-full opacity-60"></div>
+      <h3 class="font-headline font-bold text-2xl">☕ Almuerzo</h3>
+      <span class="text-sm bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full font-bold">Media Mañana</span>
+    </div>
+    <div class="bg-yellow-50/80 p-5 rounded-[2.5rem] border border-yellow-200/30">
+      <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-2 shadow-sm" data-med="kreon_almuerzo">
         <div class="flex items-center gap-4">
-          <div class="bg-secondary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-secondary-container text-4xl icon-fill">medication</span></div>
-          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Kreon 35000</h4><p class="text-base text-on-surface-variant font-medium mt-1">2 Cápsulas</p></div>
+          <div class="bg-yellow-100 p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-yellow-950 text-4xl icon-fill">medication</span></div>
+          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Kreon 35000</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Cápsula</p></div>
         </div>
         <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
-      </div>
-
-      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="valsartan">
-        <div class="flex items-center gap-4">
-          <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">monitor_heart</span></div>
-          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Valsartan/HTZ 160/25</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comprimido</p></div>
-        </div>
-        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
-      </div>
-
-      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="amlodipino">
-        <div class="flex items-center gap-4">
-          <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">favorite</span></div>
-          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Amlodipino 5mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comprimido</p></div>
-        </div>
-        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
-      </div>
-
-      <div id="card-trangorex-am" class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="trangorex_am">
-        <div class="flex items-center gap-4">
-          <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">vital_signs</span></div>
-          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Trangorex 200mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">1 Comp. • Solo L–V</p></div>
-        </div>
-        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
-      </div>
-
-      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="enoxaparina">
-        <div class="flex items-center gap-4">
-          <div class="bg-primary-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">vaccines</span></div>
-          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Enoxaparina 100mg</h4><p class="text-base text-on-surface-variant font-medium mt-1">Inyectable SC</p></div>
-        </div>
-        <button class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0"><span class="material-symbols-outlined text-3xl">check</span></button>
-      </div>
-
-      <div class="med-card-am bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-secondary-container flex items-center justify-between gap-2 shadow-sm" data-med="insulina_lantus_am">
-        <div class="flex items-center gap-4">
-          <div class="bg-primary-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">bloodtype</span></div>
-          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Insulina Lantus</h4><p class="text-base text-on-surface-variant font-medium mt-1">10–12 UI SC</p></div>
-        </div>
-        <button id="btn-insulina-lantus" class="btn-med-am h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
-          <span class="material-symbols-outlined text-3xl">check</span>
-        </button>
       </div>
     </div>
   </div>
@@ -281,14 +337,16 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       <h3 class="font-headline font-bold text-2xl">☀️ Comida</h3>
       <span class="text-sm bg-secondary-fixed text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Mediodía</span>
     </div>
-    <div class="bg-surface-container-high border-l-[8px] border-secondary-container p-6 rounded-3xl" data-med="kreon_comida">
-      <div class="flex justify-between items-start mb-4 gap-4">
-        <div class="flex-1 min-w-0"><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant text-lg">2 Cápsulas</p></div>
-        <div class="bg-secondary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-secondary-container text-3xl icon-fill">medication</span></div>
+    <div class="bg-orange-100/40 p-5 rounded-[2.5rem] border border-orange-200/50">
+      <div class="bg-white border-l-[8px] border-secondary-container p-6 rounded-3xl" data-med="kreon_comida">
+        <div class="flex justify-between items-start mb-4 gap-4">
+          <div class="flex-1 min-w-0"><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant text-lg">2 Cápsulas</p></div>
+          <div class="bg-secondary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-secondary-container text-3xl icon-fill">medication</span></div>
+        </div>
+        <button class="btn-toma w-full h-20 bg-gradient-to-b from-secondary to-secondary-fixed-dim text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
+          <span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA
+        </button>
       </div>
-      <button class="btn-toma w-full h-20 bg-gradient-to-b from-secondary to-secondary-fixed-dim text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
-        <span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA
-      </button>
     </div>
   </div>
 
@@ -299,14 +357,16 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       <h3 class="font-headline font-bold text-2xl">🍪 Merienda</h3>
       <span class="text-sm bg-tertiary-fixed text-on-tertiary-container px-2 py-0.5 rounded-full font-bold">Tarde</span>
     </div>
-    <div class="bg-surface-container-high border-l-[8px] border-tertiary-container p-6 rounded-3xl flex flex-col gap-4" data-med="kreon_merienda">
-      <div class="flex items-center gap-4 min-w-0">
-        <div class="bg-tertiary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-tertiary-container text-3xl icon-fill">bakery_dining</span></div>
-        <div class="flex-1 min-w-0"><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant">3 Cápsulas</p></div>
+    <div class="bg-emerald-100/40 p-5 rounded-[2.5rem] border border-emerald-200/50">
+      <div class="bg-white border-l-[8px] border-tertiary-container p-6 rounded-3xl flex flex-col gap-4" data-med="kreon_merienda">
+        <div class="flex items-center gap-4 min-w-0">
+          <div class="bg-tertiary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-tertiary-container text-3xl icon-fill">bakery_dining</span></div>
+          <div class="flex-1 min-w-0"><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant">3 Cápsulas</p></div>
+        </div>
+        <button class="btn-toma w-full h-20 bg-gradient-to-b from-tertiary to-tertiary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
+          <span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA
+        </button>
       </div>
-      <button class="btn-toma w-full h-20 bg-gradient-to-b from-tertiary to-tertiary-container text-white rounded-xl font-headline font-bold text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-lg">
-        <span class="material-symbols-outlined text-3xl">check_circle</span>REGISTRAR TOMA
-      </button>
     </div>
   </div>
 
@@ -317,56 +377,61 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
       <h3 class="font-headline font-bold text-2xl">🌙 Cena</h3>
       <span class="text-sm bg-primary-fixed text-on-primary-container px-2 py-0.5 rounded-full font-bold">Noche</span>
     </div>
-    <!-- Omeprazol 40mg Night (Priority — 30 min BEFORE dinner) -->
-    <div id="card-omeprazol-pm" class="bg-surface-container-highest rounded-3xl p-6 border-l-[8px] border-primary-container relative overflow-hidden">
-      <div class="flex items-center gap-3 mb-2">
-        <span class="material-symbols-outlined text-primary-container text-3xl icon-fill">pill</span>
-        <span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-xs font-bold shrink-0">⏰ 30 MIN ANTES DE CENAR</span>
-      </div>
-      <div class="min-w-0">
-        <h3 class="font-headline text-2xl font-bold mb-1">Omeprazol 40mg</h3>
-        <p class="text-on-surface-variant text-sm mb-4">Tómalo 30 min antes de cenar.</p>
-      </div>
-      <button id="btn-omeprazol-pm" class="w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg">
-        <span class="material-symbols-outlined text-3xl">check_circle</span>Tomar Omeprazol (Cena)
-      </button>
-    </div>
-    <!-- Timer PM (hidden by default) -->
-    <div id="timer-omeprazol-pm" class="hidden bg-surface-container-highest p-6 rounded-3xl timer-glow">
-      <div class="flex flex-col items-center text-center gap-3">
-        <div class="relative w-40 h-40 flex items-center justify-center">
-          <svg class="absolute inset-0 w-full h-full -rotate-90"><circle class="text-surface-dim" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-width="8"></circle><circle id="timer-circle-pm" class="text-primary-container" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-dasharray="452.39" stroke-dashoffset="0" stroke-width="8" stroke-linecap="round"></circle></svg>
-          <span id="timer-text-pm" class="text-4xl font-black font-headline text-primary-container">30:00</span>
+
+    <div class="bg-blue-100/40 p-5 rounded-[2.5rem] border border-blue-200/50 space-y-4">
+      <!-- Omeprazol 40mg Night (Priority — 30 min BEFORE dinner) -->
+      <div id="card-omeprazol-pm" class="bg-white rounded-3xl p-6 border-l-[8px] border-primary-container relative overflow-hidden">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="material-symbols-outlined text-primary-container text-3xl icon-fill">pill</span>
+          <span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-xs font-bold shrink-0">⏰ 30 MIN ANTES DE CENAR</span>
         </div>
-        <h3 class="text-xl font-bold">Cronómetro de 30 min</h3>
-        <p class="text-on-surface-variant text-sm">Espera antes de cenar</p>
-        <button onclick="cancelOmeprazolTimer('pm')" class="mt-2 px-6 py-3 bg-error text-on-error rounded-xl font-headline font-bold text-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2 border-none ring-0">
-          <span class="material-symbols-outlined text-lg">cancel</span>Omitir Espera (No Recomendado)
+        <div class="min-w-0">
+          <h3 class="font-headline text-2xl font-bold mb-1">Omeprazol 40mg</h3>
+          <p class="text-on-surface-variant text-sm mb-4">Tómalo 30 min antes de cenar.</p>
+        </div>
+        <button id="btn-omeprazol-pm" class="w-full h-20 bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-bold text-lg flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg">
+          <span class="material-symbols-outlined text-3xl">check_circle</span>Tomar Omeprazol (Cena)
         </button>
       </div>
-    </div>
-    <!-- Dinner meds (locked until Omeprazol timer ends) -->
-    <div id="meds-noche-locked" class="space-y-3">
-      <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2">Con la Cena <span class="material-symbols-outlined text-sm" id="lock-icon-pm">lock</span></h4>
-      <div class="bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-primary-container flex items-center justify-between gap-2 shadow-sm" data-med="kreon_noche">
-        <div class="flex items-center gap-4">
-          <div class="bg-primary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">medication</span></div>
-          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Kreon 35000</h4><p class="text-base text-primary font-bold mt-1">2 Cápsulas</p></div>
+
+      <!-- Timer PM (hidden by default) -->
+      <div id="timer-omeprazol-pm" class="hidden bg-white/80 p-6 rounded-3xl timer-glow">
+        <div class="flex flex-col items-center text-center gap-3">
+          <div class="relative w-40 h-40 flex items-center justify-center">
+            <svg class="absolute inset-0 w-full h-full -rotate-90"><circle class="text-surface-dim" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-width="8"></circle><circle id="timer-circle-pm" class="text-primary-container" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-dasharray="452.39" stroke-dashoffset="0" stroke-width="8" stroke-linecap="round"></circle></svg>
+            <span id="timer-text-pm" class="text-4xl font-black font-headline text-primary-container">30:00</span>
+          </div>
+          <h3 class="text-xl font-bold">Cronómetro de 30 min</h3>
+          <p class="text-on-surface-variant text-sm">Espera antes de cenar</p>
+          <button onclick="cancelOmeprazolTimer('pm')" class="mt-2 px-6 py-3 bg-error text-on-error rounded-xl font-headline font-bold text-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2 border-none ring-0">
+            <span class="material-symbols-outlined text-lg">cancel</span>Omitir Espera (No Recomendado)
+          </button>
         </div>
-        <button id="btn-kreon-noche" class="btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
-          <span class="material-symbols-outlined text-3xl">check</span>
-        </button>
       </div>
-      
-      <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2 mt-4">Antes de dormir</h4>
-      <div class="bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-primary-container flex items-center justify-between gap-2 shadow-sm" data-med="mirtazapina_noche">
-        <div class="flex items-center gap-4">
-          <div class="bg-primary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">bedtime</span></div>
-          <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Mirtazapina 15mg</h4><p class="text-base text-primary font-bold mt-1">1 Comprimido</p></div>
+
+      <!-- Dinner meds (locked until Omeprazol timer ends) -->
+      <div id="meds-noche-locked" class="space-y-3">
+        <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2">Con la Cena <span class="material-symbols-outlined text-sm" id="lock-icon-pm">lock</span></h4>
+        <div class="bg-white rounded-3xl p-5 border-l-[8px] border-primary-container flex items-center justify-between gap-2 shadow-sm" data-med="kreon_noche">
+          <div class="flex items-center gap-4">
+            <div class="bg-primary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">medication</span></div>
+            <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Kreon 35000</h4><p class="text-base text-primary font-bold mt-1">2 Cápsulas</p></div>
+          </div>
+          <button id="btn-kreon-noche" class="btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
+            <span class="material-symbols-outlined text-3xl">check</span>
+          </button>
         </div>
-        <button id="btn-mirtazapina" class="btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
-          <span class="material-symbols-outlined text-3xl">check</span>
-        </button>
+        
+        <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2 mt-4">Antes de dormir</h4>
+        <div class="bg-white rounded-3xl p-5 border-l-[8px] border-primary-container flex items-center justify-between gap-2 shadow-sm" data-med="mirtazapina_noche">
+          <div class="flex items-center gap-4">
+            <div class="bg-primary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">bedtime</span></div>
+            <div><h4 class="font-headline font-extrabold text-[22px] leading-tight">Mirtazapina 15mg</h4><p class="text-base text-primary font-bold mt-1">1 Comprimido</p></div>
+          </div>
+          <button id="btn-mirtazapina" class="btn-med-pm h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0">
+            <span class="material-symbols-outlined text-3xl">check</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1119,6 +1184,16 @@ document.getElementById('btn-save-constantes')?.addEventListener('click', async 
 // ══════════════════════════════════════
 // CHECK-IN
 // ══════════════════════════════════════
+function adjustValue(id, delta, decimals) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  let val = parseFloat(input.value) || 0;
+  input.value = (val + delta).toFixed(decimals);
+  // Trigger input event for alerts (like fever check)
+  input.dispatchEvent(new Event('input'));
+}
+window.adjustValue = adjustValue;
+
 document.getElementById('input-temp').addEventListener('input', e => {
   const v = parseFloat(e.target.value);
   document.getElementById('temp-alert').classList.toggle('hidden', !(v > 37.5));
@@ -1127,9 +1202,21 @@ document.getElementById('input-temp').addEventListener('input', e => {
 document.getElementById('btn-checkin-save').addEventListener('click', async () => {
   const temp = parseFloat(document.getElementById('input-temp').value);
   const gluc = parseFloat(document.getElementById('input-glucose').value);
-  if (isNaN(temp) || isNaN(gluc)) { alert('Por favor, introduce ambos valores.'); return; }
+  const o2 = parseFloat(document.getElementById('input-o2').value);
+  
+  if (isNaN(temp) || isNaN(gluc) || isNaN(o2)) { 
+    alert('Por favor, introduce todos los valores.'); 
+    return; 
+  }
+  
   const period = PERIOD();
-  const data = { glucosa: gluc, temperatura: temp, timestamp: new Date().toISOString(), periodo: period };
+  const data = { 
+    glucosa: gluc, 
+    temperatura: temp, 
+    oxigeno: o2,
+    timestamp: new Date().toISOString(), 
+    periodo: period 
+  };
   // Save locally
   localStorage.setItem(`checkin_${TODAY()}_${period}`, JSON.stringify(data));
   // Save history
@@ -1871,6 +1958,7 @@ const MED_NAMES = {
   'omeprazol_am': 'Omeprazol (Mañana)',
   'omeprazol_pm': 'Omeprazol (Noche)',
   'kreon_am': 'Kreon 35000 (Desayuno)',
+  'kreon_almuerzo': 'Kreon 35000 (Almuerzo)',
   'kreon_comida': 'Kreon 35000 (Comida)',
   'kreon_merienda': 'Kreon 35000 (Merienda)',
   'kreon_noche': 'Kreon 35000 (Cena)',
@@ -1887,7 +1975,8 @@ const MED_NAMES = {
 const MED_DOSES = {
   'omeprazol_am': '1 Cápsula',
   'omeprazol_pm': '1 Cápsula',
-  'kreon_am': '2 Cápsulas',
+  'kreon_am': '1 Cápsula',
+  'kreon_almuerzo': '1 Cápsula',
   'kreon_comida': '2 Cápsulas',
   'kreon_merienda': '3 Cápsulas',
   'kreon_noche': '2 Cápsulas',
@@ -2149,18 +2238,20 @@ function renderCharts() {
 
   // Vitals chart
   const ctxVitals = document.getElementById('chart-vitals').getContext('2d');
-  const vitalsData = { labels: [], glucose: [], temp: [] };
+  const vitalsData = { labels: [], glucose: [], temp: [], o2: [] };
 
   last7Days.forEach(d => {
     vitalsData.labels.push(d.label);
-    const dayConst = HISTORY_DATA.days[d.date]?.constantes;
-    if (dayConst && Object.keys(dayConst).length > 0) {
-      const morningConst = dayConst.manana || dayConst.comida || Object.values(dayConst)[0];
-      vitalsData.glucose.push(morningConst.glucosa || null);
-      vitalsData.temp.push(morningConst.temperatura || null);
+    const dayData = HISTORY_DATA.days[d.date];
+    if (dayData && dayData.constantes && dayData.constantes.entries && dayData.constantes.entries.length > 0) {
+      const lastEntry = dayData.constantes.entries[0];
+      vitalsData.glucose.push(lastEntry.glucosa || null);
+      vitalsData.temp.push(lastEntry.temperatura || null);
+      vitalsData.o2.push(lastEntry.oxigeno || null);
     } else {
       vitalsData.glucose.push(null);
       vitalsData.temp.push(null);
+      vitalsData.o2.push(null);
     }
   });
 
@@ -2174,20 +2265,48 @@ function renderCharts() {
         borderColor: 'rgba(33, 150, 243, 1)',
         backgroundColor: 'rgba(33, 150, 243, 0.1)',
         fill: true,
-        tension: 0.3
+        tension: 0.3,
+        yAxisID: 'y1'
       }, {
         label: 'Temperatura (°C)',
         data: vitalsData.temp,
         borderColor: 'rgba(255, 152, 0, 1)',
         backgroundColor: 'rgba(255, 152, 0, 0.1)',
         fill: false,
-        tension: 0.3
+        tension: 0.3,
+        yAxisID: 'y'
+      }, {
+        label: 'Oxígeno (% SpO2)',
+        data: vitalsData.o2,
+        borderColor: 'rgba(76, 175, 80, 1)',
+        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+        fill: false,
+        tension: 0.3,
+        yAxisID: 'y1'
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom' } }
+      plugins: { legend: { position: 'bottom' } },
+      scales: {
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: { display: true, text: 'Temp (°C)', font: { size: 10, weight: 'bold' } },
+          suggestedMin: 35,
+          suggestedMax: 38
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          title: { display: true, text: 'Glucosa / O2', font: { size: 10, weight: 'bold' } },
+          grid: { drawOnChartArea: false },
+          suggestedMin: 70
+        }
+      }
     }
   }));
 }
