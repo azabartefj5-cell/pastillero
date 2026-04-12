@@ -79,13 +79,12 @@ module.exports = async (req, res) => {
            let lastTick = null;
            if (id === 'morfina' && periodico.morfina) lastTick = periodico.morfina.lastTick;
            else if (id === 'hidroferol' && periodico.hidroferol) lastTick = periodico.hidroferol.lastTick;
-           // O fallback para otros genéricos si lo guardásemos
            
            if (lastTick) {
              const daysDiff = now.diff(moment(lastTick), 'days');
              if (daysDiff >= med.periodic) {
                  takeToday = true;
-                 pushBody = \`Hoy toca \${med.name} (cada \${med.periodic} días).\`;
+                 pushBody = `Hoy toca ${med.name} (cada ${med.periodic} días).`;
              }
            } else {
              // Si nunca se ha tomado, avisamos para que registre el primero
@@ -94,12 +93,12 @@ module.exports = async (req, res) => {
        } else if (med.days && med.days.includes(currentDay)) {
            // Corresponde al día de la semana actual
            takeToday = true;
-           pushBody = \`Toca \${med.name} (\${med.dose}).\`;
+           pushBody = `Toca ${med.name} (${med.dose}).`;
        }
        
        if (takeToday) {
            alarmsToSend.push({
-               title: \`⏰ \${med.name}\`,
+               title: `⏰ ${med.name}`,
                body: pushBody
            });
        }
@@ -126,7 +125,7 @@ module.exports = async (req, res) => {
 
     await Promise.all(promises);
 
-    return res.status(200).json({ success: true, message: \`Enviadas \${alarmsToSend.length} alarmas.\` });
+    return res.status(200).json({ success: true, message: `Enviadas ${alarmsToSend.length} alarmas.` });
 
   } catch (error) {
     console.error("Error en el cron:", error);
