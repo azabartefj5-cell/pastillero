@@ -1205,6 +1205,7 @@ function navigateToHoy() {
 function startGuidedMode(resume = false) {
   APP.guided.active = true;
   APP.guided.period = PERIOD();
+  APP.guided.steps = []; // Reset steps array to prevent duplication
   localStorage.setItem(`guided_active_${TODAY()}`, 'true');
   localStorage.setItem(`guided_started_${TODAY()}_${APP.guided.period}`, 'true');
   
@@ -1215,6 +1216,10 @@ function startGuidedMode(resume = false) {
     localStorage.setItem(`guided_step_${TODAY()}`, '0');
   }
   
+  // Load check-in data for this period
+  const checkinKey = `checkin_${TODAY()}_${APP.guided.period}`;
+  const checkinData = JSON.parse(localStorage.getItem(checkinKey) || '{}');
+
   // Helper for Periodic Logic
   const getDaysLeft = (id, maxDays) => {
     const lastDate = localStorage.getItem(`last_${id}_date`);
@@ -1256,8 +1261,8 @@ function startGuidedMode(resume = false) {
         title: 'Tiempo de Espera', 
         voice: 'Pilar, ahora debemos tener un poquito de paciencia. El protector necesita treinta minutos para hacer su efecto antes de desayunar. Yo te avisaré.' 
       });
-    } else if (localStorage.getItem(`omeprazol_timer_am_${TODAY()}`)) {
-      // If med taken, check if timer exists (regardless of skip flag) to show current status
+    } else if (localStorage.getItem(`omeprazol_timer_am_${TODAY()}`) && localStorage.getItem(`omeprazol_wait_finished_am_${TODAY()}`) !== 'true') {
+      // If med taken but timer still running and NOT skipped, show the wait step
       APP.guided.steps.push({ 
         type: 'wait', 
         title: 'Tiempo de Espera', 
@@ -1325,7 +1330,8 @@ function startGuidedMode(resume = false) {
     if (!localStorage.getItem(`med_${TODAY()}_omeprazol_pm`)) {
       APP.guided.steps.push({ type: 'med', med: 'omeprazol_pm', title: 'Protector Gástrico', dose: '1 Cápsula', voice: 'Empezamos con el protector de la noche. Tómalo ahora Pilar.', icon: 'pill' });
       APP.guided.steps.push({ type: 'wait', title: 'Tiempo de Espera', voice: 'Como siempre, vamos a esperar unos minutos antes de cenar para que el protector haga su función.' });
-    } else if (localStorage.getItem(`omeprazol_timer_pm_${TODAY()}`)) {
+    } else if (localStorage.getItem(`omeprazol_timer_pm_${TODAY()}`) && localStorage.getItem(`omeprazol_wait_finished_pm_${TODAY()}`) !== 'true') {
+      // If med taken but timer still running and NOT skipped, show the wait step
       APP.guided.steps.push({ type: 'wait', title: 'Tiempo de Espera', voice: 'Recuerda Pilar que aún falta un ratito de espera por el protector gástrico de la noche. Ten un poco de paciencia.' });
     }
     if (!localStorage.getItem(`med_${TODAY()}_kreon_noche`)) {
@@ -1381,9 +1387,20 @@ function renderGuidedStep() {
     case 'wait':
       container.innerHTML = `
         <h2 class="guided-title">${step.title}</h2>
-        <div id="guided-timer" class="text-7xl font-black text-primary my-10">30:00</div>
-        <p class="guided-subtitle">Espera a que pase el tiempo antes de continuar.</p>
-        <button onclick="skipGuidedWait()" class="mt-4 px-8 py-4 bg-error/10 text-error rounded-2xl font-bold text-sm">Omitir (No recomendado)</button>
+        <p class="guided-subtitle" style="margin-bottom:1rem;">Espera 30 minutos antes de ${APP.guided.period === 'manana' ? 'desayunar' : 'cenar'}.</p>
+        <div class="flex flex-col items-center">
+          <div class="relative" style="width:200px;height:200px;">
+            <svg class="absolute inset-0 w-full h-full" style="transform:rotate(-90deg)">
+              <circle cx="100" cy="100" r="88" fill="transparent" stroke="#dadbd2" stroke-width="10"></circle>
+              <circle id="guided-timer-circle" cx="100" cy="100" r="88" fill="transparent" stroke="#2196f3" stroke-width="10" stroke-dasharray="552.92" stroke-dashoffset="0" stroke-linecap="round"></circle>
+            </svg>
+            <div id="guided-timer" class="absolute inset-0 flex items-center justify-center text-5xl font-black font-headline text-primary">30:00</div>
+          </div>
+          <p class="text-on-surface-variant text-lg font-bold mt-4">⏳ Esperando absorción del Omeprazol</p>
+        </div>
+        <button onclick="skipGuidedWait()" class="mt-6 w-full px-8 py-4 bg-error text-white rounded-2xl font-headline font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <span class="material-symbols-outlined">cancel</span>Omitir Espera (No Recomendado)
+        </button>
       `;
       startGuidedTimer();
       break;
@@ -1467,6 +1484,9 @@ async function saveGuidedMed(medId) {
 }
 
 window.startGuidedTimer = function() {
+  const CIRCUMFERENCE = 552.92; // 2 * PI * 88
+  const DURATION_SECS = 30 * 60; // 30 minutes
+  
   const tick = () => {
     // Check if guided mode is active
     if (!APP.guided.active) return;
@@ -1488,13 +1508,14 @@ window.startGuidedTimer = function() {
 
     const end = APP.timerEnds[suffix];
     
-    // Bi-directional sync flag
+    // Bi-directional sync: check if timer was skipped/finished in full day view
     const externallyFinished = localStorage.getItem(`omeprazol_wait_finished_${suffix}_${today}`) === 'true';
     
+    const display = document.getElementById('guided-timer');
+    const circle = document.getElementById('guided-timer-circle');
     if (!display) return;
     
     // If no end time and not finished, we shouldn't be here, but we wait for it to appear
-    // (except if it was explicitly finished/skipped, then we show 0)
     if (!end && !externallyFinished) {
       setTimeout(tick, 500); 
       return;
@@ -1506,17 +1527,31 @@ window.startGuidedTimer = function() {
     
     display.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
     
+    // Update circular progress
+    if (circle) {
+      const elapsed = DURATION_SECS - remaining;
+      const offset = (elapsed / DURATION_SECS) * CIRCUMFERENCE;
+      circle.setAttribute('stroke-dashoffset', CIRCUMFERENCE - offset);
+    }
+    
     if (remaining <= 0) {
-      display.innerHTML = '<span class="text-tertiary font-black">¡TIEMPO LISTO!</span>';
-      if (!display.parentNode.querySelector('.btn-continue-guided')) {
+      display.textContent = '';
+      display.innerHTML = '<span class="text-tertiary font-black text-4xl">¡LISTO!</span>';
+      if (circle) {
+        circle.setAttribute('stroke', '#22c55e');
+        circle.setAttribute('stroke-dashoffset', '0');
+      }
+      // Remove skip button and add continue button
+      const container = document.getElementById('guided-content');
+      if (container && !container.querySelector('.btn-continue-guided')) {
         speak("Pilar, el tiempo de espera ha terminado. Ya puedes continuar.");
-        const oldBtn = display.parentNode.querySelector('button[onclick*="skipGuidedWait"]');
+        const oldBtn = container.querySelector('button[onclick*="skipGuidedWait"]');
         if (oldBtn) oldBtn.remove();
         const btn = document.createElement('button');
         btn.onclick = nextGuidedStep;
-        btn.className = "guided-btn-main bg-tertiary text-white mt-4 pointer-events-auto btn-continue-guided";
+        btn.className = "guided-btn-main bg-tertiary text-white mt-6 pointer-events-auto btn-continue-guided";
         btn.innerHTML = "CONTINUAR <span class='material-symbols-outlined'>arrow_forward</span>";
-        display.parentNode.appendChild(btn);
+        container.querySelector('.guided-card')?.appendChild(btn) || container.appendChild(btn);
       }
     } else {
       setTimeout(tick, 1000);
@@ -1526,15 +1561,23 @@ window.startGuidedTimer = function() {
 };
 
 window.skipGuidedWait = function() {
-  console.log('Skipping guided wait...');
+  console.log('⏩ Omitiendo espera guiada del Omeprazol...');
   try {
     const today = (typeof TODAY === 'function') ? TODAY() : '';
     const suffix = (APP.guided && APP.guided.period === 'manana') ? 'am' : 'pm';
+    
+    // 1. Set the skip flag in localStorage (persists across both views)
     localStorage.setItem(`omeprazol_wait_finished_${suffix}_${today}`, 'true');
+    
+    // 2. Also cancel the full-day-view timer so it shows as finished there too
+    if (APP.timers[suffix]) clearTimeout(APP.timers[suffix]);
+    finishOmeprazolTimer(suffix);
+    
+    // 3. Advance to next guided step
     nextGuidedStep();
   } catch (e) {
     console.error('Error in skipGuidedWait:', e);
-    // Fallback if anything fails
+    // Fallback if anything fails — never block Pilar
     nextGuidedStep();
   }
 };
@@ -1794,7 +1837,25 @@ function lockMeds(suffix, locked) {
 
 function restoreTimers() {
   ['am','pm'].forEach(suffix => {
+    // Check if the wait was already skipped/finished
+    const wasSkipped = localStorage.getItem(`omeprazol_wait_finished_${suffix}_${TODAY()}`) === 'true';
     const stored = localStorage.getItem(`omeprazol_timer_${suffix}_${TODAY()}`);
+    
+    if (wasSkipped) {
+      // Timer was skipped — show finished state, don't restart countdown
+      if (stored) localStorage.removeItem(`omeprazol_timer_${suffix}_${TODAY()}`);
+      const btn = document.getElementById(`btn-omeprazol-${suffix}`);
+      const timerEl = document.getElementById(`timer-omeprazol-${suffix}`);
+      const card = document.getElementById(`card-omeprazol-${suffix}`);
+      if (btn) btn.classList.add('hidden');
+      if (card) card.classList.add('hidden');
+      if (timerEl) {
+        timerEl.classList.remove('hidden');
+        finishOmeprazolTimer(suffix);
+      }
+      return;
+    }
+    
     if (stored) {
       const end = parseInt(stored);
       if (end > Date.now()) {
@@ -1806,7 +1867,7 @@ function restoreTimers() {
         tickTimer(suffix);
       } else {
         localStorage.removeItem(`omeprazol_timer_${suffix}_${TODAY()}`);
-        lockMeds(suffix, false);
+        finishOmeprazolTimer(suffix);
       }
     }
   });
