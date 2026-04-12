@@ -109,7 +109,14 @@ module.exports = async (req, res) => {
     }
 
     if (alarmsToSend.length === 0) {
-      return res.status(200).json({ message: "Cron ejecutado. No hay alarmas a esta hora.", devices: allTokens.length });
+      const allMedTimes = Object.entries(dinamicos).map(([id, m]) => `${m.name}: ${m.time} (Hoy: ${m.days?.includes(currentDay)})`);
+      return res.status(200).json({ 
+        message: "Cron ejecutado. No hay alarmas a esta hora.", 
+        currentTime, 
+        currentDay,
+        meds_checked: allMedTimes,
+        devices: allTokens.length 
+      });
     }
 
     // 5. Enviar Pushes a TODOS los dispositivos registrados
