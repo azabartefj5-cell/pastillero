@@ -130,6 +130,22 @@ module.exports = async (req, res) => {
             title: alarma.title,
             body: alarma.body
           },
+          android: {
+            priority: 'high',
+            notification: {
+              sound: 'default',
+              default_vibrate_timings: true,
+              notification_priority: 'PRIORITY_MAX'
+            }
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: 'default',
+                contentAvailable: true
+              }
+            }
+          },
           data: {
             url: "./index.html"
           }
@@ -144,7 +160,9 @@ module.exports = async (req, res) => {
       success: true, 
       sent_notifications: messages.length, 
       success_count: response.successCount,
-      failure_count: response.failureCount
+      failure_count: response.failureCount,
+      currentTime,
+      meds_triggered: alarmsToSend.map(a => a.title)
     });
 
   } catch (error) {

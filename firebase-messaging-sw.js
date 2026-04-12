@@ -18,7 +18,11 @@ messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
     body: payload.notification.body,
     icon: './icons/icon-192.png',
-    badge: './icons/icon-192.png'
+    badge: './icons/icon-192.png',
+    vibrate: [200, 100, 200, 100, 200, 100, 400],
+    tag: 'pastillero-med-alarm',
+    renovateNotification: true,
+    requireInteraction: true
   };
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
