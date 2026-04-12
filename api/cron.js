@@ -1,23 +1,29 @@
 const admin = require('firebase-admin');
 const moment = require('moment-timezone');
 
-// Inicializar Firebase Admin
-// La clave JSON debe estar en la variable de entorno FIREBASE_SERVICE_ACCOUNT en Vercel
-if (!admin.apps.length) {
-  try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
+// Inicializar Firebase Admin de forma segura
+let firebaseInitialized = false;
+try {
+  const saEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (saEnv && !admin.apps.length) {
+    const serviceAccount = JSON.parse(saEnv);
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)
     });
-  } catch (e) {
-    console.error("Error inicializando Firebase Admin. Revisa FIREBASE_SERVICE_ACCOUNT", e);
+    firebaseInitialized = true;
+  } else if (admin.apps.length) {
+    firebaseInitialized = true;
   }
+} catch (e) {
+  console.error("Error crítico inicializando Firebase Admin:", e.message);
 }
 
 module.exports = async (req, res) => {
-  // Asegurarnos de que Firebase Admin está inicializado
-  if (!admin.apps.length) {
-    return res.status(500).json({ error: "Firebase no configurado correctamente en el servidor." });
+  if (!firebaseInitialized) {
+    return res.status(200).json({ 
+      error: "CONFIG_MISSING", 
+      message: "Falta configurar la variable FIREBASE_SERVICE_ACCOUNT en Vercel o el JSON es inválido." 
+    });
   }
 
   const db = admin.firestore();
