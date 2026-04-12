@@ -35,18 +35,16 @@ module.exports = async (req, res) => {
   console.log(`Cron ejecutado. Hora actual en España: ${currentTime}, Día: ${currentDay}`);
 
   try {
-    // 2. Obtener el token FCM de Pilar
+    // 2. Obtener los tokens FCM de todos los dispositivos registrados
     const dispositivosSnap = await db.collection('dispositivos').get();
-    let pilarToken = null;
+    const allTokens = [];
     dispositivosSnap.forEach(doc => {
-      // Tomamos el primer token válido
-      if (doc.data().fcmToken) {
-        pilarToken = doc.data().fcmToken;
-      }
+      const token = doc.data().fcmToken;
+      if (token) allTokens.push(token);
     });
 
-    if (!pilarToken) {
-      return res.status(200).json({ message: "No hay token FCM registrado. Pilar debe activar las notificaciones primero." });
+    if (allTokens.length === 0) {
+      return res.status(200).json({ message: "No hay tokens FCM registrados. Abre la APP y acepta notificaciones primero." });
     }
 
     // 3. Cargar las configuraciones dinámicas de la base de datos central de medicamentos
@@ -56,7 +54,7 @@ module.exports = async (req, res) => {
     }
     const dinamicos = alarmasRef.data();
 
-    // 4. Analizar medicamentos periodicos (Morfina, Hidroferol)
+    // 4. Analizar medicamentos periódicos
     const periodicoRef = await db.collection('tomas_pilar').doc('historico_periodico').get();
     const periodico = periodicoRef.exists ? periodicoRef.data() : {};
 
@@ -76,9 +74,7 @@ module.exports = async (req, res) => {
        
        if (med.periodic) {
            // Lógica de periodicos (cada X días)
-           let lastTick = null;
-           if (id === 'morfina' && periodico.morfina) lastTick = periodico.morfina.lastTick;
-           else if (id === 'hidroferol' && periodico.hidroferol) lastTick = periodico.hidroferol.lastTick;
+           let lastTick = (id === 'morfina' ? periodico.morfina?.lastTick : (id === 'hidroferol' ? periodico.hidroferol?.lastTick : null));
            
            if (lastTick) {
              const daysDiff = now.diff(moment(lastTick), 'days');
@@ -105,27 +101,35 @@ module.exports = async (req, res) => {
     }
 
     if (alarmsToSend.length === 0) {
-      return res.status(200).json({ message: "Cron ejecutado. No hay alarmas programadas para esta hora exacta." });
+      return res.status(200).json({ message: "Cron ejecutado. No hay alarmas a esta hora.", devices: allTokens.length });
     }
 
-    // 5. Enviar Pushes
-    let promises = alarmsToSend.map(alarma => {
-      return admin.messaging().send({
-        token: pilarToken,
-        notification: {
-          title: alarma.title,
-          body: alarma.body
-        },
-        data: {
-          click_action: "FLUTTER_NOTIFICATION_CLICK", // Para compatibilidad
-          url: "./index.html"
-        }
+    // 5. Enviar Pushes a TODOS los dispositivos registrados
+    const messages = [];
+    allTokens.forEach(token => {
+      alarmsToSend.forEach(alarma => {
+        messages.push({
+          token: token,
+          notification: {
+            title: alarma.title,
+            body: alarma.body
+          },
+          data: {
+            url: "./index.html"
+          }
+        });
       });
     });
 
-    await Promise.all(promises);
+    // Enviar todos los mensajes en lotes de forma eficiente
+    const response = await admin.messaging().sendEach(messages);
 
-    return res.status(200).json({ success: true, message: `Enviadas ${alarmsToSend.length} alarmas.` });
+    return res.status(200).json({ 
+      success: true, 
+      sent_notifications: messages.length, 
+      success_count: response.successCount,
+      failure_count: response.failureCount
+    });
 
   } catch (error) {
     console.error("Error en el cron:", error);
