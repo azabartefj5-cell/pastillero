@@ -44,7 +44,15 @@ module.exports = async (req, res) => {
     });
 
     if (allTokens.length === 0) {
-      return res.status(200).json({ message: "No hay tokens FCM registrados. Abre la APP y acepta notificaciones primero." });
+      return res.status(200).json({ 
+        message: "No hay tokens FCM registrados.", 
+        debug: {
+          project: admin.instanceId ? "Admin Inicializado" : "Desconocido",
+          collection_empty: dispositivosSnap.empty,
+          docs_count: dispositivosSnap.size,
+          hint: "Abre la APP en el móvil, ve a Configuración y pulsa 'Activar Notificaciones' si no están activas."
+        }
+      });
     }
 
     // 3. Cargar las configuraciones dinámicas de la base de datos central de medicamentos
