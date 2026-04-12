@@ -124,7 +124,7 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
         <span id="sync-time" class="text-[10px] font-black uppercase tracking-widest">Online</span>
       </div>
       <div id="firebase-status-badge" class="px-3 py-1.5 bg-white/30 rounded-full text-[10px] font-black uppercase text-on-primary-container tracking-widest transition-all">Offline</div>
-      <span class="material-symbols-outlined text-on-surface-variant text-3xl">account_circle</span>
+      <span id="btn-toggle-config" class="material-symbols-outlined text-on-surface-variant text-3xl cursor-pointer active:scale-90 transition-all" onclick="toggleConfigScreen()">settings</span>
     </div>
   </div>
 </header>
@@ -543,6 +543,397 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
     </div>
   </div>
 </section>
+
+<!-- ══════ SCREEN: CONFIGURATION (TWIN) ══════ -->
+<section class="screen space-y-8 fade-in" id="screen-config">
+  <header class="flex flex-col gap-4">
+    <div id="config-guided-hidden" style="display:none" class="p-6 bg-primary text-white rounded-[2.5rem] shadow-xl flex flex-col items-center gap-4 text-center animate-pulse cursor-pointer" onclick="startGuidedMode()">
+      <span class="material-symbols-outlined text-6xl icon-fill">play_circle</span>
+      <div>
+        <h3 class="font-headline font-black text-3xl">Modo Guiado</h3>
+        <p class="text-lg opacity-90">Pulsa aquí para que te guíe paso a paso con tus medicinas.</p>
+      </div>
+      <button class="w-full h-20 bg-white text-primary rounded-3xl font-black text-2xl shadow-lg pointer-events-none">
+        EMPEZAR TOMAS
+      </button>
+    </div>
+    <div class="flex justify-between items-end">
+      <div>
+        <h2 class="font-headline font-black text-3xl">Configuración de Horarios</h2>
+        <p class="text-on-surface-variant font-bold text-lg">Edición de medicamentos, dosis y alarmas</p>
+      </div>
+      <div class="flex flex-col items-end">
+        <span id="period-badge" class="px-4 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed font-black text-xs uppercase tracking-widest shadow-sm">Mañana</span>
+      </div>
+      </div>
+    </div>
+
+    <!-- Last readings display -->
+    <div id="config-constantes-hidden" style="display:none" class="bg-gradient-to-r from-tertiary-container/30 to-primary-container/30 rounded-3xl p-4 border border-tertiary/20 mb-6">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="material-symbols-outlined text-tertiary text-2xl icon-fill">monitor_heart</span>
+        <h3 class="font-headline font-bold text-lg">Últimas Constantes</h3>
+      </div>
+      <div id="last-constantes" class="flex flex-wrap gap-x-4 gap-y-2 text-sm items-center">
+        <div class="flex items-center gap-1">
+          <span class="material-symbols-outlined text-secondary text-lg">thermostat</span>
+          <span class="font-bold text-base" id="last-temp">--</span>
+          <span class="text-on-surface-variant text-[10px]">°C</span>
+        </div>
+        <div class="flex items-center gap-1 border-l border-outline-variant/30 pl-4">
+          <span class="material-symbols-outlined text-primary text-lg">bloodtype</span>
+          <span class="font-bold text-base" id="last-glucose">--</span>
+          <span class="text-on-surface-variant text-[10px]">mg/dL</span>
+        </div>
+        <div class="flex items-center gap-1 border-l border-outline-variant/30 pl-4">
+          <span class="material-symbols-outlined text-tertiary text-lg">air</span>
+          <span class="font-bold text-base" id="last-o2">--</span>
+          <span class="text-on-surface-variant text-[10px]">% SpO2</span>
+        </div>
+        <div class="ml-auto flex items-center gap-1 text-on-surface-variant text-[10px] bg-white/40 px-2 py-1 rounded-lg">
+          <span class="material-symbols-outlined text-xs">schedule</span>
+          <span id="last-constantes-time">--</span>
+        </div>
+      </div>
+    </div>
+
+  <!-- ───── DESAYUNO (Amarillo / Mañana) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-yellow-400 rounded-full"></div>
+      <h3 class="font-headline font-bold text-2xl">🌅 Desayuno</h3>
+      <span class="text-sm bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full font-bold">Mañana</span>
+    </div>
+
+    <div class="bg-yellow-200/40 p-5 rounded-[2.5rem] border border-yellow-300/50 space-y-4">
+      <!-- Omeprazol 40mg (Priority — 30 min BEFORE) -->
+      <div id="card-omeprazol-am" class="bg-white rounded-3xl p-6 shadow-sm relative overflow-hidden ring-4 ring-yellow-400/20">
+        <div class="absolute right-5 top-5"><span class="material-symbols-outlined text-yellow-600 text-3xl">schedule</span></div>
+        <div class="mb-4">
+          <span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-xs font-bold">⏰ 30 MIN ANTES DE DESAYUNAR</span>
+          <h3 class="font-headline font-black text-2xl mt-2">Omeprazol 40mg</h3>
+          <p class="text-on-surface-variant font-bold">1 Cápsula • Protector gástrico</p>
+        </div>
+        <button class="w-full h-16 bg-surface-variant text-on-surface font-headline font-bold text-lg flex items-center justify-center gap-3 rounded-xl mt-4 active:scale-95 transition-all outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined">settings</span>⚙️ CONFIGURAR</button>
+      </div>
+
+      <!-- Timer AM (hidden by default) -->
+      <div id="timer-omeprazol-am" class="hidden bg-white/80 p-6 rounded-3xl timer-glow">
+        <div class="flex flex-col items-center text-center gap-3">
+          <div class="relative w-40 h-40 flex items-center justify-center">
+            <svg class="absolute inset-0 w-full h-full -rotate-90"><circle class="text-surface-dim" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-width="8"></circle><circle id="timer-circle-am" class="text-primary-container" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-dasharray="452.39" stroke-dashoffset="0" stroke-width="8" stroke-linecap="round"></circle></svg>
+            <span id="timer-text-am" class="text-4xl font-black font-headline text-primary-container">30:00</span>
+          </div>
+          <h3 class="text-xl font-bold">Esperando absorción</h3>
+          <p class="text-on-surface-variant text-sm">Espera 30 min antes de desayunar</p>
+          <button onclick="cancelOmeprazolTimer('am')" class="mt-2 px-6 py-3 bg-error text-on-error rounded-xl font-headline font-bold text-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2 border-none ring-0">
+            <span class="material-symbols-outlined text-lg">cancel</span>Omitir Espera (No Recomendado)
+          </button>
+        </div>
+      </div>
+
+      <!-- Rest of morning meds (locked until Omeprazol timer ends) -->
+      <div id="config-manana-list" class="space-y-3">
+        <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2">Con el desayuno <span class="material-symbols-outlined text-sm" style="display:none">lock</span></h4>
+        
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="valsartan">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">monitor_heart</span></div>
+            <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Valsartan/HTZ 160/25</h4><p class="text-base text-on-surface-variant font-medium mt-0.5">1 Comprimido</p></div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+  
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="amlodipino">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">favorite</span></div>
+            <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Amlodipino 5mg</h4><p class="text-base text-on-surface-variant font-medium mt-0.5">1 Comprimido</p></div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+  
+        <div id="card-trangorex-am" class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="trangorex_am">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="bg-error-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-error-container text-4xl icon-fill">vital_signs</span></div>
+            <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Trangorex 200mg</h4><p class="text-base text-on-surface-variant font-medium mt-0.5">1 Comp. • Solo L–V</p></div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="kreon_am">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="bg-yellow-100 p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-yellow-950 text-4xl icon-fill">medication</span></div>
+            <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Kreon 35000</h4><p class="text-base text-on-surface-variant font-medium mt-0.5">1 Cápsula</p></div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="enoxaparina">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="bg-primary-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">vaccines</span></div>
+            <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Enoxaparina 100mg</h4><p class="text-base text-on-surface-variant font-medium mt-0.5">Inyectable SC</p></div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+  
+        <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="insulina_lantus_am">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="bg-primary-container p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">bloodtype</span></div>
+            <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Insulina Lantus</h4><p class="text-base text-on-surface-variant font-medium mt-0.5">10–12 UI SC</p></div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ───── ALMUERZO (Media Mañana) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-yellow-400 rounded-full opacity-60"></div>
+      <h3 class="font-headline font-bold text-2xl">☕ Almuerzo</h3>
+      <span class="text-sm bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full font-bold">Media Mañana</span>
+    </div>
+    <div class="bg-yellow-100/60 p-5 rounded-[2.5rem] border border-yellow-200/40">
+      <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="kreon_almuerzo">
+        <div class="flex items-center gap-4 min-w-0 flex-1">
+          <div class="bg-yellow-100 p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-yellow-950 text-4xl icon-fill">medication</span></div>
+          <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Kreon 35000</h4><p class="text-base text-on-surface-variant font-medium mt-0.5">1 Cápsula</p></div>
+        </div>
+        <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── COMIDA (Naranja) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-secondary-container rounded-full"></div>
+      <h3 class="font-headline font-bold text-2xl">☀️ Comida</h3>
+      <span class="text-sm bg-secondary-fixed text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Mediodía</span>
+    </div>
+    <div class="bg-orange-100/60 p-5 rounded-[2.5rem] border border-orange-200/60">
+      <div class="bg-white border-l-[8px] border-secondary-container p-6 rounded-3xl" data-med="kreon_comida">
+        <div class="flex justify-between items-start mb-4 gap-4">
+          <div class="flex-1 min-w-0"><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant text-lg">2 Cápsulas</p></div>
+          <div class="bg-secondary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-secondary-container text-3xl icon-fill">medication</span></div>
+        </div>
+        <button class="w-full h-16 bg-surface-variant text-on-surface font-headline font-bold text-lg flex items-center justify-center gap-3 rounded-xl mt-4 active:scale-95 transition-all outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined">settings</span>⚙️ CONFIGURAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── MERIENDA (Verde) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-tertiary-container rounded-full"></div>
+      <h3 class="font-headline font-bold text-2xl">🍪 Merienda</h3>
+      <span class="text-sm bg-tertiary-fixed text-on-tertiary-container px-2 py-0.5 rounded-full font-bold">Tarde</span>
+    </div>
+    <div class="bg-emerald-100/60 p-5 rounded-[2.5rem] border border-emerald-200/60">
+      <div class="bg-white border-l-[8px] border-tertiary-container p-6 rounded-3xl flex flex-col gap-4" data-med="kreon_merienda">
+        <div class="flex items-center gap-4 min-w-0">
+          <div class="bg-tertiary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-tertiary-container text-3xl icon-fill">bakery_dining</span></div>
+          <div class="flex-1 min-w-0"><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant">3 Cápsulas</p></div>
+        </div>
+        <button class="w-full h-16 bg-surface-variant text-on-surface font-headline font-bold text-lg flex items-center justify-center gap-3 rounded-xl mt-4 active:scale-95 transition-all outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined">settings</span>⚙️ CONFIGURAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── CENA (Azul / Noche) ───── -->
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-4 h-12 bg-primary-container rounded-full"></div>
+      <h3 class="font-headline font-bold text-2xl">🌙 Cena</h3>
+      <span class="text-sm bg-primary-fixed text-on-primary-container px-2 py-0.5 rounded-full font-bold">Noche</span>
+    </div>
+
+    <div class="bg-blue-100/60 p-5 rounded-[2.5rem] border border-blue-200/60 space-y-4">
+      <!-- Omeprazol 40mg Night (Priority — 30 min BEFORE dinner) -->
+      <div id="card-omeprazol-pm" class="bg-white rounded-3xl p-6 border-l-[8px] border-primary-container relative overflow-hidden">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="material-symbols-outlined text-primary-container text-3xl icon-fill">pill</span>
+          <span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-xs font-bold shrink-0">⏰ 30 MIN ANTES DE CENAR</span>
+        </div>
+        <div class="min-w-0">
+          <h3 class="font-headline text-2xl font-bold mb-1">Omeprazol 40mg</h3>
+          <p class="text-on-surface-variant text-sm mb-4">Tómalo 30 min antes de cenar.</p>
+        </div>
+        <button class="w-full h-16 bg-surface-variant text-on-surface font-headline font-bold text-lg flex items-center justify-center gap-3 rounded-xl mt-4 active:scale-95 transition-all outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined">settings</span>⚙️ CONFIGURAR</button>
+      </div>
+
+      <!-- Timer PM (hidden by default) -->
+      <div id="timer-omeprazol-pm" class="hidden bg-white/80 p-6 rounded-3xl timer-glow">
+        <div class="flex flex-col items-center text-center gap-3">
+          <div class="relative w-40 h-40 flex items-center justify-center">
+            <svg class="absolute inset-0 w-full h-full -rotate-90"><circle class="text-surface-dim" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-width="8"></circle><circle id="timer-circle-pm" class="text-primary-container" cx="80" cy="80" fill="transparent" r="72" stroke="currentColor" stroke-dasharray="452.39" stroke-dashoffset="0" stroke-width="8" stroke-linecap="round"></circle></svg>
+            <span id="timer-text-pm" class="text-4xl font-black font-headline text-primary-container">30:00</span>
+          </div>
+          <h3 class="text-xl font-bold">Cronómetro de 30 min</h3>
+          <p class="text-on-surface-variant text-sm">Espera antes de cenar</p>
+          <button onclick="cancelOmeprazolTimer('pm')" class="mt-2 px-6 py-3 bg-error text-on-error rounded-xl font-headline font-bold text-sm active:scale-95 transition-all w-full flex items-center justify-center gap-2 border-none ring-0">
+            <span class="material-symbols-outlined text-lg">cancel</span>Omitir Espera (No Recomendado)
+          </button>
+        </div>
+      </div>
+
+      <!-- Dinner meds (locked until Omeprazol timer ends) -->
+      <div id="config-noche-list" class="space-y-3">
+        <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2">Con la Cena <span class="material-symbols-outlined text-sm" style="display:none">lock</span></h4>
+        <div class="bg-white rounded-3xl p-5 border-l-[8px] border-primary-container flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="kreon_noche">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="bg-primary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">medication</span></div>
+            <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Kreon 35000</h4><p class="text-base text-primary font-bold mt-0.5">2 Cápsulas</p></div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+        
+        <h4 class="text-base font-bold text-on-surface-variant flex items-center gap-2 mt-4">Antes de dormir</h4>
+        <div class="bg-white rounded-3xl p-5 border-l-[8px] border-primary-container flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="mirtazapina_noche">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="bg-primary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-primary-container text-4xl icon-fill">bedtime</span></div>
+            <div class="min-w-0 flex-1"><h4 class="font-headline font-extrabold text-xl leading-tight">Mirtazapina 15mg</h4><p class="text-base text-primary font-bold mt-0.5">1 Comprimido</p></div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───── RECORDATORIOS ESPECIALES (INTERACTIVOS) ───── -->
+  <div class="bg-surface-container-high rounded-3xl p-5 border-l-[8px] border-tertiary shadow-sm">
+    <div class="flex items-center gap-3 mb-4 text-tertiary">
+      <span class="material-symbols-outlined text-3xl icon-fill">event_available</span>
+      <h3 class="font-headline text-xl font-bold text-on-surface">Mantenimiento y Especiales</h3>
+    </div>
+    <div class="space-y-4">
+      <!-- PARCHE MORFINA (3 días) -->
+      <div id="ui-morfina" class="p-4 rounded-2xl border-2 border-surface-variant/50 transition-colors bg-white/40">
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-error-container text-on-error-container flex items-center justify-center">
+              <span class="material-symbols-outlined icon-fill">layers</span>
+            </div>
+            <div class="min-w-0">
+              <p class="font-bold text-lg font-headline">Parche de Morfina</p>
+              <p class="text-sm font-medium" id="morfina-status-text">Calculando próxima fecha...</p>
+            </div>
+          </div>
+        </div>
+        <button class="w-full h-16 bg-surface-variant text-on-surface font-headline font-bold text-lg flex items-center justify-center gap-3 rounded-xl mt-4 active:scale-95 transition-all outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined">settings</span>⚙️ CONFIGURAR</button>
+      </div>
+
+      <!-- HIDROFEROL (15 días) -->
+      <div id="ui-hidroferol" class="p-4 rounded-2xl border-2 border-surface-variant/50 transition-colors bg-white/40">
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+              <span class="material-symbols-outlined icon-fill">calendar_month</span>
+            </div>
+            <div class="min-w-0">
+              <p class="font-bold text-lg font-headline">Hidroferol</p>
+              <p class="text-sm font-medium" id="hidroferol-status-text">Calculando próxima fecha...</p>
+            </div>
+          </div>
+        </div>
+        <button class="w-full h-16 bg-surface-variant text-on-surface font-headline font-bold text-lg flex items-center justify-center gap-3 rounded-xl mt-4 active:scale-95 transition-all outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined">settings</span>⚙️ CONFIGURAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="px-5 mb-8">
+    <button onclick="createNewMedication()" class="w-full h-20 bg-primary/10 text-primary border border-primary/20 border-dashed rounded-3xl font-headline font-bold text-xl flex items-center justify-center gap-4 active:scale-95 transition-all outline-none">
+      <span class="material-symbols-outlined text-3xl">add_circle</span> AÑADIR NUEVO MEDICAMENTO
+    </button>
+  </div>
+</section>
+
+
+<!-- ══════ MODAL: CONFIGURATION ══════ -->
+<div id="modal-config" class="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+  <div class="bg-surface rounded-[2rem] w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl transform scale-95 transition-transform duration-300 mx-auto mt-10">
+    <div class="sticky top-0 bg-surface/90 backdrop-blur-md p-5 pb-3 border-b border-outline/10 flex justify-between items-center z-10">
+      <h3 class="font-headline font-extrabold text-2xl flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">edit_square</span> Editar Toma
+      </h3>
+      <button onclick="closeConfigModal()" class="h-10 w-10 flex items-center justify-center bg-surface-variant text-on-surface rounded-full active:scale-90">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+    
+    <div class="p-5 space-y-6">
+      <div class="bg-primary/5 rounded-2xl p-4 border border-primary/20">
+        <h4 id="modal-med-name" class="font-headline font-black text-2xl mb-1">Nombre</h4>
+        <p id="modal-med-dose" class="text-on-surface-variant font-medium">1 Comprimido</p>
+      </div>
+
+      <div class="space-y-2">
+        <label class="font-bold text-sm text-on-surface-variant flex items-center gap-1">
+          <span class="material-symbols-outlined text-lg">alarm</span> Hora de Alarma Push
+        </label>
+        <input type="time" id="modal-med-time" class="w-full h-14 px-4 bg-surface-container rounded-xl font-headline font-bold text-2xl text-center outline-none border border-outline/10" value="08:00">
+      </div>
+
+      <div class="space-y-3">
+        <label class="font-bold text-sm text-on-surface-variant flex items-center gap-1">
+          <span class="material-symbols-outlined text-lg">calendar_month</span> Días Recomendados
+        </label>
+        <div class="grid grid-cols-7 gap-1">
+          <label class="flex flex-col items-center gap-1 cursor-pointer">
+            <input type="checkbox" value="1" class="day-checkbox hidden peer">
+            <div class="w-full aspect-square bg-surface-container peer-checked:bg-primary peer-checked:text-white rounded-lg flex items-center justify-center font-bold text-sm transition-colors border border-outline/10">L</div>
+          </label>
+          <label class="flex flex-col items-center gap-1 cursor-pointer">
+            <input type="checkbox" value="2" class="day-checkbox hidden peer">
+            <div class="w-full aspect-square bg-surface-container peer-checked:bg-primary peer-checked:text-white rounded-lg flex items-center justify-center font-bold text-sm transition-colors border border-outline/10">M</div>
+          </label>
+          <label class="flex flex-col items-center gap-1 cursor-pointer">
+            <input type="checkbox" value="3" class="day-checkbox hidden peer">
+            <div class="w-full aspect-square bg-surface-container peer-checked:bg-primary peer-checked:text-white rounded-lg flex items-center justify-center font-bold text-sm transition-colors border border-outline/10">X</div>
+          </label>
+          <label class="flex flex-col items-center gap-1 cursor-pointer">
+            <input type="checkbox" value="4" class="day-checkbox hidden peer">
+            <div class="w-full aspect-square bg-surface-container peer-checked:bg-primary peer-checked:text-white rounded-lg flex items-center justify-center font-bold text-sm transition-colors border border-outline/10">J</div>
+          </label>
+          <label class="flex flex-col items-center gap-1 cursor-pointer">
+            <input type="checkbox" value="5" class="day-checkbox hidden peer">
+            <div class="w-full aspect-square bg-surface-container peer-checked:bg-primary peer-checked:text-white rounded-lg flex items-center justify-center font-bold text-sm transition-colors border border-outline/10">V</div>
+          </label>
+          <label class="flex flex-col items-center gap-1 cursor-pointer">
+            <input type="checkbox" value="6" class="day-checkbox hidden peer">
+            <div class="w-full aspect-square bg-surface-container peer-checked:bg-primary peer-checked:text-white rounded-lg flex items-center justify-center font-bold text-sm transition-colors border border-outline/10">S</div>
+          </label>
+          <label class="flex flex-col items-center gap-1 cursor-pointer">
+            <input type="checkbox" value="0" class="day-checkbox hidden peer">
+            <div class="w-full aspect-square bg-surface-container peer-checked:bg-primary peer-checked:text-white rounded-lg flex items-center justify-center font-bold text-sm transition-colors border border-outline/10">D</div>
+          </label>
+        </div>
+      </div>
+      
+      <div class="space-y-2 mt-4" id="modal-periodic-options">
+        <label class="font-bold text-sm text-on-surface-variant flex items-center gap-1">
+          <span class="material-symbols-outlined text-lg">event_repeat</span> Repetición cíclica
+        </label>
+        <select id="modal-periodic-select" class="w-full h-14 bg-surface-container rounded-xl px-4 font-bold outline-none border border-outline/10">
+          <option value="">No es periódica</option>
+          <option value="3">Cada 3 días (Morfina)</option>
+          <option value="15">Cada 15 días (Hidroferol)</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="p-5 bg-surface-container-low border-t border-outline/10 flex flex-col gap-3 rounded-b-[2rem]">
+      <button onclick="saveMedConfig()" class="w-full h-[60px] bg-gradient-to-b from-primary to-primary-container text-white rounded-xl font-headline font-black text-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-md">
+        <span class="material-symbols-outlined text-2xl">save</span> Guardar
+      </button>
+
+      <button onclick="toggleMedStatus()" id="btn-toggle-med" class="w-full h-[50px] bg-error-container text-on-error-container rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all">
+        <span class="material-symbols-outlined">visibility_off</span> Ocultar/Desactivar
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════ SCREEN: BOTIQUÍN SOS ══════ -->
 <section class="screen space-y-4 fade-in" id="screen-sos">
@@ -1154,6 +1545,235 @@ async function deleteMedToma(medId, fecha) {
 
 // Global exports for HTML onclick handlers
 window.deleteMedToma = deleteMedToma;
+// ══════════════════════════════════════
+// DYNAMIC CONFIGURATION LOGIC
+// ══════════════════════════════════════
+let MEDICATIONS_DB = {
+  // MAÑANA
+  "omeprazol_am": { name: "Omeprazol 40mg", dose: "1 Cápsula (30m antes)", time: "08:00", days: [1,2,3,4,5,6,0], period: "manana" },
+  "valsartan": { name: "Valsartan/HTZ 160/25", dose: "1 Comprimido", time: "08:30", days: [1,2,3,4,5,6,0], period: "manana" },
+  "amlodipino": { name: "Amlodipino 5mg", dose: "1 Comprimido", time: "08:30", days: [1,2,3,4,5,6,0], period: "manana" },
+  "trangorex_am": { name: "Trangorex 200mg", dose: "1 Comp. Solo L-V", time: "08:30", days: [1,2,3,4,5], period: "manana" },
+  "kreon_am": { name: "Kreon 35000", dose: "1 Cápsula", time: "08:30", days: [1,2,3,4,5,6,0], period: "manana" },
+  "enoxaparina": { name: "Enoxaparina 100mg", dose: "Inyectable SC", time: "08:30", days: [1,2,3,4,5,6,0], period: "manana" },
+  "insulina_lantus_am": { name: "Insulina Lantus", dose: "10-12 UI SC", time: "08:30", days: [1,2,3,4,5,6,0], period: "manana" },
+  
+  // ALMUERZO
+  "kreon_almuerzo": { name: "Kreon 35000", dose: "1 Cápsula", time: "11:30", days: [1,2,3,4,5,6,0], period: "almuerzo" },
+  
+  // COMIDA
+  "kreon_comida": { name: "Kreon 35000", dose: "2 Cápsulas", time: "14:30", days: [1,2,3,4,5,6,0], period: "comida" },
+  
+  // MERIENDA
+  "kreon_merienda": { name: "Kreon 35000", dose: "3 Cápsulas", time: "18:00", days: [1,2,3,4,5,6,0], period: "merienda" },
+  
+  // NOCHE
+  "omeprazol_pm": { name: "Omeprazol 40mg", dose: "1 Cápsula (30m antes)", time: "20:00", days: [1,2,3,4,5,6,0], period: "noche" },
+  "kreon_noche": { name: "Kreon 35000", dose: "2 Cápsulas", time: "21:00", days: [1,2,3,4,5,6,0], period: "noche" },
+  "mirtazapina_noche": { name: "Mirtazapina 15mg", dose: "1 Comprimido", time: "22:00", days: [1,2,3,4,5,6,0], period: "noche" },
+  
+  // ESPECIALES
+  "morfina": { name: "Parche Morfina", dose: "Cambio de parche", time: "09:00", days: [], period: "especial", periodic: 3 },
+  "hidroferol": { name: "Hidroferol", dose: "1 Cápsula", time: "09:00", days: [], period: "especial", periodic: 15 }
+};
+
+let currentEditingMedId = null;
+
+window.createNewMedication = function() {
+  const newId = 'med_custom_' + Date.now();
+  MEDICATIONS_DB[newId] = {
+    name: 'Nuevo Medicamento',
+    dose: '1 Dosis',
+    time: '12:00',
+    days: [1,2,3,4,5,6,0],
+    period: 'comida' // default
+  };
+  
+  currentEditingMedId = newId;
+  openConfigModal(null, newId); 
+  
+  // Force pre-fill defaults because openConfigModal expects the DOM to exist sometimes
+  document.getElementById('modal-med-name').textContent = 'Nuevo Medicamento';
+  document.getElementById('modal-med-dose').textContent = '1 Dosis';
+  document.getElementById('modal-med-time').value = '12:00';
+  document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = true);
+};
+
+
+window.toggleConfigScreen = function() {
+  const icon = document.getElementById('btn-toggle-config');
+  if (APP.currentScreen !== 'config') {
+    showScreen('config');
+    icon.textContent = 'close';
+    icon.classList.add('text-error');
+  } else {
+    showScreen('hoy');
+    icon.textContent = 'settings';
+    icon.classList.remove('text-error');
+  }
+};
+
+window.openConfigModal = function(btnElement, forceMedId = null) {
+  let medId = forceMedId;
+  if (!medId && btnElement && typeof btnElement.closest === 'function') {
+    const parentCard = btnElement.closest('[data-med]');
+    if (parentCard) {
+      medId = parentCard.dataset.med;
+    } else {
+      const wrapper = btnElement.closest('#card-omeprazol-am, #card-omeprazol-pm');
+      if (wrapper) {
+        medId = wrapper.id === 'card-omeprazol-am' ? 'omeprazol_am' : 'omeprazol_pm';
+      }
+    }
+
+    if (!medId) {
+      const parentUi = btnElement.closest('#ui-morfina, #ui-hidroferol');
+      if (parentUi) medId = parentUi.id.replace('ui-', '');
+    }
+  }
+
+  if (!medId) { alert("Error resolviendo ID de medicamento."); return; }
+  
+  currentEditingMedId = medId;
+  const med = MEDICATIONS_DB[medId] || { name: 'Desconocido', dose: '', time: '12:00', days: [1,2,3,4,5,6,0] };
+
+  document.getElementById('modal-med-name').textContent = med.name;
+  document.getElementById('modal-med-dose').textContent = med.dose;
+  document.getElementById('modal-med-time').value = med.time || '08:00';
+  
+  document.querySelectorAll('.day-checkbox').forEach(cb => {
+    cb.checked = med.days && med.days.includes(parseInt(cb.value));
+  });
+
+  const select = document.getElementById('modal-periodic-select');
+  if (med.periodic === 3) select.value = "3";
+  else if (med.periodic === 15) select.value = "15";
+  else select.value = "";
+
+  const toggleBtn = document.getElementById('btn-toggle-med');
+  if (med.deleted) {
+      toggleBtn.innerHTML = '<span class="material-symbols-outlined">visibility</span> Reactivar Medicamento';
+      toggleBtn.classList.replace('bg-error-container', 'bg-green-100');
+      toggleBtn.classList.replace('text-on-error-container', 'text-green-800');
+  } else {
+      toggleBtn.innerHTML = '<span class="material-symbols-outlined">visibility_off</span> Ocultar/Desactivar';
+      toggleBtn.classList.replace('bg-green-100', 'bg-error-container');
+      toggleBtn.classList.replace('text-green-800', 'text-on-error-container');
+  }
+
+  const modal = document.getElementById('modal-config');
+  modal.classList.remove('hidden');
+  setTimeout(() => {
+    modal.classList.remove('opacity-0');
+    modal.children[0].classList.remove('scale-95');
+  }, 10);
+};
+
+window.closeConfigModal = function() {
+  const modal = document.getElementById('modal-config');
+  modal.classList.add('opacity-0');
+  modal.children[0].classList.add('scale-95');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    currentEditingMedId = null;
+  }, 300);
+};
+
+window.saveMedConfig = async function() {
+  if (!currentEditingMedId) return;
+  
+  const med = MEDICATIONS_DB[currentEditingMedId] || {};
+  med.time = document.getElementById('modal-med-time').value;
+  
+  const days = [];
+  document.querySelectorAll('.day-checkbox:checked').forEach(cb => {
+    days.push(parseInt(cb.value));
+  });
+  med.days = days;
+
+  const periodic = document.getElementById('modal-periodic-select').value;
+  if(periodic) med.periodic = parseInt(periodic);
+  else med.periodic = null;
+
+  MEDICATIONS_DB[currentEditingMedId] = med;
+
+  if (APP.db) {
+    try {
+      await setDoc(doc(APP.db, 'config', 'medicamentos_pilar'), {
+        [currentEditingMedId]: med
+      }, { merge: true });
+    } catch(e) { console.error(e); }
+  }
+  
+  applyDynamicVisibility();
+  closeConfigModal();
+};
+
+window.toggleMedStatus = async function() {
+  if (!currentEditingMedId) return;
+  const med = MEDICATIONS_DB[currentEditingMedId];
+  med.deleted = !med.deleted;
+  
+  if (APP.db) {
+    try {
+      await setDoc(doc(APP.db, 'config', 'medicamentos_pilar'), {
+        [currentEditingMedId]: { deleted: med.deleted }
+      }, { merge: true });
+    } catch(e) { console.error(e); }
+  }
+  
+  applyDynamicVisibility();
+  closeConfigModal();
+};
+
+async function loadDynamicConfig() {
+  if (!APP.db) return;
+  try {
+    const snap = await getDoc(doc(APP.db, 'config', 'medicamentos_pilar'));
+    if (snap.exists()) {
+      const dbData = snap.data();
+      // Merge with default DB
+      for (const key in dbData) {
+        if (MEDICATIONS_DB[key]) {
+          MEDICATIONS_DB[key] = { ...MEDICATIONS_DB[key], ...dbData[key] };
+        } else {
+          MEDICATIONS_DB[key] = dbData[key]; // Inject dynamically inserted ones
+        }
+      }
+    } else {
+        // First run: save defaults
+        await setDoc(doc(APP.db, 'config', 'medicamentos_pilar'), MEDICATIONS_DB);
+    }
+  } catch(e) { console.error("Error loading config", e); }
+  applyDynamicVisibility();
+}
+
+// Ensure the UI matches logic
+function applyDynamicVisibility() {
+  const currentDay = new Date().getDay();
+  // 1. Ocultar los que estén "deleted" o no toquen hoy (excepto especiales que van por last date)
+  for (const [id, med] of Object.entries(MEDICATIONS_DB)) {
+     const isDeleted = med.deleted === true;
+     const correctDay = med.days && med.days.includes(currentDay);
+     const isPeriodic = med.periodic;
+     
+     // Find the card in "screen-hoy"
+     const elemHoy = document.querySelector('#screen-hoy [data-med="' + id + '"]') || 
+                     document.querySelector('#screen-hoy #card-' + id.replace('_', '-'));
+                     
+     if (elemHoy) {
+         if (isDeleted || (!correctDay && !isPeriodic)) {
+             elemHoy.classList.add('hidden');
+         } else {
+             // Only remove hidden if it's not logically locked (like PM Omeprazol timer wrapper)
+             // For simplicity, just remove hidden for now. The timer logic controls its own hidden state.
+             if (!elemHoy.id.includes('timer-')) elemHoy.classList.remove('hidden');
+         }
+     }
+  }
+}
+
+
 window.TODAY = TODAY;
 
 // ══════════════════════════════════════

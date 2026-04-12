@@ -1,4 +1,33 @@
-const CACHE_NAME = 'pastillero-pilar-v24';
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+  apiKey: "AIzaSyAqtsi5m_kqXHKwHcsIXHiyrNti6G5qtMo",
+  authDomain: "pastillero-interactivo.firebaseapp.com",
+  projectId: "pastillero-interactivo",
+  storageBucket: "pastillero-interactivo.firebasestorage.app",
+  messagingSenderId: "59578784468",
+  appId: "1:59578784468:web:79467c7fa1a2cc78fa7941"
+});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  console.log('[sw.js] Received background message ', payload);
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: './icons/icon-192.png',
+    badge: './icons/icon-192.png',
+    vibrate: [200, 100, 200, 100, 200, 100, 200],
+    requireInteraction: true,
+    data: { url: './index.html' }
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+const CACHE_NAME = 'pastillero-pilar-v27';
 const STATIC_ASSETS = [
   './index.html',
   './manifest.json',
@@ -63,9 +92,11 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Notification click: open the app when user taps panic alert notification
+// Notification click: open the app when user taps any notification
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+  const targetUrl = event.notification.data?.url || './index.html';
+  
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
       // Focus existing window if available
@@ -76,7 +107,7 @@ self.addEventListener('notificationclick', event => {
       }
       // Otherwise open a new window
       if (self.clients.openWindow) {
-        return self.clients.openWindow('./index.html');
+        return self.clients.openWindow(targetUrl);
       }
     })
   );
