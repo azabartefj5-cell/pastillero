@@ -27,7 +27,7 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-const CACHE_NAME = 'pastillero-pilar-v29';
+const CACHE_NAME = 'pastillero-pilar-v30';
 const STATIC_ASSETS = [
   './index.html',
   './manifest.json',
