@@ -112,6 +112,7 @@ module.exports = async (req, res) => {
       const allMedTimes = Object.entries(dinamicos).map(([id, m]) => `${m.name}: ${m.time} (Hoy: ${m.days?.includes(currentDay)})`);
       return res.status(200).json({ 
         message: "Cron ejecutado. No hay alarmas a esta hora.", 
+        deploy_id: "v101-2210",
         currentTime, 
         currentDay,
         meds_checked: allMedTimes,
