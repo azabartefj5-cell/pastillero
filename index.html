@@ -1255,6 +1255,12 @@ h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getFirestore,doc,setDoc,getDoc,getDocs,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp,query,orderBy,limit,deleteField}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getMessaging,getToken}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+
+const VAPID_KEY = "BCFBreCrb3eakQLr_mdIhIZ-0Uxh6PLD45KOI9SHDRzeLadzVXgHo13w3qygI9y1fkp2TDceUredg2CMzDDoMvk";
+import{getMessaging,getToken}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+
+const VAPID_KEY = "BCFBreCrb3eakQLr_mdIhIZ-0Uxh6PLD45KOI9SHDRzeLadzVXgHo13w3qygI9y1fkp2TDceUredg2CMzDDoMvk";
 
 // ══════════════════════════════════════
 // FIREBASE CONFIG (HARDCODED)
@@ -1728,24 +1734,34 @@ window.toggleMedStatus = async function() {
 
 async function loadDynamicConfig() {
   if (!APP.db) return;
-  try {
-    const snap = await getDoc(doc(APP.db, 'config', 'medicamentos_pilar'));
+  
+  // Real-time listener for medication config
+  onSnapshot(doc(APP.db, 'config', 'medicamentos_pilar'), (snap) => {
     if (snap.exists()) {
       const dbData = snap.data();
+      console.log("🔄 Configuración de medicamentos actualizada desde la nube");
       // Merge with default DB
       for (const key in dbData) {
         if (MEDICATIONS_DB[key]) {
           MEDICATIONS_DB[key] = { ...MEDICATIONS_DB[key], ...dbData[key] };
         } else {
-          MEDICATIONS_DB[key] = dbData[key]; // Inject dynamically inserted ones
+          MEDICATIONS_DB[key] = dbData[key];
         }
       }
-    } else {
+      applyDynamicVisibility();
+      // Re-render dashboard components if needed
+      if (typeof updateFortasecUI === 'function') updateFortasecUI();
+      if (typeof updatePeriodicUI === 'function') updatePeriodicUI();
+    }
+  });
+
+  try {
+    const snap = await getDoc(doc(APP.db, 'config', 'medicamentos_pilar'));
+    if (!snap.exists()) {
         // First run: save defaults
         await setDoc(doc(APP.db, 'config', 'medicamentos_pilar'), MEDICATIONS_DB);
     }
-  } catch(e) { console.error("Error loading config", e); }
-  applyDynamicVisibility();
+  } catch(e) { console.error("Error loading initial config", e); }
 }
 
 // Ensure the UI matches logic
@@ -2706,18 +2722,44 @@ function connectFirebase(config) {
   try {
     const app = initializeApp(config);
     APP.db = getFirestore(app);
+    APP.messaging = getMessaging(app);
     APP.firebaseReady = true;
     document.getElementById('firebase-status-text').textContent = 'Conectado: ' + config.projectId;
     document.getElementById('firebase-status-badge').textContent = 'Online';
     document.getElementById('firebase-status-badge').classList.remove('bg-white/30');
     document.getElementById('firebase-status-badge').classList.add('bg-green-200','text-green-800');
-    document.getElementById('sync-indicator').classList.remove('bg-yellow-100','text-yellow-700');
-    document.getElementById('sync-indicator').classList.add('bg-green-100','text-green-700');
-    // Start listeners
+    
     startFirebaseListeners();
-    // Auto-load history on connect
+    loadDynamicConfig();
     loadFullHistory();
+    
+    if ('Notification' in window && Notification.permission === 'granted') {
+      registrarTokenFCM();
+    }
   } catch(e) { console.error('Firebase init error:', e); }
+}
+
+async function registrarTokenFCM() {
+  if (!APP.messaging) return;
+  console.log("☁️ Intentando registrar token FCM...");
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    const token = await getToken(APP.messaging, { vapidKey: VAPID_KEY });
+    if (token) {
+      if (APP.db) {
+        await setDoc(doc(APP.db, 'dispositivos', APP.deviceId), {
+          fcmToken: token,
+          ultimoRegistro: serverTimestamp(),
+          os: navigator.platform,
+          userAgent: navigator.userAgent
+        }, { merge: true });
+        console.log('✅ Token FCM guardado');
+        updateNotifUI();
+      }
+    }
+  } catch (err) { console.error('❌ Error FCM:', err); }
 }
 
 function startFirebaseListeners() {
@@ -3620,10 +3662,10 @@ function init() {
 
   // Notification button request
   document.getElementById('btn-request-notif')?.addEventListener('click', () => {
-    Notification.requestPermission().then(perm => {
-      console.log('Notification permission:', perm);
+    registrarTokenFCM().then(() => {
       updateNotifUI();
     });
+  });
   });
   updateNotifUI();
 
