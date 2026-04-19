@@ -1,0 +1,55 @@
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 48;font-size:2rem;vertical-align:middle}
+.icon-fill{font-variation-settings:'FILL' 1}
+body{font-family:'Public Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+h1,h2,h3,.font-headline{font-family:'Lexend',sans-serif}
+.no-scrollbar::-webkit-scrollbar{display:none}
+.screen{display:none}.screen.active{display:block}
+.tab-active{background:rgba(33,150,243,0.12);color:#0061a4;border-radius:1rem}
+.tab-inactive{color:#57534e}
+.locked-card{opacity:0.45;pointer-events:none;filter:grayscale(0.6)}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 15px rgba(33,150,243,0.2)}50%{box-shadow:0 0 30px rgba(33,150,243,0.4)}}
+.timer-glow{animation:pulseGlow 2s ease-in-out infinite}
+.fade-in{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes panicPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(186,26,26,0.7)}50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(186,26,26,0)}}
+.panic-btn{animation:panicPulse 2s ease-in-out infinite}
+.panic-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center}
+.panic-overlay.hidden{display:none}
+@keyframes shakeX{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shakeX 0.3s ease 3}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.animate-spin{animation:spin 1s linear infinite}
+  /* Guided Mode Styles */
+  .screen-guided { position: fixed; inset: 0; background: #fafaf1; z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; }
+  .screen-guided.active { display: flex; }
+  .guided-card { background: white; border-radius: 3rem; padding: 3rem; width: 100%; max-width: 600px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); }
+  .guided-title { font-size: 3rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; color: #1a1c17; overflow-wrap: break-word; word-wrap: break-word; hyphens: auto; }
+  .guided-subtitle { font-size: 1.5rem; color: #404752; margin-bottom: 2.5rem; font-weight: 500; overflow-wrap: break-word; }
+  .guided-btn-main { width: 100%; height: 120px; border-radius: 2rem; font-size: 2rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 1rem; transition: all 0.2s; box-shadow: 0 10px 25px rgba(0,97,164,0.2); border: none; }
+  .guided-btn-main:active { transform: scale(0.95); opacity: 0.9; }
+  .guided-input { font-size: 5rem; font-weight: 900; text-align: center; width: 100%; background: transparent; border: none; color: #0061a4; outline: none; margin-bottom: 2rem; }
+
+  @media (max-width: 640px) {
+    .guided-card { padding: 1.5rem; border-radius: 2rem; }
+    .guided-title { font-size: 1.75rem; margin-bottom: 1rem; }
+    .guided-subtitle { font-size: 1.1rem; margin-bottom: 1.5rem; }
+    .guided-btn-main { height: 80px; font-size: 1.5rem; border-radius: 1.5rem; }
+    .guided-input { font-size: 3.5rem; margin-bottom: 1rem; }
+    .welcome-card { padding: 2rem 1.5rem; border-radius: 2.5rem; }
+    .welcome-title { font-size: 2.5rem; }
+    .welcome-btn { height: 80px; font-size: 1.75rem; }
+  }
+  .guided-nav { position: fixed; bottom: 3rem; left: 0; right: 0; padding: 0 2rem; display: flex; justify-content: center; }
+  .guided-exit { position: fixed; top: 1.5rem; right: 1.5rem; width: 50px; height: 50px; border-radius: 25px; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: #404752; }
+  .resting-screen { position: fixed; inset: 0; background: #001d36; z-index: 900; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 2rem; text-align: center; }
+  .resting-screen.active { display: flex; }
+  .screen-welcome { position: fixed; inset: 0; background: #1a73e8; z-index: 1100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; }
+  .screen-welcome.active { display: flex; }
+  .welcome-card { background: #1a6cb9; border-radius: 3.5rem; padding: 3rem 2rem; width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+  .welcome-play-icon { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 2.5rem; color: #1a6cb9; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+  .welcome-play-icon span { font-size: 50px; margin-left: 5px; }
+  .welcome-title { color: white; font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem; font-family: 'Lexend', sans-serif; }
+  .welcome-msg { color: white; font-size: 1.4rem; line-height: 1.4; margin-bottom: 3.5rem; opacity: 0.95; font-weight: 500; padding: 0 1rem; }
+  .welcome-btn { width: 100%; height: 100px; background: white; color: #1a6cb9; border-radius: 2.5rem; font-size: 2.2rem; font-weight: 900; border: none; box-shadow: 0 15px 30px rgba(0,0,0,0.15); transition: all 0.2s; text-transform: uppercase; }
+  .welcome-btn:active { transform: scale(0.96); opacity: 0.9; }
+</style>
