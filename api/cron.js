@@ -103,7 +103,8 @@ module.exports = async (req, res) => {
        if (takeToday) {
            alarmsToSend.push({
                title: `⏰ ${med.name}`,
-               body: pushBody
+               body: pushBody,
+               medId: id
            });
        }
     }
@@ -120,34 +121,50 @@ module.exports = async (req, res) => {
       });
     }
 
-    // 5. Enviar Pushes a TODOS los dispositivos registrados
+    // 5. Enviar Pushes como DATA-ONLY messages (bypasses Android Doze)
+    // Al NO incluir el campo "notification" en el nivel superior,
+    // Android NO muestra su propia notificación genérica.
+    // En su lugar, nuestro Service Worker (sw.js) intercepta el mensaje
+    // y construye la notificación con vibración agresiva y botones de acción.
     const messages = [];
     allTokens.forEach(token => {
       alarmsToSend.forEach(alarma => {
         messages.push({
           token: token,
-          notification: {
+          // ⚠️ SIN campo "notification" aquí — solo "data"
+          data: {
+            type: 'MED_ALARM',
             title: alarma.title,
-            body: alarma.body
+            body: alarma.body,
+            medId: alarma.medId || '',
+            timestamp: now.toISOString(),
+            url: './index.html'
           },
           android: {
             priority: 'high',
-            notification: {
-              sound: 'default',
-              default_vibrate_timings: true,
-              notification_priority: 'PRIORITY_MAX'
-            }
+            ttl: '0s' // Entrega inmediata, no almacenar
           },
           apns: {
+            headers: {
+              'apns-priority': '10', // Máxima prioridad en iOS
+              'apns-push-type': 'alert'
+            },
             payload: {
               aps: {
+                'content-available': 1,
                 sound: 'default',
-                contentAvailable: true
+                alert: {
+                  title: alarma.title,
+                  body: alarma.body
+                }
               }
             }
           },
-          data: {
-            url: "./index.html"
+          webpush: {
+            headers: {
+              Urgency: 'high',
+              TTL: '0'
+            }
           }
         });
       });

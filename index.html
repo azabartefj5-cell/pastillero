@@ -59,7 +59,7 @@ tailwind.config = {
 <!-- ═══════════ TOP APP BAR ═══════════ -->
 <header class="w-full top-0 sticky bg-white z-50 shadow-sm" id="app-header">
   <div id="update-banner" class="hidden bg-primary text-white text-[10px] py-1 px-4 flex justify-between items-center">
-    <span>Nueva versión v30 disponible</span>
+    <span>Nueva versión v33 disponible</span>
     <button onclick="location.reload(true)" class="bg-white text-primary px-2 py-0.5 rounded font-bold">ACTUALIZAR</button>
   </div>
   <div class="flex justify-between items-center px-5 py-3 max-w-lg mx-auto">
@@ -869,6 +869,13 @@ tailwind.config = {
           <option value="3">Cada 3 días (Morfina)</option>
           <option value="15">Cada 15 días (Hidroferol)</option>
         </select>
+      </div>
+      
+      <div class="mt-6 pt-4 border-t border-outline/10">
+        <button onclick="syncNativeAlarm()" id="btn-sync-native" class="w-full h-[50px] bg-primary/10 text-primary border border-primary/20 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all outline-none">
+          <span class="material-symbols-outlined">alarm_add</span> Sincronizar Alarma Nativa
+        </button>
+        <p class="text-[10px] text-center text-on-surface-variant mt-2">Guarda esta toma en la app de Reloj de tu dispositivo.</p>
       </div>
     </div>
     

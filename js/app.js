@@ -1,6 +1,6 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import{getFirestore,doc,setDoc,getDoc,getDocs,onSnapshot,updateDoc,increment,collection,addDoc,serverTimestamp,query,orderBy,limit,deleteField}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import{getMessaging,getToken}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+import{getMessaging,getToken,onMessage}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
 const VAPID_KEY = "BCFBreCrb3eakQLr_mdIhIZ-0Uxh6PLD45KOI9SHDRzeLadzVXgHo13w3qygI9y1fkp2TDceUredg2CMzDDoMvk";
 
@@ -472,6 +472,56 @@ window.toggleMedStatus = async function() {
   
   applyDynamicVisibility();
   closeConfigModal();
+};
+
+window.syncNativeAlarm = function() {
+  if (!currentEditingMedId) return;
+  const med = MEDICATIONS_DB[currentEditingMedId] || {};
+  let timeStr = document.getElementById('modal-med-time').value || med.time || '08:00';
+  let parts = timeStr.split(':');
+  if (parts.length !== 2) return;
+  
+  let hour = parts[0];
+  let minute = parts[1];
+  const title = "💊 " + (med.name || "Pastilla");
+  
+  // Android Intent to set native alarm
+  const intentStr = `intent:#Intent;action=android.intent.action.SET_ALARM;S.android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};i.android.intent.extra.alarm.HOUR=${hour};i.android.intent.extra.alarm.MINUTES=${minute};B.android.intent.extra.alarm.SKIP_UI=false;end`;
+  
+  let a = document.createElement("a");
+  
+  let isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
+  if (isAndroid) {
+      a.href = intentStr;
+      a.click();
+  } else {
+      // Fallback: ICS Event
+      let now = new Date();
+      now.setHours(hour, minute, 0);
+      let isodt = now.toISOString().replace(/-|:|\.\d\d\d/g, "");
+      
+      let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Pastillero Pilar//App//ES
+BEGIN:VEVENT
+UID:${Date.now()}@pastillero
+DTSTAMP:${isodt}
+DTSTART:${isodt}
+SUMMARY:${title}
+DESCRIPTION:Recordatorio de Medicación
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:${title}
+TRIGGER:-PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR`;
+
+      let blob = new Blob([icsContent], { type: 'text/calendar' });
+      a.href = URL.createObjectURL(blob);
+      a.download = `alarma_${currentEditingMedId}.ics`;
+      a.click();
+  }
 };
 
 async function loadDynamicConfig() {
@@ -1478,6 +1528,7 @@ function connectFirebase(config) {
     if ('Notification' in window && Notification.permission === 'granted') {
       registrarTokenFCM();
     }
+    setupForegroundMessaging();
   } catch(e) { console.error('Firebase init error:', e); }
 }
 
@@ -1488,7 +1539,19 @@ async function registrarTokenFCM() {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return;
 
-    const token = await getToken(APP.messaging, { vapidKey: VAPID_KEY });
+    // Get our sw.js registration to tell Firebase to use it for messaging
+    let swRegistration = null;
+    if ('serviceWorker' in navigator) {
+      swRegistration = await navigator.serviceWorker.getRegistration('/');
+      console.log('📋 SW Registration for FCM:', swRegistration?.active?.scriptURL);
+    }
+
+    const tokenOptions = { vapidKey: VAPID_KEY };
+    if (swRegistration) {
+      tokenOptions.serviceWorkerRegistration = swRegistration;
+    }
+
+    const token = await getToken(APP.messaging, tokenOptions);
     if (token) {
       if (APP.db) {
         await setDoc(doc(APP.db, 'dispositivos', APP.deviceId), {
@@ -1502,6 +1565,84 @@ async function registrarTokenFCM() {
       }
     }
   } catch (err) { console.error('❌ Error FCM:', err); }
+}
+
+// ══════════════════════════════════════
+// FOREGROUND MESSAGE HANDLER
+// When the app IS open, FCM data messages arrive here.
+// We show a visual alarm overlay + play the alarm sound.
+// ══════════════════════════════════════
+function setupForegroundMessaging() {
+  if (!APP.messaging) return;
+
+  onMessage(APP.messaging, (payload) => {
+    console.log('🔔 Foreground FCM message:', payload);
+    const data = payload.data || {};
+
+    if (data.type === 'MED_ALARM') {
+      // Show visual alarm overlay
+      showForegroundAlarm(data);
+    }
+  });
+}
+
+function showForegroundAlarm(data) {
+  const title = data.title || '⏰ Hora del medicamento';
+  const body = data.body || 'Es la hora de tu medicamento.';
+
+  // Play alarm sound
+  if (APP.playAlarmSound) APP.playAlarmSound();
+
+  // Vibrate aggressively
+  if (navigator.vibrate) {
+    navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000]);
+  }
+
+  // Also show a browser notification (in case user switches tabs)
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const n = new Notification(title, {
+      body: body,
+      icon: './icons/icon-192.png',
+      requireInteraction: true,
+      tag: 'pastillero-foreground-alarm'
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+  }
+
+  // Show the panic overlay repurposed as alarm overlay
+  const overlay = document.getElementById('panic-overlay');
+  if (overlay) {
+    const contentDiv = overlay.querySelector('.bg-white');
+    if (contentDiv) {
+      // Temporarily change the overlay content to show medication alarm
+      const originalHTML = contentDiv.innerHTML;
+      contentDiv.innerHTML = `
+        <div class="text-center">
+          <div class="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span class="material-symbols-outlined text-6xl icon-fill">medication</span>
+          </div>
+          <h2 class="font-headline font-black text-3xl text-primary tracking-tight">${title}</h2>
+          <p class="text-on-surface-variant text-lg mt-2 font-medium">${body}</p>
+        </div>
+        <div class="space-y-3">
+          <button onclick="this.closest('.panic-overlay').classList.add('hidden'); if(window.stopAlarmSound) window.stopAlarmSound(); if(navigator.vibrate) navigator.vibrate(0);"
+            class="flex items-center justify-center gap-3 w-full h-16 bg-primary text-white rounded-2xl font-headline font-black text-lg active:scale-95 transition-all shadow-md">
+            <span class="material-symbols-outlined">check_circle</span> ENTENDIDO
+          </button>
+        </div>
+      `;
+      overlay.classList.remove('hidden');
+
+      // Restore original content when closed
+      const observer = new MutationObserver((mutations) => {
+        if (overlay.classList.contains('hidden')) {
+          contentDiv.innerHTML = originalHTML;
+          observer.disconnect();
+        }
+      });
+      observer.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+    }
+  }
 }
 
 function startFirebaseListeners() {
