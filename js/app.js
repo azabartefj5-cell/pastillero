@@ -492,8 +492,7 @@ window.syncNativeAlarm = function() {
   
   let isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
   if (isAndroid) {
-      a.href = intentStr;
-      a.click();
+      window.location.href = intentStr;
   } else {
       // Fallback: ICS Event
       let now = new Date();
@@ -2522,9 +2521,63 @@ function restoreMedStates() {
 }
 
 // ══════════════════════════════════════
+// LOCAL ALARM CHECKER
+// ══════════════════════════════════════
+function checkLocalAlarms() {
+  const now = new Date();
+  const currentHour = String(now.getHours()).padStart(2, '0');
+  const currentMinute = String(now.getMinutes()).padStart(2, '0');
+  const currentTime = `${currentHour}:${currentMinute}`;
+  const currentDay = now.getDay();
+  
+  // Ensure we have loaded config
+  if (!MEDICATIONS_DB) return;
+  
+  for (const [id, med] of Object.entries(MEDICATIONS_DB)) {
+    if (med.deleted) continue;
+    
+    // Check periodicity
+    let takeToday = false;
+    if (med.periodic) {
+       let lastTick = localStorage.getItem(`last_${id}_date`);
+       if (lastTick) {
+         const daysDiff = Math.floor((now - new Date(lastTick)) / (1000 * 60 * 60 * 24));
+         if (daysDiff >= med.periodic) takeToday = true;
+       } else {
+         takeToday = true;
+       }
+    } else if (med.days && med.days.includes(currentDay)) {
+       takeToday = true;
+    }
+    
+    if (takeToday && med.time === currentTime) {
+      const takenKey = `med_${TODAY()}_${id}`;
+      // Use time + minute to run once
+      const alarmKey = `local_alarm_${TODAY()}_${currentTime}_${id}`;
+      
+      if (!localStorage.getItem(takenKey) && !localStorage.getItem(alarmKey)) {
+        console.log(`⏰ [ALARM LOCAL] Disparando: ${med.name}`);
+        localStorage.setItem(alarmKey, 'true');
+        
+        if (typeof showForegroundAlarm === 'function') {
+           showForegroundAlarm({
+             title: `⏰ ${med.name}`,
+             body: `Toca tu medicación: ${med.dose || ''}`,
+             medId: id
+           });
+        }
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
 function init() {
+  // Configurar reloj de alarmas locales cada 10 segundos
+  setInterval(checkLocalAlarms, 10000);
+
   // Date label
   const dateStr = SPANISH_DATE();
   const dateEl = document.getElementById('current-date-hoy');
