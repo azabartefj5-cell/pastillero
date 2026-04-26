@@ -731,6 +731,9 @@ function startGuidedMode(resume = false) {
       msg: 'Pilar, qué olor más rico sale de la cocina. Vamos con la medicina.',
       voice: 'Hola Pilar. Qué olor más rico sale de la cocina. Antes de disfrutar de la comida, vamos a registrar tu medicina.'
     });
+    if (!checkinData.glucosa) {
+      APP.guided.steps.push({ type: 'vital', vital: 'glucosa', title: 'Tu Azúcar', voice: 'Por favor Pilar, indícame tu nivel de azúcar actual antes de la comida.', icon: 'bloodtype', unit: 'mg', default: 110, delta: 5 });
+    }
     if (!localStorage.getItem(`med_${TODAY()}_kreon_comida`)) {
       APP.guided.steps.push({ type: 'med', med: 'kreon_comida', title: 'Kreon 35000 (Comida)', dose: '2 Cápsulas', voice: 'Tómate ahora tus dos cápsulas de Kreon para ayudarte con la digestión de la comida.', icon: 'medication' });
     }
@@ -742,6 +745,9 @@ function startGuidedMode(resume = false) {
       msg: 'Es hora de merendar algo rico, Pilar. No olvidemos el Kreon.',
       voice: 'Hola Pilar. Es la hora de la merienda. Vamos a tomarnos el Kreon antes de que se enfríe lo que hayas preparado.'
     });
+    if (!checkinData.glucosa) {
+      APP.guided.steps.push({ type: 'vital', vital: 'glucosa', title: 'Tu Azúcar', voice: 'Por favor Pilar, indícame tu nivel de azúcar actual antes de merendar.', icon: 'bloodtype', unit: 'mg', default: 110, delta: 5 });
+    }
     if (!localStorage.getItem(`med_${TODAY()}_kreon_merienda`)) {
       APP.guided.steps.push({ type: 'med', med: 'kreon_merienda', title: 'Kreon 35000 (Merienda)', dose: '3 Cápsulas', voice: 'Para merendar te tocan tres cápsulas de Kreon. Tómales con un poquito de agua.', icon: 'bakery_dining' });
     }
@@ -754,6 +760,9 @@ function startGuidedMode(resume = false) {
       msg: 'Ya se acaba el día, Pilar. Vamos con la última tanda de hoy.',
       voice: 'Hola Pilar. Ya se acaba el día y pronto podrás descansar. Vamos a hacer las últimas tareas de hoy para que duermas tranquila.'
     });
+    if (!checkinData.glucosa) {
+      APP.guided.steps.push({ type: 'vital', vital: 'glucosa', title: 'Tu Azúcar', voice: 'Por favor Pilar, indícame tu nivel de azúcar actual antes de la cena.', icon: 'bloodtype', unit: 'mg', default: 110, delta: 5 });
+    }
     if (!localStorage.getItem(`med_${TODAY()}_omeprazol_pm`)) {
       APP.guided.steps.push({ type: 'med', med: 'omeprazol_pm', title: 'Protector Gástrico', dose: '1 Cápsula', voice: 'Empezamos con el protector de la noche. Tómalo ahora Pilar.', icon: 'pill' });
       APP.guided.steps.push({ type: 'wait', title: 'Tiempo de Espera', voice: 'Como siempre, vamos a esperar unos minutos antes de cenar para que el protector haga su función.' });
@@ -807,7 +816,10 @@ function renderGuidedStep() {
         <div class="w-24 h-24 bg-primary-container text-white rounded-full flex items-center justify-center mx-auto mb-6"><span class="material-symbols-outlined text-5xl icon-fill">${step.icon || 'pill'}</span></div>
         <h2 class="guided-title">${step.title}</h2>
         <p class="guided-subtitle text-3xl font-black text-primary">${step.dose}</p>
-        <button onclick="saveGuidedMed('${step.med}')" class="guided-btn-main bg-primary text-white">YA ME LA HE TOMADO <span class="material-symbols-outlined font-black">check</span></button>
+        <div class="flex flex-col gap-3 w-full max-w-sm mx-auto">
+          <button onclick="saveGuidedMed('${step.med}')" class="guided-btn-main bg-primary text-white w-full">YA ME LA HE TOMADO <span class="material-symbols-outlined font-black">check</span></button>
+          <button onclick="skipGuidedMed('${step.med}')" class="w-full px-8 py-3 bg-surface-variant text-on-surface rounded-2xl font-headline font-bold text-base flex items-center justify-center gap-2 active:scale-95 transition-all">OMITIR MEDICAMENTO <span class="material-symbols-outlined text-xl">skip_next</span></button>
+        </div>
       `;
       break;
     
@@ -888,6 +900,16 @@ async function saveGuidedVital(type) {
   currentCheckin.periodo = period;
   localStorage.setItem(checkinKey, JSON.stringify(currentCheckin));
 
+  if (type === 'glucosa' && val > 200) {
+    APP.guided.steps.splice(APP.guided.currentStep + 1, 0, {
+      type: 'welcome',
+      title: 'Precaución: Azúcar Alto',
+      msg: 'Te sugiero ponerte una dosis de insulina rápida para compensar la comida.',
+      voice: 'Atención Pilar. Tienes el azúcar por encima de 200. Te sugiero ponerte una dosis de insulina rápida para compensar la comida.',
+      icon: 'vaccines'
+    });
+  }
+
   nextGuidedStep();
 }
 
@@ -909,6 +931,11 @@ async function saveGuidedMed(medId) {
     nextGuidedStep();
   }
 }
+
+window.skipGuidedMed = function(medId) {
+  console.log('Skipping med in guided mode:', medId);
+  nextGuidedStep();
+};
 
 window.startGuidedTimer = function() {
   const CIRCUMFERENCE = 552.92; // 2 * PI * 88
