@@ -266,6 +266,23 @@ async function deleteMedToma(medId, fecha) {
   if (medId === 'omeprazol_am' || medId === 'omeprazol_pm') {
     const suffix = medId === 'omeprazol_am' ? 'am' : 'pm';
     localStorage.removeItem(`omeprazol_timer_${suffix}_${fecha}`);
+    localStorage.removeItem(`omeprazol_wait_finished_${suffix}_${fecha}`);
+
+    if (fecha === TODAY()) {
+      if (APP.timers && APP.timers[suffix]) {
+        clearTimeout(APP.timers[suffix]);
+        delete APP.timers[suffix];
+      }
+      if (APP.timerEnds) delete APP.timerEnds[suffix];
+      
+      // Restaurar UI: mostrar botón, ocultar contador y mostrar tarjeta principal
+      document.getElementById(`btn-omeprazol-${suffix}`)?.classList.remove('hidden');
+      document.getElementById(`timer-omeprazol-${suffix}`)?.classList.add('hidden');
+      document.getElementById(`card-omeprazol-${suffix}`)?.classList.remove('hidden');
+      
+      // Desbloquear resto de medicamentos
+      if (typeof lockMeds === 'function') lockMeds(suffix, false);
+    }
   }
 
   // 5. If it's SOS Fortasec, decrement count
