@@ -293,6 +293,8 @@ async function deleteMedToma(medId, fecha) {
 
 // Global exports for HTML onclick handlers
 window.deleteMedToma = deleteMedToma;
+window.saveMedToma = saveMedToma;
+window.markCardTakenUI = markCardTakenUI;
 // ══════════════════════════════════════
 // DYNAMIC CONFIGURATION LOGIC
 // ══════════════════════════════════════
