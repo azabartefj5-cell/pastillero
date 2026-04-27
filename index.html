@@ -892,6 +892,15 @@ tailwind.config = {
             class="flex-1 h-12 bg-white rounded-xl px-4 font-headline font-black text-2xl text-center outline-none border border-outline/20" />
           <span id="modal-interval-unit" class="font-bold text-sm text-primary whitespace-nowrap">horas</span>
         </div>
+        <!-- Hasta la fecha (UNTIL) -->
+        <div id="modal-until-row" class="hidden flex flex-col gap-1.5">
+          <label class="font-bold text-sm text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-lg">event_busy</span> Hasta la fecha (fin del tratamiento)
+          </label>
+          <input type="date" id="modal-recurrence-until"
+            class="w-full h-12 bg-white rounded-xl px-4 font-bold outline-none border border-outline/20 text-on-surface" />
+          <p class="text-[10px] text-on-surface-variant">Deja vacío para alarmas sin fecha de fin.</p>
+        </div>
         <!-- Descripcion contextual -->
         <p id="modal-recurrence-hint" class="text-[11px] text-on-surface-variant italic"></p>
         <!-- Campo oculto de compatibilidad con el sistema antiguo de periodicos -->
@@ -910,7 +919,7 @@ tailwind.config = {
         <button onclick="syncICSAlarm()" id="btn-sync-ics" class="w-full h-[44px] bg-surface-container text-on-surface-variant border border-outline/20 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all outline-none">
           <span class="material-symbols-outlined text-lg">calendar_month</span> Descargar .ics (otros calendarios)
         </button>
-        <p class="text-[10px] text-center text-on-surface-variant">Se añade como evento recurrente diario con recordatorio.</p>
+        <p class="text-[10px] text-center text-on-surface-variant">⏰ Aviso 15 min antes de cada toma · Recurrencia según configuración.</p>
       </div>
     </div>
     
