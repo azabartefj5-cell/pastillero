@@ -2363,6 +2363,31 @@ function startFirebaseListeners() {
 
     console.log(`⏰ [ALARM LOOP] Iniciando: "${msg}"`);
 
+    // Iniciar contexto de audio si no existe
+    const ctx = APP._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    APP._audioCtx = ctx;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    // ── HACK PARA MÓVILES EN SEGUNDO PLANO ──
+    // Mantener el AudioContext despierto con un sonido inaudible continuo.
+    // Esto evita que Android suspenda el audio en los silencios, 
+    // permitiendo que la locución (TTS) funcione con la pantalla apagada.
+    const keepAliveOsc = ctx.createOscillator();
+    const keepAliveGain = ctx.createGain();
+    keepAliveOsc.type = 'sine';
+    keepAliveOsc.frequency.value = 440;
+    keepAliveGain.gain.value = 0.0001; // Prácticamente inaudible
+    keepAliveOsc.connect(keepAliveGain);
+    keepAliveGain.connect(ctx.destination);
+    keepAliveOsc.start();
+
+    // Al detener la alarma, paramos también el oscilador silencioso
+    const originalStop = APP.stopMedAlarm;
+    APP.stopMedAlarm = function() {
+      try { keepAliveOsc.stop(); } catch(e) {}
+      originalStop();
+    };
+
     async function loop() {
       while (APP._medAlarmActive) {
         // ── 1. Sonido × 2 (fuerte) ──
@@ -2388,6 +2413,7 @@ function startFirebaseListeners() {
         await _sleep(5000);
       }
       console.log('🔕 Alarm loop terminado');
+      try { keepAliveOsc.stop(); } catch(e) {} // Por seguridad
     }
 
     loop();
