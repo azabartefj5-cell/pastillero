@@ -59,7 +59,7 @@ tailwind.config = {
 <!-- ═══════════ TOP APP BAR ═══════════ -->
 <header class="w-full top-0 sticky bg-white z-50 shadow-sm" id="app-header">
   <div id="update-banner" class="hidden bg-primary text-white text-[10px] py-1 px-4 flex justify-between items-center">
-    <span>Nueva versión v34 disponible</span>
+    <span>Nueva versión v35 disponible</span>
     <button onclick="location.reload(true)" class="bg-white text-primary px-2 py-0.5 rounded font-bold">ACTUALIZAR</button>
   </div>
   <div class="flex justify-between items-center px-5 py-3 max-w-lg mx-auto">
@@ -330,7 +330,7 @@ tailwind.config = {
       <h3 class="font-headline font-bold text-2xl">☕ Almuerzo</h3>
       <span class="text-sm bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full font-bold">Media Mañana</span>
     </div>
-    <div class="bg-yellow-100/60 p-5 rounded-[2.5rem] border border-yellow-200/40">
+    <div class="bg-yellow-100/60 p-5 rounded-[2.5rem] border border-yellow-200/40" id="meds-almuerzo-list">
       <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="kreon_almuerzo">
         <div class="flex items-center gap-4 min-w-0 flex-1">
           <div class="bg-yellow-100 p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-yellow-950 text-4xl icon-fill">medication</span></div>
@@ -348,7 +348,7 @@ tailwind.config = {
       <h3 class="font-headline font-bold text-2xl">☀️ Comida</h3>
       <span class="text-sm bg-secondary-fixed text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Mediodía</span>
     </div>
-    <div class="bg-orange-100/60 p-5 rounded-[2.5rem] border border-orange-200/60">
+    <div class="bg-orange-100/60 p-5 rounded-[2.5rem] border border-orange-200/60" id="meds-comida-list">
       <div class="bg-white border-l-[8px] border-secondary-container p-6 rounded-3xl" data-med="kreon_comida">
         <div class="flex justify-between items-start mb-4 gap-4">
           <div class="flex-1 min-w-0"><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant text-lg">2 Cápsulas</p></div>
@@ -368,7 +368,7 @@ tailwind.config = {
       <h3 class="font-headline font-bold text-2xl">🍪 Merienda</h3>
       <span class="text-sm bg-tertiary-fixed text-on-tertiary-container px-2 py-0.5 rounded-full font-bold">Tarde</span>
     </div>
-    <div class="bg-emerald-100/60 p-5 rounded-[2.5rem] border border-emerald-200/60">
+    <div class="bg-emerald-100/60 p-5 rounded-[2.5rem] border border-emerald-200/60" id="meds-merienda-list">
       <div class="bg-white border-l-[8px] border-tertiary-container p-6 rounded-3xl flex flex-col gap-4" data-med="kreon_merienda">
         <div class="flex items-center gap-4 min-w-0">
           <div class="bg-tertiary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-tertiary-container text-3xl icon-fill">bakery_dining</span></div>
@@ -643,7 +643,7 @@ tailwind.config = {
       <h3 class="font-headline font-bold text-2xl">☕ Almuerzo</h3>
       <span class="text-sm bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full font-bold">Media Mañana</span>
     </div>
-    <div class="bg-yellow-100/60 p-5 rounded-[2.5rem] border border-yellow-200/40">
+    <div class="bg-yellow-100/60 p-5 rounded-[2.5rem] border border-yellow-200/40" id="config-almuerzo-list">
       <div class="med-card-am bg-white rounded-3xl p-5 border-l-[8px] border-yellow-400 flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="kreon_almuerzo">
         <div class="flex items-center gap-4 min-w-0 flex-1">
           <div class="bg-yellow-100 p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-yellow-950 text-4xl icon-fill">medication</span></div>
@@ -661,7 +661,7 @@ tailwind.config = {
       <h3 class="font-headline font-bold text-2xl">☀️ Comida</h3>
       <span class="text-sm bg-secondary-fixed text-on-secondary-container px-2 py-0.5 rounded-full font-bold">Mediodía</span>
     </div>
-    <div class="bg-orange-100/60 p-5 rounded-[2.5rem] border border-orange-200/60">
+    <div class="bg-orange-100/60 p-5 rounded-[2.5rem] border border-orange-200/60" id="config-comida-list">
       <div class="bg-white border-l-[8px] border-secondary-container p-6 rounded-3xl" data-med="kreon_comida">
         <div class="flex justify-between items-start mb-4 gap-4">
           <div class="flex-1 min-w-0"><h4 class="font-headline font-extrabold text-2xl">Kreon 35000</h4><p class="text-on-surface-variant text-lg">2 Cápsulas</p></div>
@@ -679,7 +679,7 @@ tailwind.config = {
       <h3 class="font-headline font-bold text-2xl">🍪 Merienda</h3>
       <span class="text-sm bg-tertiary-fixed text-on-tertiary-container px-2 py-0.5 rounded-full font-bold">Tarde</span>
     </div>
-    <div class="bg-emerald-100/60 p-5 rounded-[2.5rem] border border-emerald-200/60">
+    <div class="bg-emerald-100/60 p-5 rounded-[2.5rem] border border-emerald-200/60" id="config-merienda-list">
       <div class="bg-white border-l-[8px] border-tertiary-container p-6 rounded-3xl flex flex-col gap-4" data-med="kreon_merienda">
         <div class="flex items-center gap-4 min-w-0">
           <div class="bg-tertiary-fixed p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined text-on-tertiary-container text-3xl icon-fill">bakery_dining</span></div>
@@ -812,9 +812,22 @@ tailwind.config = {
     </div>
     
     <div class="p-5 space-y-6">
-      <div class="bg-primary/5 rounded-2xl p-4 border border-primary/20">
-        <h4 id="modal-med-name" class="font-headline font-black text-2xl mb-1">Nombre</h4>
-        <p id="modal-med-dose" class="text-on-surface-variant font-medium">1 Comprimido</p>
+      <div class="bg-primary/5 rounded-2xl p-4 border border-primary/20 flex flex-col gap-2">
+        <input type="text" id="modal-med-name" class="w-full bg-transparent font-headline font-black text-2xl outline-none border-b border-primary/20 focus:border-primary placeholder-on-surface-variant/50 transition-colors" placeholder="Nombre del Medicamento">
+        <input type="text" id="modal-med-dose" class="w-full bg-transparent text-on-surface-variant font-medium outline-none border-b border-primary/20 focus:border-primary placeholder-on-surface-variant/50 transition-colors" placeholder="Dosis (ej: 1 Comprimido)">
+      </div>
+      
+      <div class="space-y-2 mt-4" id="modal-period-options">
+        <label class="font-bold text-sm text-on-surface-variant flex items-center gap-1">
+          <span class="material-symbols-outlined text-lg">light_mode</span> Momento del Día
+        </label>
+        <select id="modal-med-period" class="w-full h-14 bg-surface-container rounded-xl px-4 font-bold outline-none border border-outline/10">
+          <option value="manana">Mañana (Desayuno)</option>
+          <option value="almuerzo">Media Mañana (Almuerzo)</option>
+          <option value="comida">Mediodía (Comida)</option>
+          <option value="merienda">Tarde (Merienda)</option>
+          <option value="noche">Noche (Cena)</option>
+        </select>
       </div>
 
       <div class="space-y-2">

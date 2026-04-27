@@ -341,8 +341,8 @@ window.createNewMedication = function() {
   openConfigModal(null, newId); 
   
   // Force pre-fill defaults because openConfigModal expects the DOM to exist sometimes
-  document.getElementById('modal-med-name').textContent = 'Nuevo Medicamento';
-  document.getElementById('modal-med-dose').textContent = '1 Dosis';
+  document.getElementById('modal-med-name').value = 'Nuevo Medicamento';
+  document.getElementById('modal-med-dose').value = '1 Dosis';
   document.getElementById('modal-med-time').value = '12:00';
   document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = true);
 };
@@ -385,9 +385,14 @@ window.openConfigModal = function(btnElement, forceMedId = null) {
   currentEditingMedId = medId;
   const med = MEDICATIONS_DB[medId] || { name: 'Desconocido', dose: '', time: '12:00', days: [1,2,3,4,5,6,0] };
 
-  document.getElementById('modal-med-name').textContent = med.name;
-  document.getElementById('modal-med-dose').textContent = med.dose;
+  document.getElementById('modal-med-name').value = med.name || 'Desconocido';
+  document.getElementById('modal-med-dose').value = med.dose || '';
   document.getElementById('modal-med-time').value = med.time || '08:00';
+  
+  const periodSelect = document.getElementById('modal-med-period');
+  if (periodSelect && med.period) {
+    periodSelect.value = med.period;
+  }
   
   document.querySelectorAll('.day-checkbox').forEach(cb => {
     cb.checked = med.days && med.days.includes(parseInt(cb.value));
@@ -431,7 +436,14 @@ window.saveMedConfig = async function() {
   if (!currentEditingMedId) return;
   
   const med = MEDICATIONS_DB[currentEditingMedId] || {};
+  med.name = document.getElementById('modal-med-name').value;
+  med.dose = document.getElementById('modal-med-dose').value;
   med.time = document.getElementById('modal-med-time').value;
+  
+  const periodSelect = document.getElementById('modal-med-period');
+  if (periodSelect) {
+    med.period = periodSelect.value;
+  }
   
   const days = [];
   document.querySelectorAll('.day-checkbox:checked').forEach(cb => {
@@ -555,9 +567,90 @@ async function loadDynamicConfig() {
   } catch(e) { console.error("Error loading initial config", e); }
 }
 
+// Generates HTML cards for dynamically added custom medications
+function renderCustomMeds() {
+  // Remove previously rendered custom cards
+  document.querySelectorAll('.custom-med-card').forEach(el => el.remove());
+
+  for (const [id, med] of Object.entries(MEDICATIONS_DB)) {
+    if (id.startsWith('med_custom_')) {
+      // Colors based on period
+      let bgColor = 'bg-primary-container';
+      let textColor = 'text-on-primary-container';
+      let borderColor = 'border-primary';
+      
+      if (med.period === 'manana' || med.period === 'almuerzo') {
+         bgColor = 'bg-yellow-100'; textColor = 'text-yellow-950'; borderColor = 'border-yellow-400';
+      } else if (med.period === 'comida') {
+         bgColor = 'bg-secondary-fixed'; textColor = 'text-on-secondary-container'; borderColor = 'border-secondary-container';
+      } else if (med.period === 'merienda') {
+         bgColor = 'bg-tertiary-fixed'; textColor = 'text-on-tertiary-container'; borderColor = 'border-tertiary-container';
+      } else if (med.period === 'noche') {
+         bgColor = 'bg-primary-fixed'; textColor = 'text-on-primary-container'; borderColor = 'border-primary-container';
+      }
+
+      // HTML for Dashboard (Hoy)
+      const cardHoyHTML = `
+        <div class="custom-med-card bg-white rounded-3xl p-5 border-l-[8px] ${borderColor} flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="${id}">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="${bgColor} p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined ${textColor} text-4xl icon-fill">medication</span></div>
+            <div class="min-w-0 flex-1">
+              <h4 class="font-headline font-extrabold text-xl leading-tight">${med.name}</h4>
+              <p class="text-base text-on-surface-variant font-medium mt-0.5">${med.dose}</p>
+            </div>
+          </div>
+          <button class="h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0" onclick="saveMedToma('${id}', '${med.period}').then(ts => { if(window.markCardTakenUI) markCardTakenUI(this.closest('[data-med]'), ts); })">
+            <span class="material-symbols-outlined text-3xl">check</span>
+          </button>
+        </div>
+      `;
+      
+      // HTML for Configuration
+      const cardConfigHTML = `
+        <div class="custom-med-card bg-white rounded-3xl p-5 border-l-[8px] ${borderColor} flex items-center justify-between gap-3 shadow-sm overflow-hidden" data-med="${id}">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
+            <div class="${bgColor} p-3 rounded-full flex-shrink-0"><span class="material-symbols-outlined ${textColor} text-4xl icon-fill">medication</span></div>
+            <div class="min-w-0 flex-1">
+              <h4 class="font-headline font-extrabold text-xl leading-tight">${med.name}</h4>
+              <p class="text-base text-on-surface-variant font-medium mt-0.5">${med.dose}</p>
+            </div>
+          </div>
+          <button class="h-12 w-12 bg-surface-variant text-on-surface rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0 outline-none" onclick="openConfigModal(this)"><span class="material-symbols-outlined text-xl">settings</span></button>
+        </div>
+      `;
+
+      const periodIdMapHoy = {
+        'manana': 'meds-manana-locked',
+        'almuerzo': 'meds-almuerzo-list',
+        'comida': 'meds-comida-list',
+        'merienda': 'meds-merienda-list',
+        'noche': 'meds-noche-locked'
+      };
+      
+      const periodIdMapConfig = {
+        'manana': 'config-manana-list',
+        'almuerzo': 'config-almuerzo-list',
+        'comida': 'config-comida-list',
+        'merienda': 'config-merienda-list',
+        'noche': 'config-noche-list'
+      };
+      
+      const containerHoy = document.getElementById(periodIdMapHoy[med.period] || 'meds-comida-list');
+      if (containerHoy) containerHoy.insertAdjacentHTML('beforeend', cardHoyHTML);
+      
+      const containerConfig = document.getElementById(periodIdMapConfig[med.period] || 'config-comida-list');
+      if (containerConfig) containerConfig.insertAdjacentHTML('beforeend', cardConfigHTML);
+    }
+  }
+}
+
 // Ensure the UI matches logic
 function applyDynamicVisibility() {
   const currentDay = new Date().getDay();
+  
+  // Render dynamically added custom medications first
+  renderCustomMeds();
+  
   // 1. Ocultar los que estén "deleted" o no toquen hoy (excepto especiales que van por last date)
   for (const [id, med] of Object.entries(MEDICATIONS_DB)) {
      const isDeleted = med.deleted === true;
@@ -576,6 +669,31 @@ function applyDynamicVisibility() {
              // For simplicity, just remove hidden for now. The timer logic controls its own hidden state.
              if (!elemHoy.id.includes('timer-')) elemHoy.classList.remove('hidden');
          }
+         
+         // Update text dynamically for existing cards
+         const nameEl = elemHoy.querySelector('h4, h3.font-headline');
+         const doseEl = elemHoy.querySelector('p.text-on-surface-variant, p.text-base');
+         if (nameEl && med.name) nameEl.textContent = med.name;
+         if (doseEl && med.dose) doseEl.textContent = med.dose;
+     }
+
+     // Find the card in "screen-config"
+     const elemConfig = document.querySelector('#screen-config [data-med="' + id + '"]') || 
+                        document.querySelector('#screen-config #card-' + id.replace('_', '-'));
+                        
+     if (elemConfig) {
+         if (isDeleted) {
+             elemConfig.classList.add('opacity-50');
+         } else {
+             elemConfig.classList.remove('opacity-50');
+             elemConfig.classList.remove('hidden');
+         }
+         
+         // Update text dynamically for existing config cards
+         const nameElConfig = elemConfig.querySelector('h4, h3.font-headline');
+         const doseElConfig = elemConfig.querySelector('p.text-on-surface-variant, p.text-base');
+         if (nameElConfig && med.name) nameElConfig.textContent = med.name;
+         if (doseElConfig && med.dose) doseElConfig.textContent = med.dose;
      }
   }
 }
