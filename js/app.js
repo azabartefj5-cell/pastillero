@@ -488,53 +488,85 @@ window.toggleMedStatus = async function() {
   closeConfigModal();
 };
 
-window.syncNativeAlarm = function() {
+// Helper: convierte los días seleccionados en BYDAY para Google Calendar/ICS
+// days: [0=Dom,1=Lun,...,6=Sáb]  → GCal usa SU,MO,TU,WE,TH,FR,SA
+function _daysToRRule(days) {
+  const MAP = { 0: 'SU', 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA' };
+  if (!days || days.length === 7) return 'SU,MO,TU,WE,TH,FR,SA';
+  return days.map(d => MAP[d]).filter(Boolean).join(',');
+}
+
+// Construye la fecha de inicio del evento (próxima ocurrencia a la hora indicada)
+function _buildCalDate(hour, minute) {
+  const now = new Date();
+  const start = new Date();
+  start.setSeconds(0, 0);
+  start.setHours(parseInt(hour), parseInt(minute));
+  if (start <= now) start.setDate(start.getDate() + 1);
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  const end = new Date(start.getTime() + 30 * 60 * 1000);
+  return { startStr: fmt(start), endStr: fmt(end) };
+}
+
+window.syncGoogleCalendar = function() {
   if (!currentEditingMedId) return;
   const med = MEDICATIONS_DB[currentEditingMedId] || {};
-  let timeStr = document.getElementById('modal-med-time').value || med.time || '08:00';
-  let parts = timeStr.split(':');
-  if (parts.length !== 2) return;
-  
-  let hour = parts[0];
-  let minute = parts[1];
-  const title = "💊 " + (med.name || "Pastilla");
-  
-  // Android Intent to set native alarm
-  const intentStr = `intent:#Intent;action=android.intent.action.SET_ALARM;S.android.intent.extra.alarm.MESSAGE=${encodeURIComponent(title)};i.android.intent.extra.alarm.HOUR=${hour};i.android.intent.extra.alarm.MINUTES=${minute};B.android.intent.extra.alarm.SKIP_UI=false;end`;
-  
-  let a = document.createElement("a");
-  
-  let isAndroid = /android/i.test(navigator.userAgent || navigator.vendor || window.opera);
-  if (isAndroid) {
-      window.location.href = intentStr;
-  } else {
-      // Fallback: ICS Event
-      let now = new Date();
-      now.setHours(hour, minute, 0);
-      let isodt = now.toISOString().replace(/-|:|\.\d\d\d/g, "");
-      
-      let icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Pastillero Pilar//App//ES
-BEGIN:VEVENT
-UID:${Date.now()}@pastillero
-DTSTAMP:${isodt}
-DTSTART:${isodt}
-SUMMARY:${title}
-DESCRIPTION:Recordatorio de Medicación
-BEGIN:VALARM
-ACTION:DISPLAY
-DESCRIPTION:${title}
-TRIGGER:-PT0M
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
+  const timeStr = document.getElementById('modal-med-time').value || med.time || '08:00';
+  const [hour, minute] = timeStr.split(':');
+  const title = encodeURIComponent('💊 ' + (med.name || 'Medicamento'));
+  const details = encodeURIComponent('Dosis: ' + (med.dose || '') + '\nRegistrado desde Pastillero Pilar');
+  const { startStr, endStr } = _buildCalDate(hour, minute);
+  const days = med.days || [0,1,2,3,4,5,6];
+  const byday = _daysToRRule(days);
+  const rrule = encodeURIComponent('RRULE:FREQ=WEEKLY;BYDAY=' + byday);
 
-      let blob = new Blob([icsContent], { type: 'text/calendar' });
-      a.href = URL.createObjectURL(blob);
-      a.download = `alarma_${currentEditingMedId}.ics`;
-      a.click();
-  }
+  const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    '&text=' + title +
+    '&dates=' + startStr + '/' + endStr +
+    '&details=' + details +
+    '&recur=' + rrule +
+    '&sf=true&output=xml';
+
+  window.open(url, '_blank');
+};
+
+window.syncICSAlarm = function() {
+  if (!currentEditingMedId) return;
+  const med = MEDICATIONS_DB[currentEditingMedId] || {};
+  const timeStr = document.getElementById('modal-med-time').value || med.time || '08:00';
+  const [hour, minute] = timeStr.split(':');
+  const title = '💊 ' + (med.name || 'Medicamento');
+  const { startStr, endStr } = _buildCalDate(hour, minute);
+  const days = med.days || [0,1,2,3,4,5,6];
+  const byday = _daysToRRule(days);
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Pastillero Pilar//App//ES',
+    'BEGIN:VEVENT',
+    'UID:' + currentEditingMedId + '_' + Date.now() + '@pastillero',
+    'DTSTAMP:' + startStr,
+    'DTSTART:' + startStr,
+    'DTEND:' + endStr,
+    'SUMMARY:' + title,
+    'DESCRIPTION:Dosis: ' + (med.dose || ''),
+    'RRULE:FREQ=WEEKLY;BYDAY=' + byday,
+    'BEGIN:VALARM',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:' + title,
+    'TRIGGER:-PT0M',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob = new Blob([lines], { type: 'text/calendar;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'alarma_' + currentEditingMedId + '.ics';
+  a.click();
 };
 
 async function loadDynamicConfig() {
