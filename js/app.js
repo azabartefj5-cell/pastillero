@@ -2253,33 +2253,40 @@ function startFirebaseListeners() {
     APP._audioCtx = ctx;
     if (ctx.state === 'suspended') ctx.resume();
 
-    // Bip suave de 3 notas (no la sirena)
-    const times = [0, 0.35, 0.70];
-    const freqs = [880, 1047, 1319]; // La, Do, Mi (acorde mayor — sonido amigable)
-    times.forEach((t, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freqs[i];
-      gain.gain.setValueAtTime(0, ctx.currentTime + t);
-      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + t + 0.05);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + t + 0.28);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + t);
-      osc.stop(ctx.currentTime + t + 0.30);
-    });
+    const msg = dose
+      ? `Es hora de tomar ${medName}. Dosis: ${dose}.`
+      : `Pilar, es hora de tomar ${medName}.`;
 
-    // Vibración suave en móvil
-    if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+    // Acorde de 3 notas repetido 3 veces (más insistente)
+    const freqs  = [880, 1047, 1319]; // La - Do - Mi
+    const CYCLES = 3;   // número de veces que suena el acorde
+    const GAP    = 1.2; // segundos entre cada ciclo
 
-    // Tras el bip, hablar en voz alta
-    setTimeout(() => {
-      const msg = dose
-        ? `Es hora de tomar ${medName}. Dosis: ${dose}.`
-        : `Pilar, es hora de tomar ${medName}.`;
-      APP.speakMed(msg);
-    }, 1100);
+    for (let cycle = 0; cycle < CYCLES; cycle++) {
+      const base = cycle * (0.70 + GAP);
+      freqs.forEach((freq, i) => {
+        const t    = base + i * 0.30;
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, ctx.currentTime + t);
+        gain.gain.linearRampToValueAtTime(0.75, ctx.currentTime + t + 0.05); // más alto
+        gain.gain.linearRampToValueAtTime(0,    ctx.currentTime + t + 0.25);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + t);
+        osc.stop(ctx.currentTime  + t + 0.28);
+      });
+    }
+
+    // Vibración insistente: 3 pulsos dobles
+    if (navigator.vibrate) navigator.vibrate([400, 150, 400, 150, 400, 300, 400, 150, 400, 150, 400]);
+
+    // TTS al acabar el último ciclo — se repite 2 veces
+    const totalDuration = CYCLES * (0.70 + GAP) * 1000;
+    setTimeout(() => { APP.speakMed(msg); }, totalDuration);
+    setTimeout(() => { APP.speakMed(msg); }, totalDuration + 4500); // segunda vez
   };
 
   // Exponer globalmente para uso desde HTML y SW redirect
@@ -2861,46 +2868,75 @@ function restoreMedStates() {
 // ══════════════════════════════════════
 function checkLocalAlarms() {
   const now = new Date();
-  const currentHour = String(now.getHours()).padStart(2, '0');
+  const currentHour   = String(now.getHours()).padStart(2, '0');
   const currentMinute = String(now.getMinutes()).padStart(2, '0');
-  const currentTime = `${currentHour}:${currentMinute}`;
-  const currentDay = now.getDay();
+  const currentTime   = `${currentHour}:${currentMinute}`;
+  const currentDay    = now.getDay();
   
-  // Ensure we have loaded config
   if (!MEDICATIONS_DB) return;
   
   for (const [id, med] of Object.entries(MEDICATIONS_DB)) {
     if (med.deleted) continue;
     
-    // Check periodicity
     let takeToday = false;
     if (med.periodic) {
-       let lastTick = localStorage.getItem(`last_${id}_date`);
-       if (lastTick) {
-         const daysDiff = Math.floor((now - new Date(lastTick)) / (1000 * 60 * 60 * 24));
-         if (daysDiff >= med.periodic) takeToday = true;
-       } else {
-         takeToday = true;
-       }
+      const lastTick = localStorage.getItem(`last_${id}_date`);
+      if (lastTick) {
+        const daysDiff = Math.floor((now - new Date(lastTick)) / 86400000);
+        if (daysDiff >= med.periodic) takeToday = true;
+      } else {
+        takeToday = true;
+      }
     } else if (med.days && med.days.includes(currentDay)) {
-       takeToday = true;
+      takeToday = true;
     }
     
     if (takeToday && med.time === currentTime) {
       const takenKey = `med_${TODAY()}_${id}`;
-      // Use time + minute to run once
       const alarmKey = `local_alarm_${TODAY()}_${currentTime}_${id}`;
       
       if (!localStorage.getItem(takenKey) && !localStorage.getItem(alarmKey)) {
-        console.log(`⏰ [ALARM LOCAL] Disparando: ${med.name}`);
+        console.log(`⏰ [ALARM] Disparando: ${med.name} (${med.dose || ''})`);
         localStorage.setItem(alarmKey, 'true');
-        
+
+        // ── 1. Mostrar overlay visual + sonido (cuando la app está abierta) ──
         if (typeof showForegroundAlarm === 'function') {
-           showForegroundAlarm({
-             title: `⏰ ${med.name}`,
-             body: `Toca tu medicación: ${med.dose || ''}`,
-             medId: id
-           });
+          showForegroundAlarm({
+            title:   `⏰ ${med.name}`,
+            body:    `Toca tu medicación: ${med.dose || ''}`,
+            medName: med.name,
+            dose:    med.dose || '',
+            medId:   id
+          });
+        }
+
+        // ── 2. Notificación del Service Worker ──
+        // Esta es la única forma de avisar cuando la pantalla del móvil está apagada
+        // o la PWA está en segundo plano. El SW la muestra incluso con la app cerrada.
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification('💊 ' + med.name, {
+              body:             (med.dose ? 'Dosis: ' + med.dose : 'Es hora de tu medicamento'),
+              icon:             './icons/icon-192.png',
+              badge:            './icons/icon-192.png',
+              tag:              'med-alarm-' + id,
+              renotify:         true,
+              requireInteraction: true,
+              silent:           false,
+              vibrate:          [400, 150, 400, 150, 400, 300, 400, 150, 400],
+              data: {
+                type:    'MED_ALARM',
+                medId:   id,
+                medName: med.name,
+                medDose: med.dose || '',
+                url:     './index.html'
+              },
+              actions: [
+                { action: 'taken',  title: '✅ TOMADA' },
+                { action: 'snooze', title: '⏰ +10 min' }
+              ]
+            }).catch(e => console.warn('SW notif failed:', e));
+          }).catch(e => console.warn('SW not ready:', e));
         }
       }
     }

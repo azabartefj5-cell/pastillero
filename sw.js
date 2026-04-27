@@ -261,7 +261,7 @@ function getPeriod() {
 // ══════════════════════════════════════════════════════════════════
 // CACHE & OFFLINE SUPPORT
 // ══════════════════════════════════════════════════════════════════
-const CACHE_NAME = 'pastillero-pilar-v39';
+const CACHE_NAME = 'pastillero-pilar-v40';
 const STATIC_ASSETS = [
   './index.html',
   './css/style.css',
