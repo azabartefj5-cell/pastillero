@@ -1912,8 +1912,7 @@ function showForegroundAlarm(data) {
   // Usar IDs en lugar de .closest() que falla en móvil
   const closeOverlay = () => {
     overlay.classList.add('hidden');
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
-    if (navigator.vibrate) navigator.vibrate(0);
+    if (APP.stopMedAlarm) APP.stopMedAlarm(); // detiene el bucle de alarma
     contentDiv.innerHTML = originalHTML;
   };
   document.getElementById('btn-alarm-taken')?.addEventListener('click', closeOverlay);
@@ -2222,85 +2221,137 @@ function startFirebaseListeners() {
 
   // ══════════════════════════════════════
   // TTS — VOZ PARA RECORDATORIO DE MEDICAMENTO
-  // Usa la Web Speech API del navegador (funciona en Chrome/Android sin coste)
   // ══════════════════════════════════════
-  APP.speakMed = function(text, onEnd) {
-    if (!('speechSynthesis' in window)) {
-      console.warn('TTS no disponible en este navegador');
-      if (onEnd) onEnd();
-      return;
+  // MEDICATION ALARM LOOP
+  // Secuencia: sonido×2 → TTS×2 → pausa → repite
+  // Se detiene con APP.stopMedAlarm()
+  // ══════════════════════════════════════
+  APP._medAlarmActive = false;
+  APP._medAlarmSource = null;
+
+  // Detiene el bucle y cancela TTS/sonido en curso
+  APP.stopMedAlarm = function() {
+    APP._medAlarmActive = false;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (APP._medAlarmSource) {
+      try { APP._medAlarmSource.stop(); } catch(e) {}
+      APP._medAlarmSource = null;
     }
-    window.speechSynthesis.cancel(); // cancelar cualquier voz anterior
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'es-ES';
-    utter.rate = 0.9;
-    utter.pitch = 1.05;
-    utter.volume = 1.0;
-    if (onEnd) utter.onend = onEnd;
-    window.speechSynthesis.speak(utter);
+    if (navigator.vibrate) navigator.vibrate(0);
+    console.log('🔕 Alarma de medicamento detenida');
   };
 
-  // ══════════════════════════════════════
-  // MEDICATION REMINDER — sonido suave + voz
-  // Diferente a la alarma de emergencia
-  // ══════════════════════════════════════
-  APP.playMedReminder = function(medName, dose) {
-    const ctx = APP._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    APP._audioCtx = ctx;
-    if (ctx.state === 'suspended') ctx.resume();
+  // Reproduce la locución en español y devuelve una Promise que resuelve al terminar
+  APP.speakMed = function(text) {
+    return new Promise(resolve => {
+      if (!('speechSynthesis' in window)) { setTimeout(resolve, 2000); return; }
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang   = 'es-ES';
+      utter.rate   = 0.88;
+      utter.pitch  = 1.0;
+      utter.volume = 1.0;
+      utter.onend  = resolve;
+      utter.onerror = resolve;
+      window.speechSynthesis.speak(utter);
+      // Fallback: Android a veces no dispara onend — timeout de seguridad
+      setTimeout(resolve, 10000);
+    });
+  };
 
-    const msg = dose
-      ? `Es hora de tomar ${medName}. Dosis: ${dose}.`
-      : `Pilar, es hora de tomar ${medName}.`;
+  // Reproduce alerta.mp3 durante 'ms' milisegundos a volumen 'vol' (0-1)
+  function _playAlertSound(ms = 2500, vol = 1.0) {
+    return new Promise(resolve => {
+      const ctx = APP._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      APP._audioCtx = ctx;
+      if (ctx.state === 'suspended') { ctx.resume(); }
 
-    // — OPCIÓN A: usar alerta.mp3 a volumen reducido (más fiable en móvil) —
-    if (APP._alarmBuffer) {
-      // Reproducir el mp3 a volumen bajo (0.35) y sólo 3 segundos
-      const source  = ctx.createBufferSource();
-      const gainNode = ctx.createGain();
-      gainNode.gain.value = 0.35; // volumen reducido (emergencia usa 1.0)
-      source.buffer = APP._alarmBuffer;
-      source.loop   = false;
-      source.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      source.start(0);
-      // Parar a los 3 segundos
-      setTimeout(() => { try { source.stop(); } catch(e) {} }, 3000);
-    } else {
-      // — FALLBACK: acorde sintetizado si el mp3 aún no está cargado —
-      const freqs  = [880, 1047, 1319];
-      const CYCLES = 3;
-      const GAP    = 1.2;
-      for (let cycle = 0; cycle < CYCLES; cycle++) {
-        const base = cycle * (0.70 + GAP);
+      if (APP._alarmBuffer) {
+        const source   = ctx.createBufferSource();
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = vol;
+        source.buffer = APP._alarmBuffer;
+        source.loop   = false;
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        source.start(0);
+        APP._medAlarmSource = source;
+        setTimeout(() => {
+          try { source.stop(); } catch(e) {}
+          APP._medAlarmSource = null;
+          resolve();
+        }, ms);
+      } else {
+        // Fallback sintetizado (si el mp3 aún no está en caché)
+        const freqs = [880, 1047, 1319];
         freqs.forEach((freq, i) => {
-          const t    = base + i * 0.30;
+          const t    = i * 0.30;
           const osc  = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
           osc.frequency.value = freq;
           gain.gain.setValueAtTime(0, ctx.currentTime + t);
-          gain.gain.linearRampToValueAtTime(0.75, ctx.currentTime + t + 0.05);
-          gain.gain.linearRampToValueAtTime(0,    ctx.currentTime + t + 0.25);
+          gain.gain.linearRampToValueAtTime(0.8, ctx.currentTime + t + 0.05);
+          gain.gain.linearRampToValueAtTime(0,   ctx.currentTime + t + 0.25);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(ctx.currentTime + t);
           osc.stop(ctx.currentTime  + t + 0.28);
         });
+        setTimeout(resolve, ms);
       }
+    });
+  }
+
+  function _sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // Bucle principal de la alarma
+  APP.playMedReminder = function(medName, dose) {
+    if (APP._medAlarmActive) return; // ya está sonando
+    APP._medAlarmActive = true;
+
+    const msg = dose
+      ? `Es hora de tomar ${medName}. Dosis: ${dose}.`
+      : `Pilar, es hora de tomar ${medName}.`;
+
+    console.log(`⏰ [ALARM LOOP] Iniciando: "${msg}"`);
+
+    async function loop() {
+      while (APP._medAlarmActive) {
+        // ── 1. Sonido × 2 (fuerte) ──
+        await _playAlertSound(2500, 1.0);
+        if (!APP._medAlarmActive) break;
+        await _sleep(400);
+        await _playAlertSound(2500, 1.0);
+        if (!APP._medAlarmActive) break;
+        await _sleep(600);
+
+        // ── 2. Vibración insistente ──
+        if (navigator.vibrate) navigator.vibrate([400, 150, 400, 150, 400, 300, 400]);
+
+        // ── 3. TTS × 2 ──
+        await APP.speakMed(msg);
+        if (!APP._medAlarmActive) break;
+        await _sleep(800);
+        await APP.speakMed(msg);
+        if (!APP._medAlarmActive) break;
+
+        // ── 4. Pausa antes de repetir (5 s) ──
+        console.log('🔄 Alarm loop: pausando 5s antes de repetir...');
+        await _sleep(5000);
+      }
+      console.log('🔕 Alarm loop terminado');
     }
 
-    // Vibración insistente
-    if (navigator.vibrate) navigator.vibrate([400, 150, 400, 150, 400, 300, 400, 150, 400, 150, 400]);
-
-    // TTS — dos veces con pausa
-    setTimeout(() => { APP.speakMed(msg); }, 3200);
-    setTimeout(() => { APP.speakMed(msg); }, 3200 + 4500);
+    loop();
   };
 
-  // Exponer globalmente para uso desde HTML y SW redirect
+  // Exponer globalmente
   window.playMedReminder = APP.playMedReminder;
-  window.speakMed       = APP.speakMed;
+  window.stopMedAlarm    = APP.stopMedAlarm;
+  window.speakMed        = (t) => APP.speakMed(t);
 
 
 // ══════════════════════════════════════
