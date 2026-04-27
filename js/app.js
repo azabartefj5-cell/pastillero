@@ -1860,54 +1860,60 @@ function setupForegroundMessaging() {
 }
 
 function showForegroundAlarm(data) {
-  const title = data.title || '⏰ Hora del medicamento';
-  const body = data.body || 'Es la hora de tu medicamento.';
+  const title   = data.title || '⏰ Hora del medicamento';
+  const body    = data.body  || 'Es la hora de tu medicamento.';
+  const medName = data.medName || data.title?.replace('⏰ ', '') || 'el medicamento';
+  const dose    = data.dose || data.body?.replace('Toca tu medicación: ', '') || '';
 
-  // Play alarm sound
-  if (APP.playAlarmSound) APP.playAlarmSound();
-
-  // Vibrate aggressively
-  if (navigator.vibrate) {
-    navigator.vibrate([1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000]);
+  // ── Sonido suave + voz TTS (NO la sirena de emergencia) ──
+  if (APP.playMedReminder) {
+    APP.playMedReminder(medName, dose);
   }
 
-  // Also show a browser notification (in case user switches tabs)
+  // ── Vibración suave ──
+  if (navigator.vibrate) {
+    navigator.vibrate([300, 150, 300, 150, 300]);
+  }
+
+  // ── Notificación del navegador (si la app está en segundo plano) ──
   if ('Notification' in window && Notification.permission === 'granted') {
-    const n = new Notification(title, {
-      body: body,
+    const n = new Notification('💊 ' + medName, {
+      body: dose ? 'Dosis: ' + dose : body,
       icon: './icons/icon-192.png',
       requireInteraction: true,
-      tag: 'pastillero-foreground-alarm'
+      tag: 'pastillero-med-' + (data.medId || 'alarm')
     });
     n.onclick = () => { window.focus(); n.close(); };
   }
 
-  // Show the panic overlay repurposed as alarm overlay
+  // ── Overlay visual (distinto al de emergencia) ──
   const overlay = document.getElementById('panic-overlay');
   if (overlay) {
     const contentDiv = overlay.querySelector('.bg-white');
     if (contentDiv) {
-      // Temporarily change the overlay content to show medication alarm
       const originalHTML = contentDiv.innerHTML;
       contentDiv.innerHTML = `
         <div class="text-center">
           <div class="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
             <span class="material-symbols-outlined text-6xl icon-fill">medication</span>
           </div>
-          <h2 class="font-headline font-black text-3xl text-primary tracking-tight">${title}</h2>
-          <p class="text-on-surface-variant text-lg mt-2 font-medium">${body}</p>
+          <h2 class="font-headline font-black text-3xl text-primary tracking-tight">💊 ${medName}</h2>
+          <p class="text-on-surface-variant text-lg mt-2 font-medium">${dose ? 'Dosis: ' + dose : body}</p>
         </div>
         <div class="space-y-3">
           <button onclick="this.closest('.panic-overlay').classList.add('hidden'); if(window.stopAlarmSound) window.stopAlarmSound(); if(navigator.vibrate) navigator.vibrate(0);"
             class="flex items-center justify-center gap-3 w-full h-16 bg-primary text-white rounded-2xl font-headline font-black text-lg active:scale-95 transition-all shadow-md">
-            <span class="material-symbols-outlined">check_circle</span> ENTENDIDO
+            <span class="material-symbols-outlined">check_circle</span> TOMADA ✅
+          </button>
+          <button onclick="if(window.speechSynthesis) window.speechSynthesis.cancel(); this.closest('.panic-overlay').classList.add('hidden'); if(navigator.vibrate) navigator.vibrate(0);"
+            class="flex items-center justify-center gap-3 w-full h-12 bg-surface-variant text-on-surface-variant rounded-2xl font-bold text-sm active:scale-95 transition-all">
+            Posponer (tomaré ahora)
           </button>
         </div>
       `;
       overlay.classList.remove('hidden');
 
-      // Restore original content when closed
-      const observer = new MutationObserver((mutations) => {
+      const observer = new MutationObserver(() => {
         if (overlay.classList.contains('hidden')) {
           contentDiv.innerHTML = originalHTML;
           observer.disconnect();
@@ -1917,6 +1923,7 @@ function showForegroundAlarm(data) {
     }
   }
 }
+
 
 function startFirebaseListeners() {
   if (!APP.db) return;
@@ -2135,10 +2142,10 @@ function startFirebaseListeners() {
       const isSender = alertData.senderId === APP.deviceId;
       
       if (!isSender) {
-        console.log('🔔 Sonando alarma en dispositivo receptor');
-        if (APP.playAlarmSound) APP.playAlarmSound();
+        console.log('🚨 Alerta de pánico recibida en dispositivo receptor');
+        // Vibración leve para avisar (sin sirena)
         if (navigator.vibrate) {
-          navigator.vibrate([1000, 500, 1000, 500, 1000, 1000]);
+          navigator.vibrate([500, 200, 500]);
         }
       }
 
