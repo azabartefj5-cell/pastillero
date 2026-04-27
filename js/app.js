@@ -1860,68 +1860,64 @@ function setupForegroundMessaging() {
 }
 
 function showForegroundAlarm(data) {
-  const title   = data.title || '⏰ Hora del medicamento';
-  const body    = data.body  || 'Es la hora de tu medicamento.';
-  const medName = data.medName || data.title?.replace('⏰ ', '') || 'el medicamento';
-  const dose    = data.dose || data.body?.replace('Toca tu medicación: ', '') || '';
+  const medName = data.medName || (data.title || '').replace(/[⏰💊] ?/, '').trim() || 'el medicamento';
+  const dose    = data.dose || (data.body || '').replace('Toca tu medicación: ', '').trim() || '';
 
-  // ── Sonido suave + voz TTS (NO la sirena de emergencia) ──
+  // ── Sonido + TTS ──
   if (APP.playMedReminder) {
     APP.playMedReminder(medName, dose);
   }
 
-  // ── Vibración suave ──
-  if (navigator.vibrate) {
-    navigator.vibrate([300, 150, 300, 150, 300]);
-  }
-
-  // ── Notificación del navegador (si la app está en segundo plano) ──
+  // ── Notificación del navegador (segundo plano) ──
   if ('Notification' in window && Notification.permission === 'granted') {
-    const n = new Notification('💊 ' + medName, {
-      body: dose ? 'Dosis: ' + dose : body,
-      icon: './icons/icon-192.png',
-      requireInteraction: true,
-      tag: 'pastillero-med-' + (data.medId || 'alarm')
-    });
-    n.onclick = () => { window.focus(); n.close(); };
-  }
-
-  // ── Overlay visual (distinto al de emergencia) ──
-  const overlay = document.getElementById('panic-overlay');
-  if (overlay) {
-    const contentDiv = overlay.querySelector('.bg-white');
-    if (contentDiv) {
-      const originalHTML = contentDiv.innerHTML;
-      contentDiv.innerHTML = `
-        <div class="text-center">
-          <div class="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <span class="material-symbols-outlined text-6xl icon-fill">medication</span>
-          </div>
-          <h2 class="font-headline font-black text-3xl text-primary tracking-tight">💊 ${medName}</h2>
-          <p class="text-on-surface-variant text-lg mt-2 font-medium">${dose ? 'Dosis: ' + dose : body}</p>
-        </div>
-        <div class="space-y-3">
-          <button onclick="this.closest('.panic-overlay').classList.add('hidden'); if(window.stopAlarmSound) window.stopAlarmSound(); if(navigator.vibrate) navigator.vibrate(0);"
-            class="flex items-center justify-center gap-3 w-full h-16 bg-primary text-white rounded-2xl font-headline font-black text-lg active:scale-95 transition-all shadow-md">
-            <span class="material-symbols-outlined">check_circle</span> TOMADA ✅
-          </button>
-          <button onclick="if(window.speechSynthesis) window.speechSynthesis.cancel(); this.closest('.panic-overlay').classList.add('hidden'); if(navigator.vibrate) navigator.vibrate(0);"
-            class="flex items-center justify-center gap-3 w-full h-12 bg-surface-variant text-on-surface-variant rounded-2xl font-bold text-sm active:scale-95 transition-all">
-            Posponer (tomaré ahora)
-          </button>
-        </div>
-      `;
-      overlay.classList.remove('hidden');
-
-      const observer = new MutationObserver(() => {
-        if (overlay.classList.contains('hidden')) {
-          contentDiv.innerHTML = originalHTML;
-          observer.disconnect();
-        }
+    try {
+      const n = new Notification('💊 ' + medName, {
+        body:             dose ? 'Dosis: ' + dose : 'Es hora de tu medicamento',
+        icon:             './icons/icon-192.png',
+        requireInteraction: true,
+        tag:              'pastillero-med-fg-' + (data.medId || Date.now())
       });
-      observer.observe(overlay, { attributes: true, attributeFilter: ['class'] });
-    }
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch(e) {}
   }
+
+  // ── Overlay visual ──
+  const overlay = document.getElementById('panic-overlay');
+  if (!overlay) return;
+  const contentDiv = overlay.querySelector('.bg-white');
+  if (!contentDiv) return;
+
+  const originalHTML = contentDiv.innerHTML;
+  contentDiv.innerHTML = `
+    <div class="text-center">
+      <div class="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+        <span class="material-symbols-outlined text-6xl icon-fill">medication</span>
+      </div>
+      <h2 class="font-headline font-black text-3xl text-primary tracking-tight">💊 ${medName}</h2>
+      <p class="text-on-surface-variant text-lg mt-2 font-medium">${dose ? 'Dosis: ' + dose : 'Es hora de tu medicamento'}</p>
+    </div>
+    <div class="space-y-3">
+      <button id="btn-alarm-taken"
+        class="flex items-center justify-center gap-3 w-full h-16 bg-primary text-white rounded-2xl font-headline font-black text-lg active:scale-95 transition-all shadow-md">
+        <span class="material-symbols-outlined">check_circle</span> TOMADA ✅
+      </button>
+      <button id="btn-alarm-snooze"
+        class="flex items-center justify-center gap-3 w-full h-12 bg-surface-variant text-on-surface-variant rounded-2xl font-bold text-sm active:scale-95 transition-all">
+        Posponer (tomarme ahora)
+      </button>
+    </div>
+  `;
+  overlay.classList.remove('hidden');
+
+  // Usar IDs en lugar de .closest() que falla en móvil
+  const closeOverlay = () => {
+    overlay.classList.add('hidden');
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    if (navigator.vibrate) navigator.vibrate(0);
+    contentDiv.innerHTML = originalHTML;
+  };
+  document.getElementById('btn-alarm-taken')?.addEventListener('click', closeOverlay);
+  document.getElementById('btn-alarm-snooze')?.addEventListener('click', closeOverlay);
 }
 
 
@@ -2257,36 +2253,49 @@ function startFirebaseListeners() {
       ? `Es hora de tomar ${medName}. Dosis: ${dose}.`
       : `Pilar, es hora de tomar ${medName}.`;
 
-    // Acorde de 3 notas repetido 3 veces (más insistente)
-    const freqs  = [880, 1047, 1319]; // La - Do - Mi
-    const CYCLES = 3;   // número de veces que suena el acorde
-    const GAP    = 1.2; // segundos entre cada ciclo
-
-    for (let cycle = 0; cycle < CYCLES; cycle++) {
-      const base = cycle * (0.70 + GAP);
-      freqs.forEach((freq, i) => {
-        const t    = base + i * 0.30;
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0, ctx.currentTime + t);
-        gain.gain.linearRampToValueAtTime(0.75, ctx.currentTime + t + 0.05); // más alto
-        gain.gain.linearRampToValueAtTime(0,    ctx.currentTime + t + 0.25);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + t);
-        osc.stop(ctx.currentTime  + t + 0.28);
-      });
+    // — OPCIÓN A: usar alerta.mp3 a volumen reducido (más fiable en móvil) —
+    if (APP._alarmBuffer) {
+      // Reproducir el mp3 a volumen bajo (0.35) y sólo 3 segundos
+      const source  = ctx.createBufferSource();
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = 0.35; // volumen reducido (emergencia usa 1.0)
+      source.buffer = APP._alarmBuffer;
+      source.loop   = false;
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      source.start(0);
+      // Parar a los 3 segundos
+      setTimeout(() => { try { source.stop(); } catch(e) {} }, 3000);
+    } else {
+      // — FALLBACK: acorde sintetizado si el mp3 aún no está cargado —
+      const freqs  = [880, 1047, 1319];
+      const CYCLES = 3;
+      const GAP    = 1.2;
+      for (let cycle = 0; cycle < CYCLES; cycle++) {
+        const base = cycle * (0.70 + GAP);
+        freqs.forEach((freq, i) => {
+          const t    = base + i * 0.30;
+          const osc  = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, ctx.currentTime + t);
+          gain.gain.linearRampToValueAtTime(0.75, ctx.currentTime + t + 0.05);
+          gain.gain.linearRampToValueAtTime(0,    ctx.currentTime + t + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + t);
+          osc.stop(ctx.currentTime  + t + 0.28);
+        });
+      }
     }
 
-    // Vibración insistente: 3 pulsos dobles
+    // Vibración insistente
     if (navigator.vibrate) navigator.vibrate([400, 150, 400, 150, 400, 300, 400, 150, 400, 150, 400]);
 
-    // TTS al acabar el último ciclo — se repite 2 veces
-    const totalDuration = CYCLES * (0.70 + GAP) * 1000;
-    setTimeout(() => { APP.speakMed(msg); }, totalDuration);
-    setTimeout(() => { APP.speakMed(msg); }, totalDuration + 4500); // segunda vez
+    // TTS — dos veces con pausa
+    setTimeout(() => { APP.speakMed(msg); }, 3200);
+    setTimeout(() => { APP.speakMed(msg); }, 3200 + 4500);
   };
 
   // Exponer globalmente para uso desde HTML y SW redirect
@@ -3040,30 +3049,34 @@ window.deleteMedToma = deleteMedToma;
 init();
 
 // ══════════════════════════════════════
-// TTS AL ABRIR APP DESDE NOTIFICACIÓN DE MEDICAMENTO
-// Si la URL contiene ?speak=NombreMed&dose=Dosis, habla en voz alta
+// AL ABRIR APP DESDE NOTIFICACIÓN DEL SERVICE WORKER
+// Si la URL contiene ?speak=NombreMed&dose=Dosis → overlay + sonido + TTS
 // ══════════════════════════════════════
 (function checkSpeakOnLaunch() {
-  const params = new URLSearchParams(window.location.search);
+  const params  = new URLSearchParams(window.location.search);
   const medName = params.get('speak');
   const dose    = params.get('dose');
-  if (medName) {
-    // Esperar a que el audio esté desbloqueado (primer click/touch)
-    const speak = () => {
-      if (window.playMedReminder) {
-        window.playMedReminder(decodeURIComponent(medName), decodeURIComponent(dose || ''));
-      }
-      // Limpiar la URL para que no se repita al refrescar
-      const clean = window.location.pathname;
-      window.history.replaceState({}, '', clean);
-    };
-    // Si el usuario ya interactuó, hablar en 1s; si no, esperar primer touch
-    if (document.hasFocus()) {
-      setTimeout(speak, 1000);
-    } else {
-      const once = () => { speak(); document.removeEventListener('click', once); document.removeEventListener('touchstart', once); };
-      document.addEventListener('click', once, { once: true });
-      document.addEventListener('touchstart', once, { once: true });
+  if (!medName) return;
+
+  // Limpiar URL para que no se repita al refrescar
+  window.history.replaceState({}, '', window.location.pathname);
+
+  // Disparar overlay + sonido (el toque que abre la app desde la notificación
+  // ya cuenta como gesto de usuario → AudioContext desbloqueado)
+  const trigger = () => {
+    if (typeof showForegroundAlarm === 'function') {
+      showForegroundAlarm({
+        medName: decodeURIComponent(medName),
+        dose:    decodeURIComponent(dose || ''),
+        medId:   'from-notification'
+      });
     }
+  };
+
+  // Pequeño delay para que el DOM esté listo
+  if (document.readyState === 'complete') {
+    setTimeout(trigger, 800);
+  } else {
+    window.addEventListener('load', () => setTimeout(trigger, 800), { once: true });
   }
 })();
