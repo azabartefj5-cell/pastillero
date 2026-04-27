@@ -1910,13 +1910,41 @@ function showForegroundAlarm(data) {
   overlay.classList.remove('hidden');
 
   // Usar IDs en lugar de .closest() que falla en móvil
-  const closeOverlay = () => {
-    overlay.classList.add('hidden');
+  document.getElementById('btn-alarm-taken')?.addEventListener('click', async () => {
     if (APP.stopMedAlarm) APP.stopMedAlarm(); // detiene el bucle de alarma
+    overlay.classList.add('hidden');
     contentDiv.innerHTML = originalHTML;
-  };
-  document.getElementById('btn-alarm-taken')?.addEventListener('click', closeOverlay);
-  document.getElementById('btn-alarm-snooze')?.addEventListener('click', closeOverlay);
+
+    // Registrar la toma automáticamente
+    if (data.medId && typeof saveMedToma === 'function') {
+      let periodo = 'manana';
+      const idStr = String(data.medId).toLowerCase();
+      if (idStr.includes('comida') || idStr.includes('almuerzo')) periodo = 'comida';
+      else if (idStr.includes('merienda')) periodo = 'merienda';
+      else if (idStr.includes('pm') || idStr.includes('noche') || idStr.includes('cena')) periodo = 'noche';
+      
+      const ts = await saveMedToma(data.medId, periodo);
+      
+      // Actualizar tarjeta en UI si está visible
+      const card = document.querySelector(`[data-med="${data.medId}"]`) || document.getElementById(`card-${data.medId.replace(/_/g, '-')}`);
+      if (card && typeof markCardTakenUI === 'function') {
+        markCardTakenUI(card, ts);
+      }
+      
+      // Lógica específica para Omeprazol (iniciar cuenta atrás)
+      if (data.medId === 'omeprazol_am' && typeof startOmeprazolTimer === 'function') {
+        startOmeprazolTimer('manana');
+      } else if (data.medId === 'omeprazol_pm' && typeof startOmeprazolTimer === 'function') {
+        startOmeprazolTimer('noche');
+      }
+    }
+  });
+
+  document.getElementById('btn-alarm-snooze')?.addEventListener('click', () => {
+    if (APP.stopMedAlarm) APP.stopMedAlarm(); // detiene el bucle de alarma
+    overlay.classList.add('hidden');
+    contentDiv.innerHTML = originalHTML;
+  });
 }
 
 
