@@ -873,14 +873,32 @@ tailwind.config = {
         </div>
       </div>
       
-      <div class="space-y-2 mt-4" id="modal-periodic-options">
+      <!-- ── RECURRENCIA ── -->
+      <div class="space-y-3 mt-4 p-4 bg-surface-container rounded-2xl border border-outline/10" id="modal-recurrence-panel">
         <label class="font-bold text-sm text-on-surface-variant flex items-center gap-1">
-          <span class="material-symbols-outlined text-lg">event_repeat</span> Repetición cíclica
+          <span class="material-symbols-outlined text-lg">event_repeat</span> Frecuencia de la toma
         </label>
-        <select id="modal-periodic-select" class="w-full h-14 bg-surface-container rounded-xl px-4 font-bold outline-none border border-outline/10">
-          <option value="">No es periódica</option>
-          <option value="3">Cada 3 días (Morfina)</option>
-          <option value="15">Cada 15 días (Hidroferol)</option>
+        <!-- Tipo de recurrencia -->
+        <select id="modal-recurrence-type" onchange="updateRecurrenceUI()" class="w-full h-14 bg-white rounded-xl px-4 font-bold outline-none border border-outline/20 text-on-surface">
+          <option value="weekly">📅 Días específicos de la semana</option>
+          <option value="daily">🔁 Cada día (diario)</option>
+          <option value="hourly">⏱️ Cada X horas (antibiótico, etc.)</option>
+          <option value="interval_days">📆 Cada X días (morfina, etc.)</option>
+        </select>
+        <!-- Intervalo (visible solo en modo hourly o interval_days) -->
+        <div id="modal-interval-row" class="hidden flex items-center gap-3">
+          <label class="font-bold text-sm text-on-surface-variant whitespace-nowrap" id="modal-interval-label">Cada</label>
+          <input type="number" id="modal-recurrence-interval" min="1" max="168" value="8"
+            class="flex-1 h-12 bg-white rounded-xl px-4 font-headline font-black text-2xl text-center outline-none border border-outline/20" />
+          <span id="modal-interval-unit" class="font-bold text-sm text-primary whitespace-nowrap">horas</span>
+        </div>
+        <!-- Descripcion contextual -->
+        <p id="modal-recurrence-hint" class="text-[11px] text-on-surface-variant italic"></p>
+        <!-- Campo oculto de compatibilidad con el sistema antiguo de periodicos -->
+        <select id="modal-periodic-select" class="hidden">
+          <option value=""></option>
+          <option value="3">3</option>
+          <option value="15">15</option>
         </select>
       </div>
       

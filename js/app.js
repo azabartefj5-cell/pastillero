@@ -400,10 +400,15 @@ window.openConfigModal = function(btnElement, forceMedId = null) {
     cb.checked = med.days && med.days.includes(parseInt(cb.value));
   });
 
-  const select = document.getElementById('modal-periodic-select');
-  if (med.periodic === 3) select.value = "3";
-  else if (med.periodic === 15) select.value = "15";
-  else select.value = "";
+  // --- Recurrence ---
+  const rtSel = document.getElementById('modal-recurrence-type');
+  const rInt  = document.getElementById('modal-recurrence-interval');
+  const rType = med.recurrenceType || 'weekly';
+  rtSel.value = rType;
+  if (rType === 'hourly') rInt.value = med.recurrenceInterval || 8;
+  else if (rType === 'interval_days') rInt.value = med.recurrenceInterval || (med.periodic || 1);
+  else rInt.value = 1;
+  updateRecurrenceUI();
 
   const toggleBtn = document.getElementById('btn-toggle-med');
   if (med.deleted) {
@@ -443,9 +448,7 @@ window.saveMedConfig = async function() {
   med.time = document.getElementById('modal-med-time').value;
   
   const periodSelect = document.getElementById('modal-med-period');
-  if (periodSelect) {
-    med.period = periodSelect.value;
-  }
+  if (periodSelect) med.period = periodSelect.value;
   
   const days = [];
   document.querySelectorAll('.day-checkbox:checked').forEach(cb => {
@@ -453,8 +456,14 @@ window.saveMedConfig = async function() {
   });
   med.days = days;
 
-  const periodic = document.getElementById('modal-periodic-select').value;
-  if(periodic) med.periodic = parseInt(periodic);
+  // --- Recurrence (new system) ---
+  const rType = document.getElementById('modal-recurrence-type').value;
+  const rInt  = parseInt(document.getElementById('modal-recurrence-interval').value) || 1;
+  med.recurrenceType     = rType;
+  med.recurrenceInterval = (rType === 'hourly' || rType === 'interval_days') ? rInt : null;
+
+  // Backward compat: keep med.periodic for existing Morfina/Hidroferol logic
+  if (rType === 'interval_days') med.periodic = rInt;
   else med.periodic = null;
 
   MEDICATIONS_DB[currentEditingMedId] = med;
@@ -470,6 +479,7 @@ window.saveMedConfig = async function() {
   applyDynamicVisibility();
   closeConfigModal();
 };
+
 
 window.toggleMedStatus = async function() {
   if (!currentEditingMedId) return;
@@ -488,20 +498,49 @@ window.toggleMedStatus = async function() {
   closeConfigModal();
 };
 
+// ══════════════════════════════════════
+// RECURRENCE HELPERS & CALENDAR SYNC
+// ══════════════════════════════════════
+
+// Actualiza el UI del panel de recurrencia según el tipo seleccionado
+window.updateRecurrenceUI = function() {
+  const type     = document.getElementById('modal-recurrence-type').value;
+  const row      = document.getElementById('modal-interval-row');
+  const unit     = document.getElementById('modal-interval-unit');
+  const hint     = document.getElementById('modal-recurrence-hint');
+  const daysDiv  = document.querySelector('.space-y-3:has(.day-checkbox)');
+
+  row.classList.toggle('hidden', type !== 'hourly' && type !== 'interval_days');
+  if (daysDiv) daysDiv.style.opacity = (type === 'weekly') ? '1' : '0.35';
+
+  if (type === 'hourly') {
+    unit.textContent = 'horas';
+    document.getElementById('modal-recurrence-interval').value = 8;
+    hint.textContent = 'Ej: cada 8h → Google Calendar creará 3 eventos al día con alarma.';
+  } else if (type === 'interval_days') {
+    unit.textContent = 'días';
+    document.getElementById('modal-recurrence-interval').value = 3;
+    hint.textContent = 'Ej: cada 3 días → ideal para morfina o medicamentos cíclicos.';
+  } else if (type === 'daily') {
+    hint.textContent = 'Se añadirá un recordatorio diario a la hora configurada.';
+  } else {
+    hint.textContent = 'Solo se avisará los días de la semana seleccionados arriba.';
+  }
+};
+
 // Helper: convierte los días seleccionados en BYDAY para Google Calendar/ICS
-// days: [0=Dom,1=Lun,...,6=Sáb]  → GCal usa SU,MO,TU,WE,TH,FR,SA
 function _daysToRRule(days) {
   const MAP = { 0: 'SU', 1: 'MO', 2: 'TU', 3: 'WE', 4: 'TH', 5: 'FR', 6: 'SA' };
   if (!days || days.length === 7) return 'SU,MO,TU,WE,TH,FR,SA';
   return days.map(d => MAP[d]).filter(Boolean).join(',');
 }
 
-// Construye la fecha de inicio del evento (próxima ocurrencia a la hora indicada)
-function _buildCalDate(hour, minute) {
+// Construye la fecha de inicio del evento (próxima ocurrencia)
+function _buildCalDate(hour, minute, offsetHours = 0) {
   const now = new Date();
   const start = new Date();
   start.setSeconds(0, 0);
-  start.setHours(parseInt(hour), parseInt(minute));
+  start.setHours(parseInt(hour) + offsetHours, parseInt(minute));
   if (start <= now) start.setDate(start.getDate() + 1);
   const pad = n => String(n).padStart(2, '0');
   const fmt = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
@@ -509,17 +548,60 @@ function _buildCalDate(hour, minute) {
   return { startStr: fmt(start), endStr: fmt(end) };
 }
 
+// Genera el RRULE según el tipo de recurrencia del medicamento
+function _buildRRule(med) {
+  const type     = med.recurrenceType || 'weekly';
+  const interval = med.recurrenceInterval || 1;
+  const days     = med.days || [0,1,2,3,4,5,6];
+  switch (type) {
+    case 'daily':         return 'RRULE:FREQ=DAILY';
+    case 'hourly':        return 'RRULE:FREQ=HOURLY;INTERVAL=' + interval;
+    case 'interval_days': return 'RRULE:FREQ=DAILY;INTERVAL=' + interval;
+    default:              return 'RRULE:FREQ=WEEKLY;BYDAY=' + _daysToRRule(days);
+  }
+}
+
 window.syncGoogleCalendar = function() {
   if (!currentEditingMedId) return;
-  const med = MEDICATIONS_DB[currentEditingMedId] || {};
+
+  // Leer del modal (puede que no haya sido guardado aún)
+  const med = { ...( MEDICATIONS_DB[currentEditingMedId] || {}) };
+  med.recurrenceType     = document.getElementById('modal-recurrence-type').value;
+  const rIntEl = document.getElementById('modal-recurrence-interval');
+  med.recurrenceInterval = parseInt(rIntEl.value) || 1;
+  med.days = [];
+  document.querySelectorAll('.day-checkbox:checked').forEach(cb => med.days.push(parseInt(cb.value)));
+
   const timeStr = document.getElementById('modal-med-time').value || med.time || '08:00';
   const [hour, minute] = timeStr.split(':');
-  const title = encodeURIComponent('💊 ' + (med.name || 'Medicamento'));
-  const details = encodeURIComponent('Dosis: ' + (med.dose || '') + '\nRegistrado desde Pastillero Pilar');
+  const titleRaw = '💊 ' + (document.getElementById('modal-med-name').value || med.name || 'Medicamento');
+  const doseRaw  = document.getElementById('modal-med-dose').value || med.dose || '';
+
+  // Para "cada X horas", creamos múltiples eventos (máximo 3 tomas/día)
+  if (med.recurrenceType === 'hourly') {
+    const interval = med.recurrenceInterval || 8;
+    const maxDoses = Math.min(Math.floor(24 / interval), 4);
+    for (let i = 0; i < maxDoses; i++) {
+      const { startStr, endStr } = _buildCalDate(hour, minute, interval * i);
+      const title   = encodeURIComponent(titleRaw + (maxDoses > 1 ? ` (${i+1}ª toma)` : ''));
+      const details = encodeURIComponent('Dosis: ' + doseRaw + '\nToma ' + (i+1) + ' de ' + maxDoses + '\nCada ' + interval + ' horas');
+      const rrule   = encodeURIComponent('RRULE:FREQ=DAILY');
+      const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+        '&text=' + title +
+        '&dates=' + startStr + '/' + endStr +
+        '&details=' + details +
+        '&recur=' + rrule +
+        '&sf=true&output=xml';
+      setTimeout(() => window.open(url, '_blank'), i * 300); // pequeño delay para no bloquear popups
+    }
+    return;
+  }
+
+  // Para el resto de tipos (daily, interval_days, weekly)
   const { startStr, endStr } = _buildCalDate(hour, minute);
-  const days = med.days || [0,1,2,3,4,5,6];
-  const byday = _daysToRRule(days);
-  const rrule = encodeURIComponent('RRULE:FREQ=WEEKLY;BYDAY=' + byday);
+  const title   = encodeURIComponent(titleRaw);
+  const details = encodeURIComponent('Dosis: ' + doseRaw + '\nRegistrado desde Pastillero Pilar');
+  const rrule   = encodeURIComponent(_buildRRule(med));
 
   const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
     '&text=' + title +
@@ -533,41 +615,60 @@ window.syncGoogleCalendar = function() {
 
 window.syncICSAlarm = function() {
   if (!currentEditingMedId) return;
-  const med = MEDICATIONS_DB[currentEditingMedId] || {};
+
+  const med = { ...(MEDICATIONS_DB[currentEditingMedId] || {}) };
+  med.recurrenceType     = document.getElementById('modal-recurrence-type').value;
+  med.recurrenceInterval = parseInt(document.getElementById('modal-recurrence-interval').value) || 1;
+  med.days = [];
+  document.querySelectorAll('.day-checkbox:checked').forEach(cb => med.days.push(parseInt(cb.value)));
+
   const timeStr = document.getElementById('modal-med-time').value || med.time || '08:00';
   const [hour, minute] = timeStr.split(':');
-  const title = '💊 ' + (med.name || 'Medicamento');
-  const { startStr, endStr } = _buildCalDate(hour, minute);
-  const days = med.days || [0,1,2,3,4,5,6];
-  const byday = _daysToRRule(days);
+  const title = '💊 ' + (document.getElementById('modal-med-name').value || med.name || 'Medicamento');
+  const doseDesc = document.getElementById('modal-med-dose').value || med.dose || '';
+  const rruleLine = _buildRRule(med);
 
-  const lines = [
+  const allEvents = [];
+  const numEvents = (med.recurrenceType === 'hourly')
+    ? Math.min(Math.floor(24 / med.recurrenceInterval), 4) : 1;
+
+  for (let i = 0; i < numEvents; i++) {
+    const { startStr, endStr } = _buildCalDate(hour, minute, (med.recurrenceType === 'hourly') ? med.recurrenceInterval * i : 0);
+    const evTitle = title + (numEvents > 1 ? ` (${i+1}ª toma)` : '');
+    allEvents.push(
+      'BEGIN:VEVENT',
+      'UID:' + currentEditingMedId + '_' + i + '_' + Date.now() + '@pastillero',
+      'DTSTAMP:' + startStr,
+      'DTSTART:' + startStr,
+      'DTEND:' + endStr,
+      'SUMMARY:' + evTitle,
+      'DESCRIPTION:Dosis: ' + doseDesc,
+      rruleLine,
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:' + evTitle,
+      'TRIGGER:-PT0M',
+      'END:VALARM',
+      'END:VEVENT'
+    );
+  }
+
+  const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Pastillero Pilar//App//ES',
-    'BEGIN:VEVENT',
-    'UID:' + currentEditingMedId + '_' + Date.now() + '@pastillero',
-    'DTSTAMP:' + startStr,
-    'DTSTART:' + startStr,
-    'DTEND:' + endStr,
-    'SUMMARY:' + title,
-    'DESCRIPTION:Dosis: ' + (med.dose || ''),
-    'RRULE:FREQ=WEEKLY;BYDAY=' + byday,
-    'BEGIN:VALARM',
-    'ACTION:DISPLAY',
-    'DESCRIPTION:' + title,
-    'TRIGGER:-PT0M',
-    'END:VALARM',
-    'END:VEVENT',
+    ...allEvents,
     'END:VCALENDAR'
   ].join('\r\n');
 
-  const blob = new Blob([lines], { type: 'text/calendar;charset=utf-8' });
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'alarma_' + currentEditingMedId + '.ics';
   a.click();
 };
+
+
 
 async function loadDynamicConfig() {
   if (!APP.db) return;
