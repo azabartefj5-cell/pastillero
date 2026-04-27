@@ -20,13 +20,15 @@ const messaging = firebase.messaging();
 const db = firebase.firestore();
 
 // ══════════════════════════════════════
-// AGGRESSIVE VIBRATION PATTERN
-// 1s ON, 0.5s OFF — repeated 7 times = ~10.5 seconds of vibration
+// VIBRATION PATTERNS
 // ══════════════════════════════════════
+// Emergencia: sirena agresiva
 const AGGRESSIVE_VIBRATE = [
   1000, 500, 1000, 500, 1000, 500,
   1000, 500, 1000, 500, 1000, 500, 1000
 ];
+// Medicamento: suave y amigable (3 pulsos cortos)
+const MED_VIBRATE = [300, 150, 300, 150, 300];
 
 // ══════════════════════════════════════
 // DATA-ONLY MESSAGE HANDLER
@@ -77,12 +79,12 @@ function showMedAlarm(data) {
     badge: './icons/icon-192.png',
     image: './icons/icon-192.png',
 
-    // ═══ AGGRESSIVE SETTINGS ═══
-    vibrate: AGGRESSIVE_VIBRATE,
-    requireInteraction: true, // Will NOT auto-dismiss! User MUST interact.
-    renotify: true,           // Re-vibrate even if same tag replaces existing
+    // ═══ SOFT SETTINGS (medication, not emergency) ═══
+    vibrate: MED_VIBRATE,
+    requireInteraction: true,
+    renotify: true,
     tag: tag,
-    silent: false,            // Explicitly NOT silent
+    silent: false,
 
     // ═══ ACTION BUTTONS ═══
     actions: [
@@ -102,6 +104,8 @@ function showMedAlarm(data) {
     data: {
       url: data.url || './index.html',
       medId: medId,
+      medName: data.medName || medId.replace(/_/g, ' '),
+      medDose: data.medDose || '',
       timestamp: timestamp,
       type: 'MED_ALARM'
     }
@@ -135,7 +139,10 @@ self.addEventListener('notificationclick', event => {
   }
 
   // Default click (tapped the notification body): open/focus the app
-  event.waitUntil(openApp(data.url || './index.html'));
+  // Pass medName + dose so the app can speak via TTS
+  const targetUrl = (data.url || './index.html') +
+    (data.medName ? '?speak=' + encodeURIComponent(data.medName) + '&dose=' + encodeURIComponent(data.medDose || '') : '');
+  event.waitUntil(openApp(targetUrl));
 });
 
 // ══════════════════════════════════════
@@ -254,7 +261,7 @@ function getPeriod() {
 // ══════════════════════════════════════════════════════════════════
 // CACHE & OFFLINE SUPPORT
 // ══════════════════════════════════════════════════════════════════
-const CACHE_NAME = 'pastillero-pilar-v37';
+const CACHE_NAME = 'pastillero-pilar-v38';
 const STATIC_ASSETS = [
   './index.html',
   './css/style.css',

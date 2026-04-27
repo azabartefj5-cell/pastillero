@@ -2161,7 +2161,7 @@ function startFirebaseListeners() {
 }
 
   // ══════════════════════════════════════
-  // ALARM SOUND GENERATOR (Custom MP3 Buffer)
+  // ALARM SOUND GENERATOR (Custom MP3 Buffer) — EMERGENCY ONLY
   // ══════════════════════════════════════
   APP._alarmBuffer = null;
   APP._alarmSource = null;
@@ -2179,24 +2179,19 @@ function startFirebaseListeners() {
       console.log('✅ Sonido de alerta decodificado y listo');
     } catch (e) {
       console.error('❌ Error cargando alerta.mp3:', e);
-      // Fallback a beep si falla la carga
     }
   }
 
   APP.playAlarmSound = function() {
     const ctx = APP._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     APP._audioCtx = ctx;
-    
-    // Resume if it's suspended (browsers often suspend background contexts)
     if (ctx.state === 'suspended') ctx.resume();
-
-    // Stop any existing alarm first
     APP.stopAlarmSound();
 
     if (!APP._alarmBuffer) {
       console.warn('⚠️ Alarma no cargada aún. Intentando cargar...');
-      loadAlarmBuffer(); 
-      return; 
+      loadAlarmBuffer();
+      return;
     }
 
     try {
@@ -2214,15 +2209,75 @@ function startFirebaseListeners() {
 
   APP.stopAlarmSound = function() {
     if (APP._alarmSource) {
-      try {
-        APP._alarmSource.stop();
-      } catch(e) {}
+      try { APP._alarmSource.stop(); } catch(e) {}
       APP._alarmSource = null;
     }
   };
 
   // Make stopAlarmSound available globally for the close button
   window.stopAlarmSound = APP.stopAlarmSound;
+
+  // ══════════════════════════════════════
+  // TTS — VOZ PARA RECORDATORIO DE MEDICAMENTO
+  // Usa la Web Speech API del navegador (funciona en Chrome/Android sin coste)
+  // ══════════════════════════════════════
+  APP.speakMed = function(text, onEnd) {
+    if (!('speechSynthesis' in window)) {
+      console.warn('TTS no disponible en este navegador');
+      if (onEnd) onEnd();
+      return;
+    }
+    window.speechSynthesis.cancel(); // cancelar cualquier voz anterior
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'es-ES';
+    utter.rate = 0.9;
+    utter.pitch = 1.05;
+    utter.volume = 1.0;
+    if (onEnd) utter.onend = onEnd;
+    window.speechSynthesis.speak(utter);
+  };
+
+  // ══════════════════════════════════════
+  // MEDICATION REMINDER — sonido suave + voz
+  // Diferente a la alarma de emergencia
+  // ══════════════════════════════════════
+  APP.playMedReminder = function(medName, dose) {
+    const ctx = APP._audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    APP._audioCtx = ctx;
+    if (ctx.state === 'suspended') ctx.resume();
+
+    // Bip suave de 3 notas (no la sirena)
+    const times = [0, 0.35, 0.70];
+    const freqs = [880, 1047, 1319]; // La, Do, Mi (acorde mayor — sonido amigable)
+    times.forEach((t, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freqs[i];
+      gain.gain.setValueAtTime(0, ctx.currentTime + t);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + t + 0.05);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + t + 0.28);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime + t + 0.30);
+    });
+
+    // Vibración suave en móvil
+    if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+
+    // Tras el bip, hablar en voz alta
+    setTimeout(() => {
+      const msg = dose
+        ? `Es hora de tomar ${medName}. Dosis: ${dose}.`
+        : `Pilar, es hora de tomar ${medName}.`;
+      APP.speakMed(msg);
+    }, 1100);
+  };
+
+  // Exponer globalmente para uso desde HTML y SW redirect
+  window.playMedReminder = APP.playMedReminder;
+  window.speakMed       = APP.speakMed;
 
 
 // ══════════════════════════════════════
@@ -2263,10 +2318,10 @@ document.getElementById('btn-panic').addEventListener('click', () => {
 });
 
 document.getElementById('btn-test-alarm')?.addEventListener('click', () => {
-  // Show overlay and play sound locally only
-  document.getElementById('panic-overlay').classList.remove('hidden');
-  if (APP.playAlarmSound) APP.playAlarmSound();
-  if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+  // Prueba el recordatorio de medicamento (sonido suave + voz) — NO la sirena de emergencia
+  if (APP.playMedReminder) {
+    APP.playMedReminder('Omeprazol', '1 comprimido');
+  }
 });
 
 document.getElementById('btn-close-panic').addEventListener('click', () => {
@@ -2932,6 +2987,7 @@ function init() {
   navigateToHoy();
 }
 
+
 // ══════════════════════════════════════
 // GLOBAL EXPORTS (For HTML onclick handlers)
 // ══════════════════════════════════════
@@ -2940,3 +2996,31 @@ window.deleteMedToma = deleteMedToma;
 
 init();
 
+// ══════════════════════════════════════
+// TTS AL ABRIR APP DESDE NOTIFICACIÓN DE MEDICAMENTO
+// Si la URL contiene ?speak=NombreMed&dose=Dosis, habla en voz alta
+// ══════════════════════════════════════
+(function checkSpeakOnLaunch() {
+  const params = new URLSearchParams(window.location.search);
+  const medName = params.get('speak');
+  const dose    = params.get('dose');
+  if (medName) {
+    // Esperar a que el audio esté desbloqueado (primer click/touch)
+    const speak = () => {
+      if (window.playMedReminder) {
+        window.playMedReminder(decodeURIComponent(medName), decodeURIComponent(dose || ''));
+      }
+      // Limpiar la URL para que no se repita al refrescar
+      const clean = window.location.pathname;
+      window.history.replaceState({}, '', clean);
+    };
+    // Si el usuario ya interactuó, hablar en 1s; si no, esperar primer touch
+    if (document.hasFocus()) {
+      setTimeout(speak, 1000);
+    } else {
+      const once = () => { speak(); document.removeEventListener('click', once); document.removeEventListener('touchstart', once); };
+      document.addEventListener('click', once, { once: true });
+      document.addEventListener('touchstart', once, { once: true });
+    }
+  }
+})();
