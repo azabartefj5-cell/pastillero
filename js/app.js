@@ -601,7 +601,7 @@ function renderCustomMeds() {
               <p class="text-base text-on-surface-variant font-medium mt-0.5">${med.dose}</p>
             </div>
           </div>
-          <button class="h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0" onclick="saveMedToma('${id}', '${med.period}').then(ts => { if(window.markCardTakenUI) markCardTakenUI(this.closest('[data-med]'), ts); })">
+          <button class="h-16 w-16 bg-surface-variant rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0" onclick="window.saveMedToma('${id}', '${med.period}').then(ts => { if(window.markCardTakenUI) window.markCardTakenUI(document.querySelector('[data-med=\\'${id}\\']'), ts); })">
             <span class="material-symbols-outlined text-3xl">check</span>
           </button>
         </div>
