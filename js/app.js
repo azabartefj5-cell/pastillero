@@ -2284,13 +2284,39 @@ function startFirebaseListeners() {
       try { APP._medAlarmSource.stop(); } catch(e) {}
       APP._medAlarmSource = null;
     }
+    if (APP._bgTtsAudio) {
+      try {
+        APP._bgTtsAudio.pause();
+        APP._bgTtsAudio.currentTime = 0;
+      } catch(e) {}
+      APP._bgTtsAudio = null;
+    }
     if (navigator.vibrate) navigator.vibrate(0);
     console.log('🔕 Alarma de medicamento detenida');
   };
 
+  APP._bgTtsAudio = null;
+
   // Reproduce la locución en español y devuelve una Promise que resuelve al terminar
   APP.speakMed = function(text) {
     return new Promise(resolve => {
+      // Cuando la app está en segundo plano (document.hidden), speechSynthesis suele ser 
+      // bloqueado por Chrome en Android. En su lugar, usamos una URL de audio directo
+      // que se comporta como la alerta sonora y sí suena en background.
+      if (document.hidden || document.visibilityState === 'hidden') {
+        console.log('🔊 App en background: usando locución por Audio API');
+        const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=es-ES&client=tw-ob`;
+        APP._bgTtsAudio = new Audio(url);
+        APP._bgTtsAudio.onended = resolve;
+        APP._bgTtsAudio.onerror = resolve;
+        APP._bgTtsAudio.play().catch(e => {
+          console.warn('Fallo TTS por Audio API en background:', e);
+          resolve();
+        });
+        setTimeout(resolve, 8000); // timeout de seguridad
+        return;
+      }
+
       if (!('speechSynthesis' in window)) { setTimeout(resolve, 2000); return; }
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
