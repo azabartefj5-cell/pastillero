@@ -1964,6 +1964,8 @@ function showForegroundAlarm(data) {
   });
 }
 
+// Exponer globalmente para que checkSpeakOnLaunch (fuera de init) pueda llamarla
+window.showForegroundAlarm = showForegroundAlarm;
 
 function startFirebaseListeners() {
   if (!APP.db) return;
@@ -3172,33 +3174,56 @@ init();
 
 // ══════════════════════════════════════
 // AL ABRIR APP DESDE NOTIFICACIÓN DEL SERVICE WORKER
-// Si la URL contiene ?speak=NombreMed&dose=Dosis → overlay + sonido + TTS
+// Si la URL contiene ?speak=NombreMed&dose=Dosis&medId=ID → overlay + sonido + TTS
+// El Service Worker añade estos parámetros en el notificationclick.
+// El toque que abre la notificación cuenta como gesto de usuario,
+// por lo que el AudioContext y el TTS se pueden activar sin restricciones.
 // ══════════════════════════════════════
 (function checkSpeakOnLaunch() {
   const params  = new URLSearchParams(window.location.search);
   const medName = params.get('speak');
   const dose    = params.get('dose');
+  const medId   = params.get('medId');   // ID real del medicamento (p.ej. omeprazol_am)
+
   if (!medName) return;
 
   // Limpiar URL para que no se repita al refrescar
   window.history.replaceState({}, '', window.location.pathname);
 
-  // Disparar overlay + sonido (el toque que abre la app desde la notificación
-  // ya cuenta como gesto de usuario → AudioContext desbloqueado)
+  // Función que lanza el overlay + alarma completa
   const trigger = () => {
-    if (typeof showForegroundAlarm === 'function') {
-      showForegroundAlarm({
+    // window.showForegroundAlarm se expone justo después de que init() la define
+    if (typeof window.showForegroundAlarm === 'function') {
+      window.showForegroundAlarm({
         medName: decodeURIComponent(medName),
-        dose:    decodeURIComponent(dose || ''),
-        medId:   'from-notification'
+        dose:    decodeURIComponent(dose    || ''),
+        medId:   decodeURIComponent(medId   || ''),   // ID real para poder registrar toma
+        title:   decodeURIComponent(medName)
       });
+    } else {
+      // Fallback mínimo: al menos hablar aunque el overlay no esté listo
+      const msg = dose
+        ? `Pilar, es hora de tomar ${decodeURIComponent(medName)}. Dosis: ${decodeURIComponent(dose)}.`
+        : `Pilar, es hora de tomar ${decodeURIComponent(medName)}.`;
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(msg);
+        u.lang = 'es-ES';
+        u.rate = 0.88;
+        window.speechSynthesis.speak(u);
+      }
     }
   };
 
-  // Pequeño delay para que el DOM esté listo
+  // Esperar a que el DOM y el código de init() estén completamente cargados.
+  // init() se llama de forma síncrona justo antes de este bloque, pero
+  // connectFirebase() y loadAlarmBuffer() son async, así que usamos
+  // un pequeño delay para garantizar que APP.playMedReminder esté disponible.
+  const scheduleDelay = 1200; // ms — suficiente para que init() y load de voces terminen
+
   if (document.readyState === 'complete') {
-    setTimeout(trigger, 800);
+    setTimeout(trigger, scheduleDelay);
   } else {
-    window.addEventListener('load', () => setTimeout(trigger, 800), { once: true });
+    window.addEventListener('load', () => setTimeout(trigger, scheduleDelay), { once: true });
   }
 })();

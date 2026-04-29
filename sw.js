@@ -139,9 +139,13 @@ self.addEventListener('notificationclick', event => {
   }
 
   // Default click (tapped the notification body): open/focus the app
-  // Pass medName + dose so the app can speak via TTS
+  // Pass medName + dose + medId so the app can speak via TTS and register the toma
   const targetUrl = (data.url || './index.html') +
-    (data.medName ? '?speak=' + encodeURIComponent(data.medName) + '&dose=' + encodeURIComponent(data.medDose || '') : '');
+    (data.medName
+      ? '?speak='  + encodeURIComponent(data.medName) +
+        '&dose='   + encodeURIComponent(data.medDose || '') +
+        '&medId='  + encodeURIComponent(data.medId   || '')
+      : '');
   event.waitUntil(openApp(targetUrl));
 });
 
@@ -229,9 +233,13 @@ async function snoozeAlarm(data) {
 async function openApp(targetUrl) {
   const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
 
-  // Try to focus an existing window first
+  // If the app is already open, navigate it to the target URL (preserving speak params)
+  // then focus it. Using navigate() ensures checkSpeakOnLaunch receives the query string.
   for (const client of clientList) {
     if (client.url.includes('index.html') && 'focus' in client) {
+      if ('navigate' in client) {
+        await client.navigate(targetUrl);
+      }
       return client.focus();
     }
   }
@@ -261,7 +269,7 @@ function getPeriod() {
 // ══════════════════════════════════════════════════════════════════
 // CACHE & OFFLINE SUPPORT
 // ══════════════════════════════════════════════════════════════════
-const CACHE_NAME = 'pastillero-pilar-v45';
+const CACHE_NAME = 'pastillero-pilar-v46';
 const STATIC_ASSETS = [
   './index.html',
   './css/style.css',
